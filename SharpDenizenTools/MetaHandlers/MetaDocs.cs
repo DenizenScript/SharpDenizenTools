@@ -44,6 +44,16 @@ namespace SharpDenizenTools.MetaHandlers
         };
 
         /// <summary>
+        /// The actual source array to use, by default built from <see cref="DENIZEN_SOURCES"/> and <see cref="DENIZEN_ADDON_SOURCES"/>.
+        /// </summary>
+        public static string[] SourcesToUse = DENIZEN_SOURCES.JoinWith(DENIZEN_ADDON_SOURCES);
+
+        /// <summary>
+        /// Optional alternative source for zips (for things like caching).
+        /// </summary>
+        public static Func<string, byte[]> AlternateZipSourcer = null;
+
+        /// <summary>
         /// Source link for the Denizen beginner's guide.
         /// </summary>
         public static string DENIZEN_GUIDE_SOURCE = "https://guide.denizenscript.com/";
@@ -228,7 +238,7 @@ namespace SharpDenizenTools.MetaHandlers
         {
             ConcurrentBag<ZipArchive> zips = new ConcurrentBag<ZipArchive>();
             List<ManualResetEvent> resets = new List<ManualResetEvent>();
-            foreach (string src in DENIZEN_SOURCES.JoinWith(DENIZEN_ADDON_SOURCES))
+            foreach (string src in SourcesToUse)
             {
                 ManualResetEvent evt = new ManualResetEvent(false);
                 resets.Add(evt);
@@ -327,11 +337,19 @@ namespace SharpDenizenTools.MetaHandlers
         /// </summary>
         public static ZipArchive DownloadZip(string url)
         {
-            HttpClient client = new HttpClient
+            byte[] zipDataBytes;
+            if (AlternateZipSourcer != null)
             {
-                Timeout = new TimeSpan(0, 2, 0)
-            };
-            byte[] zipDataBytes = client.GetByteArrayAsync(url).Result;
+                zipDataBytes = AlternateZipSourcer(url);
+            }
+            else
+            {
+                HttpClient client = new HttpClient
+                {
+                    Timeout = new TimeSpan(0, 2, 0)
+                };
+                zipDataBytes = client.GetByteArrayAsync(url).Result;
+            }
             MemoryStream zipDataStream = new MemoryStream(zipDataBytes);
             return new ZipArchive(zipDataStream);
         }
