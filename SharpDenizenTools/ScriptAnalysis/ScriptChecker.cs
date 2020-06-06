@@ -16,6 +16,11 @@ namespace SharpDenizenTools.ScriptAnalysis
     public class ScriptChecker
     {
         /// <summary>
+        /// Action to log an internal message (defaults to <see cref="Console.WriteLine(string)"/>.
+        /// </summary>
+        public Action<string> LogInternalMessage = Console.WriteLine;
+
+        /// <summary>
         /// A set of all known script type names.
         /// </summary>
         public static readonly Dictionary<string, KnownScriptType> KnownScriptTypes = new Dictionary<string, KnownScriptType>()
@@ -250,7 +255,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             catch (Exception ex)
             {
                 Warn(Errors, -1, "yaml_load", "Invalid YAML! Error message: " + ex.Message);
-                Console.WriteLine($"YAML error: {ex}\n\nFrom:\n{CleanScriptForYAMLProcessing()}");
+                LogInternalMessage($"YAML error: {ex}\n\nFrom:\n{CleanScriptForYAMLProcessing()}");
             }
         }
 
@@ -272,7 +277,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string scriptName = CleanedLines[x][0..^1];
                                 Injects.Add(scriptName);
-                                Console.WriteLine($"ScriptChecker: Inject locally became {scriptName}");
+                                LogInternalMessage($"ScriptChecker: Inject locally became {scriptName}");
                                 break;
                             }
                         }
@@ -282,11 +287,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                         string target = line.Before(" ");
                         string scriptTarget = target.Before(".");
                         Injects.Add(scriptTarget);
-                        Console.WriteLine($"ScriptChecker: Injected {scriptTarget}");
+                        LogInternalMessage($"ScriptChecker: Injected {scriptTarget}");
                         if (target.Contains("<"))
                         {
                             Injects.Add("*");
-                            Console.WriteLine("ScriptChecker: Inject EVERYTHING");
+                            LogInternalMessage("ScriptChecker: Inject EVERYTHING");
                         }
                     }
                 }
@@ -487,7 +492,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             if (argument.Length > 2 && argNoArrows.CountCharacter('<') != argNoArrows.CountCharacter('>'))
             {
                 Warn(Warnings, line, "uneven_tags", $"Uneven number of tag marks (forgot to close a tag?).");
-                Console.WriteLine("Uneven tag marks for: " + argNoArrows);
+                LogInternalMessage("Uneven tag marks for: " + argNoArrows);
             }
             int tagIndex = argNoArrows.IndexOf('<');
             while (tagIndex != -1)
@@ -641,7 +646,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     if (!MetaDocs.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanism))
                     {
                         Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.");
-                        Console.WriteLine($"Unrecognized mechanism '{mechanism}' for script check line {line}.");
+                        LogInternalMessage($"Unrecognized mechanism '{mechanism}' for script check line {line}.");
                     }
                 }
             }
@@ -1037,8 +1042,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 catch (Exception ex)
                 {
-                    warnScript(Warnings, scriptPair.Key.Line, "exception_internal", $"Internal exception (check bot debug console)!");
-                    Console.WriteLine($"Script check exception: {ex}");
+                    warnScript(Warnings, scriptPair.Key.Line, "exception_internal", $"Internal exception (check internal debug console)!");
+                    LogInternalMessage($"Script check exception: {ex}");
                 }
             }
         }
@@ -1157,7 +1162,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     if (spaces > pspaces && clist != null && !buildingSubList)
                     {
                         Warn(Warnings, i, "growing_spaces_in_script", "Spacing grew for no reason (missing a ':' on a command, or accidental over-spacing?).");
-                        Console.WriteLine($"Line {i + 1}, Spacing is {spaces}, but was {pspaces}... unexplained growth");
+                        LogInternalMessage($"Line {i + 1}, Spacing is {spaces}, but was {pspaces}... unexplained growth");
                     }
                     if (secwaiting != null)
                     {
