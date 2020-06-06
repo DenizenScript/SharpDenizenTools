@@ -7,6 +7,7 @@ using FreneticUtilities.FreneticExtensions;
 using YamlDotNet.RepresentationModel;
 using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.MetaObjects;
+using FreneticUtilities.FreneticToolkit;
 
 namespace SharpDenizenTools.ScriptAnalysis
 {
@@ -18,7 +19,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Action to log an internal message (defaults to <see cref="Console.WriteLine(string)"/>.
         /// </summary>
-        public Action<string> LogInternalMessage = Console.WriteLine;
+        public static Action<string> LogInternalMessage = Console.WriteLine;
 
         /// <summary>
         /// A set of all known script type names.
@@ -131,6 +132,16 @@ namespace SharpDenizenTools.ScriptAnalysis
             /// The line this applies to.
             /// </summary>
             public int Line;
+
+            /// <summary>
+            /// The starting character position.
+            /// </summary>
+            public int StartChar = 0;
+
+            /// <summary>
+            /// The ending character position.
+            /// </summary>
+            public int EndChar = 0;
         }
 
         /// <summary>
@@ -170,7 +181,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         public ScriptChecker(string script)
         {
             FullOriginalScript = script;
-            Lines = script.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+            if (script.Contains('\r'))
+            {
+                script = script.Replace("\r\n", "\n").Replace('\r', '\n');
+            }
+            Lines = script.Split('\n');
             CleanedLines = Lines.Select(s => s.Trim().ToLowerFast()).ToArray();
         }
 
@@ -181,9 +196,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="line">The zero-indexed line the warning is regarding.</param>
         /// <param name="key">The unique warning key, for compressing repeat warns.</param>
         /// <param name="message">The warning message.</param>
-        public void Warn(List<ScriptWarning> warnType, int line, string key, string message)
+        /// <param name="start">The starting character index.</param>
+        /// <param name="end">The ending character index.</param>
+        public void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
         {
-            warnType.Add(new ScriptWarning() { Line = line, WarningUniqueKey = key, CustomMessageForm = message });
+            warnType.Add(new ScriptWarning() { Line = line, WarningUniqueKey = key, CustomMessageForm = message, StartChar = start, EndChar = end });
         }
 
         /// <summary>
@@ -254,7 +271,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             catch (Exception ex)
             {
-                Warn(Errors, -1, "yaml_load", "Invalid YAML! Error message: " + ex.Message);
+                Warn(Errors, 0, "yaml_load", "Invalid YAML! Error message: " + ex.Message, 0, 0);
                 LogInternalMessage($"YAML error: {ex}\n\nFrom:\n{CleanScriptForYAMLProcessing()}");
             }
         }
@@ -277,7 +294,6 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string scriptName = CleanedLines[x][0..^1];
                                 Injects.Add(scriptName);
-                                LogInternalMessage($"ScriptChecker: Inject locally became {scriptName}");
                                 break;
                             }
                         }
@@ -287,11 +303,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                         string target = line.Before(" ");
                         string scriptTarget = target.Before(".");
                         Injects.Add(scriptTarget);
-                        LogInternalMessage($"ScriptChecker: Injected {scriptTarget}");
                         if (target.Contains("<"))
                         {
                             Injects.Add("*");
-                            LogInternalMessage("ScriptChecker: Inject EVERYTHING");
                         }
                     }
                 }
@@ -305,13 +319,22 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             for (int i = 0; i < Lines.Length; i++)
             {
-                if (Lines[i].EndsWith(" "))
+                string line = Lines[i];
+                if (line.EndsWith(" "))
                 {
-                    Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).");
+                    int endChar;
+                    for (endChar = line.Length - 1; endChar >= 0; endChar--)
+                    {
+                        if (line[endChar] != ' ')
+                        {
+                            break;
+                        }
+                    }
+                    Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).", endChar, line.Length - 1);
                 }
                 else if (CleanedLines[i].Length > 0 && !CleanedLines[i].StartsWith("-") && !CleanedLines[i].Contains(":"))
                 {
-                    Warn(Warnings, i, "useless_invalid_line", "Useless/invalid line (possibly missing a `-` or a `:`, or just accidentally hit enter or paste).");
+                    Warn(Warnings, i, "useless_invalid_line", "Useless/invalid line (possibly missing a `-` or a `:`, or just accidentally hit enter or paste).", Lines[i].IndexOf(CleanedLines[i][0]), Lines[i].Length - 1);
                 }
             }
         }
@@ -329,11 +352,13 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (Lines[i].Contains("\t"))
                 {
-                    Warn(Warnings, i, "raw_tab_symbol", "This script uses the raw tab symbol. Please switch these out for 2 or 4 spaces.");
+                    Warn(Warnings, i, "raw_tab_symbol", "This script uses the raw tab symbol. Please switch these out for 2 or 4 spaces.", Lines[i].IndexOf('\t'), Lines[i].LastIndexOf('\t'));
                     break;
                 }
             }
         }
+
+        private static readonly char[] BracesChars = new char[] { '{', '}' };
 
         /// <summary>
         /// Checks if { braces } are used (instead of modern "colon:" syntax). If so, error.
@@ -348,7 +373,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (Lines[i].EndsWith("{") || Lines[i].EndsWith("}"))
                 {
-                    Warn(Errors, i, "brace_syntax", "This script uses outdated { braced } syntax. Please update to modern 'colon:' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#colon-syntax> for more info.");
+                    int start = Lines[i].IndexOfAny(BracesChars);
+                    int end = Lines[i].LastIndexOfAny(BracesChars);
+                    Warn(Errors, i, "brace_syntax", "This script uses outdated { braced } syntax. Please update to modern 'colon:' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#colon-syntax> for more info.", start, end);
                     break;
                 }
             }
@@ -367,7 +394,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (Lines[i].Contains("%"))
                 {
-                    Warn(Errors, i, "ancient_defs", "This script uses ancient %defs%. Please update to modern '<[defname]>' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#definition-syntax> for more info.");
+                    int start = Lines[i].IndexOf('%');
+                    int end = Lines[i].LastIndexOf('%');
+                    Warn(Errors, i, "ancient_defs", "This script uses ancient %defs%. Please update to modern '<[defname]>' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#definition-syntax> for more info.", start, end);
                     break;
                 }
             }
@@ -386,7 +415,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (Lines[i].Contains("<def["))
                 {
-                    Warn(Warnings, i, "old_defs", "This script uses <def[old-defs]>. Please update to modern '<[defname]>' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#definition-syntax> for more info.");
+                    int start = Lines[i].IndexOf("<def[");
+                    int end = Lines[i].LastIndexOf("<def[");
+                    Warn(Warnings, i, "old_defs", "This script uses <def[old-defs]>. Please update to modern '<[defname]>' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#definition-syntax> for more info.", start, end);
                     break;
                 }
             }
@@ -396,8 +427,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// Performs the necessary checks on a single tag.
         /// </summary>
         /// <param name="line">The line number.</param>
+        /// <param name="startChar">The index of the character where this tag starts.</param>
         /// <param name="tag">The text of the tag.</param>
-        public void CheckSingleTag(int line, string tag)
+        public void CheckSingleTag(int line, int startChar, string tag)
         {
             tag = tag.ToLowerFast();
             int brackets = 0;
@@ -423,7 +455,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     brackets--;
                     if (brackets == 0)
                     {
-                        CheckSingleArgument(line, tag.Substring(firstBracket + 1, i - firstBracket - 1));
+                        CheckSingleArgument(line, startChar + firstBracket + 1, tag.Substring(firstBracket + 1, i - firstBracket - 1));
                     }
                 }
                 else if (tag[i] == '.' && brackets == 0)
@@ -441,7 +473,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         tagParts.Add(tag[start..i]);
                     }
-                    CheckSingleArgument(line, tag.Substring(i + 2));
+                    CheckSingleArgument(line, startChar + i + 2, tag.Substring(i + 2));
                     foundABracket = true;
                     break;
                 }
@@ -457,42 +489,50 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (!MetaDocs.CurrentMeta.TagBases.Contains(tagName) && tagName.Length > 0)
             {
-                Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
+                Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar, startChar + tagName.Length);
             }
             else if (tagName.EndsWith("tag"))
             {
-                Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).");
+                Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar, startChar + tagName.Length);
             }
+            int lenThusFar = startChar + tagName.Length;
             for (int i = 1; i < tagParts.Count; i++)
             {
                 if (!MetaDocs.CurrentMeta.TagParts.Contains(tagParts[i]))
                 {
-                    Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{tagParts[i].Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
+                    Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{tagParts[i].Replace('`', '\'')}` (check `!tag ...` to find valid tags).", lenThusFar, lenThusFar + tagParts[i].Length);
                     if (tagParts[i].EndsWith("tag"))
                     {
-                        Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).");
+                        Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", lenThusFar, lenThusFar + tagParts[i].Length);
                     }
                 }
+                lenThusFar += 1 + tagParts[i].Length;
             }
         }
+
+        private static readonly char[] tagMarksChars = new char[] { '<', '>' };
 
         /// <summary>
         /// Performs the necessary checks on a single argument.
         /// </summary>
         /// <param name="line">The line number.</param>
+        /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="argument">The text of the argument.</param>
         /// <param name="isCommand">Whether this is an argument to a command.</param>
-        public void CheckSingleArgument(int line, string argument, bool isCommand = false)
+        public void CheckSingleArgument(int line, int startChar, string argument, bool isCommand = false)
         {
             if (argument.Contains("@") && !isCommand)
             {
-                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.");
+                int start = startChar + argument.IndexOf('@');
+                int end = startChar + argument.LastIndexOf('@');
+                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
             }
-            string argNoArrows = argument.Replace("<-", "arrow_left").Replace("->", "arrow_right");
+            string argNoArrows = argument.Replace("<-", "al").Replace("->", "ar");
             if (argument.Length > 2 && argNoArrows.CountCharacter('<') != argNoArrows.CountCharacter('>'))
             {
-                Warn(Warnings, line, "uneven_tags", $"Uneven number of tag marks (forgot to close a tag?).");
-                LogInternalMessage("Uneven tag marks for: " + argNoArrows);
+                int start = startChar + argument.IndexOfAny(tagMarksChars);
+                int end = startChar + argument.LastIndexOfAny(tagMarksChars);
+                Warn(Warnings, line, "uneven_tags", $"Uneven number of tag marks (forgot to close a tag?).", start, end);
             }
             int tagIndex = argNoArrows.IndexOf('<');
             while (tagIndex != -1)
@@ -520,24 +560,36 @@ namespace SharpDenizenTools.ScriptAnalysis
                     break;
                 }
                 string tag = argNoArrows.Substring(tagIndex + 1, endIndex - tagIndex - 1);
-                CheckSingleTag(line, tag);
+                CheckSingleTag(line, startChar + tagIndex + 1, tag);
                 tagIndex = argNoArrows.IndexOf('<', endIndex);
             }
+        }
+
+        /// <summary>A single argument to a command.</summary>
+        public class CommandArgument
+        {
+            /// <summary>The character index that this argument starts at.</summary>
+            public int StartChar;
+
+            /// <summary>The text of the argument.</summary>
+            public string Text;
         }
 
         /// <summary>
         /// Build args, as copied from Denizen Core -> ArgumentHelper.
         /// </summary>
         /// <param name="line">The line number.</param>
+        /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="stringArgs">The raw arguments input.</param>
         /// <returns>The argument array.</returns>
-        public string[] BuildArgs(int line, string stringArgs)
+        public CommandArgument[] BuildArgs(int line, int startChar, string stringArgs)
         {
             stringArgs = stringArgs.Trim().Replace('\r', ' ').Replace('\n', ' ');
-            List<string> matchList = new List<string>(stringArgs.CountCharacter(' '));
+            List<CommandArgument> matchList = new List<CommandArgument>(stringArgs.CountCharacter(' '));
             int start = 0;
             int len = stringArgs.Length;
             char currentQuote = '\0';
+            int firstQuote = 0;
             for (int i = 0; i < len; i++)
             {
                 char c = stringArgs[i];
@@ -545,12 +597,16 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     if (i > start)
                     {
-                        matchList.Add(stringArgs[start..i]);
+                        matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = stringArgs[start..i] });
                     }
                     start = i + 1;
                 }
                 else if (c == '"' || c == '\'')
                 {
+                    if (firstQuote == 0)
+                    {
+                        firstQuote = i;
+                    }
                     if (currentQuote == '\0')
                     {
                         if (i - 1 < 0 || stringArgs[i - 1] == ' ')
@@ -567,10 +623,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (i >= start)
                             {
                                 string matched = stringArgs[start..i];
-                                matchList.Add(matched);
+                                matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = matched });
                                 if (!matched.Contains(" "))
                                 {
-                                    Warn(MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).");
+                                    Warn(MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
                                 }
                             }
                             i++;
@@ -581,11 +637,11 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (currentQuote != '\0')
             {
-                Warn(MinorWarnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).");
+                Warn(MinorWarnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).", startChar + firstQuote, startChar + len);
             }
             if (start < len)
             {
-                matchList.Add(stringArgs.Substring(start));
+                matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = stringArgs.Substring(start) });
             }
             return matchList.ToArray();
         }
@@ -594,13 +650,16 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// Performs the necessary checks on a single command line.
         /// </summary>
         /// <param name="line">The line number.</param>
+        /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="commandText">The text of the command line.</param>
         /// <param name="definitions">The definitions tracker.</param>
-        public void CheckSingleCommand(int line, string commandText, HashSet<string> definitions)
+        public void CheckSingleCommand(int line, int startChar, string commandText, HashSet<string> definitions)
         {
             if (commandText.Contains("@"))
             {
-                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.");
+                int start = startChar + commandText.IndexOf('@');
+                int end = startChar + commandText.LastIndexOf('@');
+                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
             }
             string[] parts = commandText.Split(' ', 2);
             string commandName = parts[0].ToLowerFast();
@@ -608,77 +667,83 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 commandName = commandName.Substring(1);
             }
-            string[] arguments = parts.Length == 1 ? new string[0] : BuildArgs(line, parts[1]);
+            CommandArgument[] arguments = parts.Length == 1 ? new CommandArgument[0] : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
             if (!MetaDocs.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
                 {
-                    Warn(Errors, line, "unknown_command", $"Unknown command `{commandName.Replace('`', '\'')}` (typo? Use `!command [...]` to find a valid command).");
+                    Warn(Errors, line, "unknown_command", $"Unknown command `{commandName.Replace('`', '\'')}` (typo? Use `!command [...]` to find a valid command).", startChar, startChar + commandName.Length);
                 }
                 return;
             }
-            int argCount = arguments.Count(s => !s.StartsWith("save:") && !s.StartsWith("player:") && !s.StartsWith("npc:"));
+            int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
             {
-                Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {arguments.Length}.");
+                Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {arguments.Length}.", startChar, startChar + commandText.Length);
             }
             if (argCount > command.Maximum)
             {
-                Warn(Errors, line, "too_many_args", $"Too many arguments... the `{command.Name}` command requires no more than {command.Maximum} arguments, but you provided {arguments.Length}. Did you forget 'quotes'?");
+                Warn(Errors, line, "too_many_args", $"Too many arguments... the `{command.Name}` command requires no more than {command.Maximum} arguments, but you provided {arguments.Length}. Did you forget 'quotes'?", startChar, startChar + commandText.Length);
             }
             if (commandName == "if" || commandName == "waituntil" || commandName == "while")
             {
-                if (commandText.Contains(" == true") || commandText.Contains(" == false"))
+                int borkLen = " == true".Length;
+                int borkIndex = commandText.IndexOf(" == true");
+                if (borkIndex == -1)
                 {
-                    Warn(Errors, line, "truly_true", $"'== true' style checks are nonsense. Refer to <https://guide.denizenscript.com/guides/troubleshooting/common-mistakes.html#if-true-is-true-equal-to-truly-true-is-the-truth> for more info.");
+                    borkLen = " == false".Length;
+                    borkIndex = commandText.IndexOf(" == false");
+                }
+                if (borkIndex != -1)
+                {
+                    Warn(Errors, line, "truly_true", $"'== true' style checks are nonsense. Refer to <https://guide.denizenscript.com/guides/troubleshooting/common-mistakes.html#if-true-is-true-equal-to-truly-true-is-the-truth> for more info.", borkIndex, borkIndex + borkLen);
                 }
             }
             if (commandName == "adjust")
             {
-                string mechanism = arguments.FirstOrDefault(s => s.Contains(":") && !s.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Contains("<"));
+                CommandArgument mechanism = arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Text.Contains("<"));
                 if (mechanism == null)
                 {
-                    Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.");
+                    Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.", startChar, startChar + commandText.Length);
                 }
                 else
                 {
-                    mechanism = mechanism.Before(':').ToLowerFast();
-                    if (!MetaDocs.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanism))
+                    string mechanismName = mechanism.Text.Before(':').ToLowerFast();
+                    if (!MetaDocs.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanismName))
                     {
-                        Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.");
-                        LogInternalMessage($"Unrecognized mechanism '{mechanism}' for script check line {line}.");
+                        Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
                     }
                 }
             }
             else if (commandName == "execute" && arguments.Length >= 2)
             {
-                string bukkitCommandArg = arguments[0].ToLowerFast().StartsWith("as_") ? arguments[1] : arguments[0];
+                string bukkitCommandArg = arguments[0].Text.ToLowerFast().StartsWith("as_") ? arguments[1].Text : arguments[0].Text;
                 string bukkitCommandName = bukkitCommandArg.Before(' ').ToLowerFast();
                 if (BadExecuteCommands.Contains(bukkitCommandName) || bukkitCommandName.StartsWith("minecraft:") || bukkitCommandName.StartsWith("bukkit:"))
                 {
-                    Warn(Warnings, line, "bad_execute", "Inappropriate usage of the 'execute' command. Execute is for external plugin interop, and should never be used for vanilla commands. Use the relevant Denizen script command or mechanism instead.");
+                    Warn(Warnings, line, "bad_execute", "Inappropriate usage of the 'execute' command. Execute is for external plugin interop, and should never be used for vanilla commands. Use the relevant Denizen script command or mechanism instead.", startChar, startChar + commandText.Length);
                 }
             }
             else if (commandName == "inject")
             {
                 definitions.Add("*");
             }
-            else if (commandName == "queue" && arguments.Length == 1 && (arguments[0] == "stop" || arguments[0] == "clear"))
+            else if (commandName == "queue" && arguments.Length == 1 && (arguments[0].Text.ToLowerFast() == "stop" || arguments[0].Text.ToLowerFast() == "clear"))
             {
-                Warn(MinorWarnings, line, "queue_clear", "Old style 'queue clear'. Use the modern 'stop' command instead. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#stop-is-the-new-queue-clear> for more info.");
+                Warn(MinorWarnings, line, "queue_clear", "Old style 'queue clear'. Use the modern 'stop' command instead. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#stop-is-the-new-queue-clear> for more info.", startChar, startChar + commandText.Length);
             }
-            else if (commandName == "define")
+            else if (commandName == "define" && arguments.Length >= 1)
             {
-                string defName = arguments[0].Before(":").ToLowerFast();
+                string defName = arguments[0].Text.Before(":").ToLowerFast();
                 definitions.Add(defName);
                 if (defName.Contains("<"))
                 {
                     definitions.Add("*");
                 }
             }
-            else if (commandName == "foreach" || commandName == "while" || commandName == "repeat")
+            else if ((commandName == "foreach" || commandName == "while" || commandName == "repeat") && arguments.Length >= 1)
             {
-                string asArgument = arguments.FirstOrDefault(s => s.StartsWith("as:"));
+                string asArgument = arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("as:"))?.Text;
                 if (asArgument == null)
                 {
                     asArgument = "value";
@@ -690,7 +755,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 definitions.Add(asArgument.ToLowerFast());
                 definitions.Add("loop_index");
             }
-            string saveArgument = arguments.FirstOrDefault(s => s.StartsWith("save:"));
+            string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
             {
                 definitions.Add(ENTRY_PREFIX + saveArgument.Substring("save:".Length).ToLowerFast());
@@ -699,34 +764,34 @@ namespace SharpDenizenTools.ScriptAnalysis
                     definitions.Add(ENTRY_PREFIX + "*");
                 }
             }
-            foreach (string argument in arguments)
+            foreach (CommandArgument argument in arguments)
             {
-                CheckSingleArgument(line, argument, true);
-                int entrySpot = argument.IndexOf("<entry[");
+                CheckSingleArgument(line, argument.StartChar, argument.Text, true);
+                int entrySpot = argument.Text.ToLowerFast().IndexOf("<entry[");
                 if (entrySpot != -1)
                 {
                     entrySpot += "<entry[".Length;
-                    int endSpot = argument.IndexOf("]", entrySpot);
+                    int endSpot = argument.Text.IndexOf("]", entrySpot);
                     if (endSpot != -1)
                     {
-                        string entryText = argument[entrySpot..endSpot].ToLowerFast();
+                        string entryText = argument.Text[entrySpot..endSpot].ToLowerFast();
                         if (!definitions.Contains(ENTRY_PREFIX + entryText) && !definitions.Contains(ENTRY_PREFIX + "*"))
                         {
-                            Warn(Warnings, line, "entry_to_nowhere", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).");
+                            Warn(Warnings, line, "entry_to_nowhere", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", argument.StartChar + entrySpot, argument.StartChar + endSpot);
                         }
                     }
                 }
-                int defSpot = argument.IndexOf("<[");
+                int defSpot = argument.Text.IndexOf("<[");
                 if (defSpot != -1)
                 {
                     defSpot += "<[".Length;
-                    int endSpot = argument.IndexOf("]", defSpot);
+                    int endSpot = argument.Text.IndexOf("]", defSpot);
                     if (endSpot != -1)
                     {
-                        string defText = argument[defSpot..endSpot].ToLowerFast();
+                        string defText = argument.Text[defSpot..endSpot].ToLowerFast();
                         if (!definitions.Contains(defText) && !definitions.Contains("*"))
                         {
-                            Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).");
+                            Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", argument.StartChar + defSpot, argument.StartChar + endSpot);
                         }
                     }
                 }
@@ -785,12 +850,12 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 void warnScript(List<ScriptWarning> warns, int line, string key, string warning)
                 {
-                    Warn(warns, line, key, $"In script `{scriptPair.Key.Text.Replace('`', '\'')}`: {warning}");
+                    Warn(warns, line, key, $"In script `{scriptPair.Key.Text.Replace('`', '\'')}`: {warning}", 0, Lines[line].Length);
                 }
                 try
                 {
                     Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptPair.Value;
-                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type"), out object typeValue) || !(typeValue is LineTrackedString typeString))
+                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
                     {
                         warnScript(Errors, scriptPair.Key.Line, "no_type_key", "Missing 'type' key!");
                         continue;
@@ -802,14 +867,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     foreach (string key in scriptType.RequiredKeys)
                     {
-                        if (!scriptSection.ContainsKey(new LineTrackedString(0, key)))
+                        if (!scriptSection.ContainsKey(new LineTrackedString(0, key, 0)))
                         {
                             warnScript(Warnings, typeString.Line, "missing_key_" + typeString.Text, $"Missing required key `{key}` (check `!lang {typeString.Text} script containers` for format rules)!");
                         }
                     }
                     foreach (string key in scriptType.LikelyBadKeys)
                     {
-                        if (scriptSection.ContainsKey(new LineTrackedString(0, key)))
+                        if (scriptSection.ContainsKey(new LineTrackedString(0, key, 0)))
                         {
                             warnScript(Warnings, typeString.Line, "bad_key_" + typeString.Text, $"Unexpected key `{key.Replace('`', '\'')}` (probably doesn't belong in this script type - check `!lang {typeString.Text} script containers` for format rules)!");
                         }
@@ -827,7 +892,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         void checkAsScript(List<object> list, HashSet<string> definitionsKnown)
                         {
-                            if (scriptSection.TryGetValue(new LineTrackedString(0, "definitions"), out object defList) && defList is LineTrackedString defListVal)
+                            if (scriptSection.TryGetValue(new LineTrackedString(0, "definitions", 0), out object defList) && defList is LineTrackedString defListVal)
                             {
                                 definitionsKnown.UnionWith(defListVal.Text.ToLowerFast().Split('|').Select(s => s.Trim()));
                             }
@@ -846,12 +911,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleCommand(str.Line, str.Text, definitionsKnown);
+                                    CheckSingleCommand(str.Line, str.StartChar, str.Text, definitionsKnown);
                                 }
                                 else if (entry is Dictionary<LineTrackedString, object> subMap)
                                 {
                                     KeyValuePair<LineTrackedString, object> onlyEntry = subMap.First();
-                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.Text, definitionsKnown);
+                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, definitionsKnown);
                                     checkAsScript((List<object>)onlyEntry.Value, definitionsKnown);
                                 }
                             }
@@ -862,7 +927,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleArgument(str.Line, str.Text);
+                                    CheckSingleArgument(str.Line, str.StartChar, str.Text);
                                 }
                                 else
                                 {
@@ -902,7 +967,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyPair.Key.Line, keyPairLine.Text);
+                                CheckSingleArgument(keyPair.Key.Line, keyPair.Key.StartChar, keyPairLine.Text);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
@@ -914,7 +979,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                CheckSingleArgument(keyPair.Key.Line, keyPairLine.Text);
+                                CheckSingleArgument(keyPair.Key.Line, keyPair.Key.StartChar, keyPairLine.Text);
                             }
                         }
                         else if (keyPair.Value is Dictionary<LineTrackedString, object> keyPairMap)
@@ -926,7 +991,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 {
                                     if (subValue is LineTrackedString textLine)
                                     {
-                                        CheckSingleArgument(textLine.Line, textLine.Text);
+                                        CheckSingleArgument(textLine.Line, textLine.StartChar, textLine.Text);
                                     }
                                     else if (subValue is List<object> listKey)
                                     {
@@ -968,7 +1033,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     if (typeString.Text == "command")
                     {
-                        if (scriptSection.TryGetValue(new LineTrackedString(0, "name"), out object nameValue) && scriptSection.TryGetValue(new LineTrackedString(0, "usage"), out object usageValue))
+                        if (scriptSection.TryGetValue(new LineTrackedString(0, "name", 0), out object nameValue) && scriptSection.TryGetValue(new LineTrackedString(0, "usage", 0), out object usageValue))
                         {
                             if (usageValue is LineTrackedString usageString && nameValue is LineTrackedString nameString)
                             {
@@ -981,14 +1046,16 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     else if (typeString.Text == "assignment")
                     {
-                        if (scriptSection.TryGetValue(new LineTrackedString(0, "actions"), out object actionsValue) && actionsValue is Dictionary<LineTrackedString, object> actionsMap)
+                        if (scriptSection.TryGetValue(new LineTrackedString(0, "actions", 0), out object actionsValue) && actionsValue is Dictionary<LineTrackedString, object> actionsMap)
                         {
                             foreach (LineTrackedString actionValue in actionsMap.Keys)
                             {
                                 string actionName = actionValue.Text.Substring("on ".Length);
                                 if (actionName.Contains("@"))
                                 {
-                                    Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.");
+                                    int start = actionValue.StartChar + actionValue.Text.IndexOf('@');
+                                    int end = actionValue.StartChar + actionValue.Text.LastIndexOf('@');
+                                    Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.", start, end);
                                 }
                                 if (!MetaDocs.CurrentMeta.Actions.ContainsKey(actionName))
                                 {
@@ -1009,16 +1076,18 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                         }
                     }
-                    else if (typeString.Text == "events")
+                    else if (typeString.Text == "world")
                     {
-                        if (scriptSection.TryGetValue(new LineTrackedString(0, "events"), out object eventsValue) && eventsValue is Dictionary<LineTrackedString, object> eventsMap)
+                        if (scriptSection.TryGetValue(new LineTrackedString(0, "events", 0), out object eventsValue) && eventsValue is Dictionary<LineTrackedString, object> eventsMap)
                         {
                             foreach (LineTrackedString eventValue in eventsMap.Keys)
                             {
-                                string eventName = eventValue.Text.Substring("on ".Length);
+                                string eventName = eventValue.Text.Substring(eventValue.Text.StartsWith("on") ? "on ".Length : "after ".Length);
                                 if (eventName.Contains("@"))
                                 {
-                                    Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.");
+                                    int start = eventValue.StartChar + eventValue.Text.IndexOf('@');
+                                    int end = eventValue.StartChar + eventValue.Text.LastIndexOf('@');
+                                    Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
                                 }
                                 if (!MetaDocs.CurrentMeta.Events.ContainsKey(eventName))
                                 {
@@ -1064,12 +1133,18 @@ namespace SharpDenizenTools.ScriptAnalysis
             public int Line;
 
             /// <summary>
+            /// The character index of where this line starts.
+            /// </summary>
+            public int StartChar;
+
+            /// <summary>
             /// Constructs the LineTrackedString.
             /// </summary>
-            public LineTrackedString(int line, string text)
+            public LineTrackedString(int line, string text, int start)
             {
                 Line = line;
                 Text = text;
+                StartChar = start;
             }
 
             /// <summary>
@@ -1112,12 +1187,13 @@ namespace SharpDenizenTools.ScriptAnalysis
             bool buildingSubList = false;
             for (int i = 0; i < Lines.Length; i++)
             {
+                string line = Lines[i].Replace("\t", "    ");
                 string cleaned = CleanedLines[i];
+                int cleanStartCut = cleaned.Length == 0 ? 0 : line.IndexOf(cleaned[0]);
                 if (cleaned.Length == 0)
                 {
                     continue;
                 }
-                string line = Lines[i].Replace("\t", "    ");
                 int spaces;
                 for (spaces = 0; spaces < line.Length; spaces++)
                 {
@@ -1138,7 +1214,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     else
                     {
-                        Warn(Warnings, i, "shrunk_spacing", $"Simple spacing error - shrunk unexpectedly to new space count, from {pspaces} down to {spaces}, while expecting any of: {string.Join(", ", spacedsections.Keys)}.");
+                        Warn(Warnings, i, "shrunk_spacing", $"Simple spacing error - shrunk unexpectedly to new space count, from {pspaces} down to {spaces}, while expecting any of: {string.Join(", ", spacedsections.Keys)}.", 0, spaces);
                         pspaces = spaces;
                         continue;
                     }
@@ -1161,8 +1237,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     if (spaces > pspaces && clist != null && !buildingSubList)
                     {
-                        Warn(Warnings, i, "growing_spaces_in_script", "Spacing grew for no reason (missing a ':' on a command, or accidental over-spacing?).");
-                        LogInternalMessage($"Line {i + 1}, Spacing is {spaces}, but was {pspaces}... unexplained growth");
+                        Warn(Warnings, i, "growing_spaces_in_script", "Spacing grew for no reason (missing a ':' on a command, or accidental over-spacing?).", 0, spaces);
                     }
                     if (secwaiting != null)
                     {
@@ -1184,25 +1259,25 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         else
                         {
-                            Warn(Warnings, i, "growing_spacing_impossible", "Line grew when that isn't possible (spacing error?).");
+                            Warn(Warnings, i, "growing_spacing_impossible", "Line grew when that isn't possible (spacing error?).", 0, spaces);
                             pspaces = spaces;
                             continue;
                         }
                     }
                     else if (clist == null)
                     {
-                        Warn(Warnings, i, "weird_line_growth", "Line purpose unknown, attempted list entry when not building a list (likely line format error, perhaps missing or misplaced a `:` on lines above, or incorrect tabulation?).");
+                        Warn(Warnings, i, "weird_line_growth", "Line purpose unknown, attempted list entry when not building a list (likely line format error, perhaps missing or misplaced a `:` on lines above, or incorrect tabulation?).", 0, line.IndexOf('-'));
                         pspaces = spaces;
                         continue;
                     }
                     if (cleaned.EndsWith(":"))
                     {
-                        secwaiting = new LineTrackedString(i, cleaned.Substring("- ".Length, cleaned.Length - "- :".Length));
+                        secwaiting = new LineTrackedString(i, cleaned.Substring("- ".Length, cleaned.Length - "- :".Length), cleanStartCut + 2);
                         buildingSubList = true;
                     }
                     else
                     {
-                        clist.Add(new LineTrackedString(i, cleaned.Substring("- ".Length)));
+                        clist.Add(new LineTrackedString(i, cleaned.Substring("- ".Length), cleanStartCut + 2));
                     }
                     pspaces = spaces;
                     continue;
@@ -1210,6 +1285,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 clist = null;
                 string startofline;
                 string endofline = "";
+                int endIndex = cleanStartCut;
                 if (cleaned.EndsWith(":"))
                 {
                     startofline = cleaned[0..^1];
@@ -1217,27 +1293,28 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else if (cleaned.Contains(": "))
                 {
                     startofline = cleaned.BeforeAndAfter(": ", out endofline);
+                    endIndex += startofline.Length;
                 }
                 else
                 {
-                    Warn(Warnings, i, "identifier_missing_line", "Line purpose unknown, no identifier (missing a `:` or a `-`?).");
+                    Warn(Warnings, i, "identifier_missing_line", "Line purpose unknown, no identifier (missing a `:` or a `-`?).", 0, line.Length);
                     continue;
                 }
                 if (startofline.Length == 0)
                 {
-                    Warn(Warnings, i, "key_line_no_content", "key line missing contents (misplaced a `:`)?");
+                    Warn(Warnings, i, "key_line_no_content", "key line missing contents (misplaced a `:`)?", 0, line.Length);
                     continue;
                 }
                 string[] inputArgs = startofline.SplitFast(' ');
                 if ((inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
-                    Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?");
+                    Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                 }
                 if (spaces > pspaces)
                 {
                     if (secwaiting == null)
                     {
-                        Warn(Warnings, i, "spacing_grew_weird", "Spacing grew for no reason (missing a ':', or accidental over-spacing?).");
+                        Warn(Warnings, i, "spacing_grew_weird", "Spacing grew for no reason (missing a ':', or accidental over-spacing?).", 0, spaces);
                         pspaces = spaces;
                         continue;
                     }
@@ -1249,11 +1326,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (endofline.Length == 0)
                 {
-                    secwaiting = new LineTrackedString(i, startofline.ToLowerFast());
+                    secwaiting = new LineTrackedString(i, startofline.ToLowerFast(), cleanStartCut);
                 }
                 else
                 {
-                    currentSection[new LineTrackedString(i, startofline.ToLowerFast())] = new LineTrackedString(i, endofline);
+                    currentSection[new LineTrackedString(i, startofline.ToLowerFast(), cleanStartCut)] = new LineTrackedString(i, endofline, endIndex);
                 }
                 pspaces = spaces;
             }
@@ -1265,10 +1342,10 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void CollectStatisticInfos()
         {
-            Warn(Infos, -1, "stat_structural", $"(Statistics) Total structural lines: {StructureLines}");
-            Warn(Infos, -1, "stat_livecode", $"(Statistics) Total live code lines: {CodeLines}");
-            Warn(Infos, -1, "stat_comment", $"(Statistics) Total comment lines: {CommentLines}");
-            Warn(Infos, -1, "stat_blank", $"(Statistics) Total blank lines: {BlankLines}");
+            Warn(Infos, -1, "stat_structural", $"(Statistics) Total structural lines: {StructureLines}", 0, 0);
+            Warn(Infos, -1, "stat_livecode", $"(Statistics) Total live code lines: {CodeLines}", 0, 0);
+            Warn(Infos, -1, "stat_comment", $"(Statistics) Total comment lines: {CommentLines}", 0, 0);
+            Warn(Infos, -1, "stat_blank", $"(Statistics) Total blank lines: {BlankLines}", 0, 0);
         }
 
         /// <summary>
@@ -1276,17 +1353,26 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void Run()
         {
+            Console.Error.WriteLine("Start run");
             ClearCommentsFromLines();
             CheckYAML();
             LoadInjects();
+            Console.Error.WriteLine("Mid run");
             BasicLineFormatCheck();
+            Console.Error.WriteLine("Mid run 1");
             CheckForTabs();
+            Console.Error.WriteLine("Mid run 1.5");
             CheckForBraces();
+            Console.Error.WriteLine("Mid run 2");
             CheckForAncientDefs();
             CheckForOldDefs();
+            Console.Error.WriteLine("Mid run 3");
             Dictionary<LineTrackedString, object> containers = GatherActualContainers();
+            Console.Error.WriteLine("Mid run 4");
             CheckAllContainers(containers);
+            Console.Error.WriteLine("Mid run 5");
             CollectStatisticInfos();
+            Console.Error.WriteLine("End run");
         }
     }
 }
