@@ -1,0 +1,66 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+using SharpDenizenTools.MetaHandlers;
+
+namespace SharpDenizenTools.MetaObjects
+{
+    /// <summary>
+    /// A language documentation.
+    /// </summary>
+    public class MetaLanguage : MetaObject
+    {
+        /// <summary><see cref="MetaObject.Type"/></summary>
+        public override MetaType Type => MetaDocs.META_TYPE_LANGUAGE;
+
+        /// <summary><see cref="MetaObject.Name"/></summary>
+        public override string Name => LangName;
+
+        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.Languages.Add(CleanName, this);
+        }
+
+        /// <summary>
+        /// The name of the language.
+        /// </summary>
+        public string LangName;
+
+        /// <summary>
+        /// The long-form description.
+        /// </summary>
+        public string Description;
+
+        /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
+        public override bool ApplyValue(string key, string value)
+        {
+            switch (key)
+            {
+                case "name":
+                    LangName = value;
+                    return true;
+                case "description":
+                    Description = value;
+                    return true;
+                default:
+                    return base.ApplyValue(key, value);
+            }
+        }
+
+        /// <summary><see cref="MetaObject.PostCheck(MetaDocs)"/></summary>
+        public override void PostCheck(MetaDocs docs)
+        {
+            Require(docs, LangName, Description);
+            PostCheckLinkableText(docs, Description);
+        }
+
+        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
+        public override string GetAllSearchableText()
+        {
+            string baseText = base.GetAllSearchableText();
+            return $"{baseText}\n{Description}";
+        }
+    }
+}

@@ -5,8 +5,10 @@ using System.Linq;
 using System.IO;
 using FreneticUtilities.FreneticExtensions;
 using YamlDotNet.RepresentationModel;
+using SharpDenizenTools.MetaHandlers;
+using SharpDenizenTools.MetaObjects;
 
-namespace SharpDenizenTools
+namespace SharpDenizenTools.ScriptAnalysis
 {
     /// <summary>
     /// Utility class to check a script's validity.
@@ -448,7 +450,7 @@ namespace SharpDenizenTools
             {
                 return;
             }
-            if (!Program.CurrentMeta.TagBases.Contains(tagName) && tagName.Length > 0)
+            if (!MetaDocs.CurrentMeta.TagBases.Contains(tagName) && tagName.Length > 0)
             {
                 Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
             }
@@ -458,7 +460,7 @@ namespace SharpDenizenTools
             }
             for (int i = 1; i < tagParts.Count; i++)
             {
-                if (!Program.CurrentMeta.TagParts.Contains(tagParts[i]))
+                if (!MetaDocs.CurrentMeta.TagParts.Contains(tagParts[i]))
                 {
                     Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{tagParts[i].Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
                     if (tagParts[i].EndsWith("tag"))
@@ -602,7 +604,7 @@ namespace SharpDenizenTools
                 commandName = commandName.Substring(1);
             }
             string[] arguments = parts.Length == 1 ? new string[0] : BuildArgs(line, parts[1]);
-            if (!Program.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
+            if (!MetaDocs.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
                 {
@@ -636,7 +638,7 @@ namespace SharpDenizenTools
                 else
                 {
                     mechanism = mechanism.Before(':').ToLowerFast();
-                    if (!Program.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanism))
+                    if (!MetaDocs.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanism))
                     {
                         Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.");
                         Console.WriteLine($"Unrecognized mechanism '{mechanism}' for script check line {line}.");
@@ -983,10 +985,10 @@ namespace SharpDenizenTools
                                 {
                                     Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.");
                                 }
-                                if (!Program.CurrentMeta.Actions.ContainsKey(actionName))
+                                if (!MetaDocs.CurrentMeta.Actions.ContainsKey(actionName))
                                 {
                                     bool exists = false;
-                                    foreach (MetaAction action in Program.CurrentMeta.Actions.Values)
+                                    foreach (MetaAction action in MetaDocs.CurrentMeta.Actions.Values)
                                     {
                                         if (action.RegexMatcher.IsMatch(actionName))
                                         {
@@ -1013,10 +1015,10 @@ namespace SharpDenizenTools
                                 {
                                     Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.");
                                 }
-                                if (!Program.CurrentMeta.Events.ContainsKey(eventName))
+                                if (!MetaDocs.CurrentMeta.Events.ContainsKey(eventName))
                                 {
                                     bool exists = false;
-                                    foreach (MetaEvent evt in Program.CurrentMeta.Events.Values)
+                                    foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                     {
                                         if (evt.RegexMatcher.IsMatch(eventName))
                                         {

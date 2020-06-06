@@ -1,0 +1,129 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+using FreneticUtilities.FreneticExtensions;
+using SharpDenizenTools.MetaHandlers;
+
+namespace SharpDenizenTools.MetaObjects
+{
+    /// <summary>
+    /// A documented command.
+    /// </summary>
+    public class MetaCommand : MetaObject
+    {
+        /// <summary><see cref="MetaObject.Type"/></summary>
+        public override MetaType Type => MetaDocs.META_TYPE_COMMAND;
+
+        /// <summary><see cref="MetaObject.Name"/></summary>
+        public override string Name => CommandName;
+
+        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.Commands.Add(CleanName, this);
+        }
+
+        /// <summary>
+        /// The name of the command.
+        /// </summary>
+        public string CommandName;
+
+        /// <summary>
+        /// How many arguments are required, minimum.
+        /// </summary>
+        public int Required = 0;
+
+        /// <summary>
+        /// How many arguments are allowed, maximum.
+        /// </summary>
+        public int Maximum = int.MaxValue;
+
+        /// <summary>
+        /// The syntax guide.
+        /// </summary>
+        public string Syntax;
+
+        /// <summary>
+        /// The short description.
+        /// </summary>
+        public string Short;
+
+        /// <summary>
+        /// The long-form description.
+        /// </summary>
+        public string Description;
+
+        /// <summary>
+        /// Tags documented for this command. One tag per string.
+        /// </summary>
+        public string[] Tags = new string[0];
+
+        /// <summary>
+        /// An associated beginner's guide link.
+        /// </summary>
+        public string Guide = "";
+
+        /// <summary>
+        /// Sample usages.
+        /// </summary>
+        public List<string> Usages = new List<string>();
+
+        /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
+        public override bool ApplyValue(string key, string value)
+        {
+            switch (key)
+            {
+                case "name":
+                    CommandName = value;
+                    return true;
+                case "required":
+                    return int.TryParse(value, out Required);
+                case "maximum":
+                    bool valid = int.TryParse(value, out Maximum);
+                    if (Maximum == -1)
+                    {
+                        Maximum = int.MaxValue;
+                    }
+                    return valid;
+                case "syntax":
+                    Syntax = value;
+                    return true;
+                case "short":
+                    Short = value;
+                    return true;
+                case "description":
+                    Description = value;
+                    return true;
+                case "tags":
+                    Tags = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    return true;
+                case "usage":
+                    Usages.Add(value);
+                    return true;
+                case "guide":
+                    Guide = value;
+                    return true;
+                default:
+                    return base.ApplyValue(key, value);
+            }
+        }
+
+        /// <summary><see cref="MetaObject.PostCheck(MetaDocs)"/></summary>
+        public override void PostCheck(MetaDocs docs)
+        {
+            Require(docs, Short, Description, Syntax, CommandName);
+            PostCheckTags(docs, Tags);
+            PostCheckLinkableText(docs, Description);
+        }
+
+        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
+        public override string GetAllSearchableText()
+        {
+            string baseText = base.GetAllSearchableText();
+            string allUsages = string.Join('\n', Usages);
+            string allTags = string.Join('\n', Tags);
+            return $"{baseText}\n{allTags}\n{allUsages}\n{Syntax}\n{Short}\n{Description}\n{Guide}";
+        }
+    }
+}
