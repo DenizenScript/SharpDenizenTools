@@ -1057,6 +1057,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     int end = actionValue.StartChar + actionValue.Text.LastIndexOf('@');
                                     Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.", start, end);
                                 }
+                                actionName = "on " + actionName;
                                 if (!MetaDocs.CurrentMeta.Actions.ContainsKey(actionName))
                                 {
                                     bool exists = false;
@@ -1089,6 +1090,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     int end = eventValue.StartChar + eventValue.Text.LastIndexOf('@');
                                     Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
                                 }
+                                eventName = "on " + eventName;
                                 if (!MetaDocs.CurrentMeta.Events.ContainsKey(eventName))
                                 {
                                     bool exists = false;
