@@ -28,4 +28,11 @@
     <DefineConstants>TRACE</DefineConstants>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="FreneticUtilities\*.*" />
+    <Compile Remove="FreneticUtilities\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj" />
+  </ItemGroup>
 </Project>
