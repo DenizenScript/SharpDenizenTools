@@ -1353,26 +1353,17 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void Run()
         {
-            Console.Error.WriteLine("Start run");
             ClearCommentsFromLines();
             CheckYAML();
             LoadInjects();
-            Console.Error.WriteLine("Mid run");
             BasicLineFormatCheck();
-            Console.Error.WriteLine("Mid run 1");
             CheckForTabs();
-            Console.Error.WriteLine("Mid run 1.5");
             CheckForBraces();
-            Console.Error.WriteLine("Mid run 2");
             CheckForAncientDefs();
             CheckForOldDefs();
-            Console.Error.WriteLine("Mid run 3");
             Dictionary<LineTrackedString, object> containers = GatherActualContainers();
-            Console.Error.WriteLine("Mid run 4");
             CheckAllContainers(containers);
-            Console.Error.WriteLine("Mid run 5");
             CollectStatisticInfos();
-            Console.Error.WriteLine("End run");
         }
     }
 }
