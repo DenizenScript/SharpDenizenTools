@@ -33,6 +33,9 @@
     <Compile Remove="FreneticUtilities\**\*.*" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="8.1.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="$(SolutionDir)FreneticUtilities\FreneticUtilities\FreneticUtilities.csproj" />
   </ItemGroup>
 </Project>
