@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <OutputType>Library</OutputType>
+    <RootNamespace>SharpDenizenTools</RootNamespace>
+    <AssemblyName>SharpDenizenTools</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\Release\SharpDenizenTools.xml</DocumentationFile>
+    <Product>SharpDenizenTools</Product>
+    <Copyright>Copyright (C) The DenizenScript Team 2020</Copyright>
+    <Configurations>Debug;Release</Configurations>
+    <Version>1.0.0</Version>
+    <ProjectGuid>{3DB47D69-4228-4F22-1763-152292496865}</ProjectGuid>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+</Project>
