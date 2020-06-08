@@ -200,6 +200,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="end">The ending character index.</param>
         public void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
         {
+            foreach (ScriptWarning warning in warnType)
+            {
+                if (warning.Line == line && warning.WarningUniqueKey == key)
+                {
+                    return;
+                }
+            }
             warnType.Add(new ScriptWarning() { Line = line, WarningUniqueKey = key, CustomMessageForm = message, StartChar = start, EndChar = end });
         }
 
@@ -523,9 +530,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             if (argument.Contains("@") && !isCommand)
             {
-                int start = startChar + argument.IndexOf('@');
-                int end = startChar + argument.LastIndexOf('@');
-                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
+                Range? range = ContainsObjectNotation(argument);
+                if (range != null)
+                {
+                    int start = startChar + range.Value.Start.Value;
+                    int end = startChar + range.Value.End.Value;
+                    Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
+                }
             }
             string argNoArrows = argument.Replace("<-", "al").Replace("->", "ar");
             if (argument.Length > 2 && argNoArrows.CountCharacter('<') != argNoArrows.CountCharacter('>'))
@@ -657,9 +668,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             if (commandText.Contains("@"))
             {
-                int start = startChar + commandText.IndexOf('@');
-                int end = startChar + commandText.LastIndexOf('@');
-                Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
+                Range? range = ContainsObjectNotation(commandText);
+                if (range != null)
+                {
+                    int start = startChar + range.Value.Start.Value;
+                    int end = startChar + range.Value.End.Value;
+                    Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
+                }
             }
             string[] parts = commandText.Split(' ', 2);
             string commandName = parts[0].ToLowerFast();
@@ -1086,9 +1101,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 string eventName = eventValue.Text.Substring(eventValue.Text.StartsWith("on") ? "on ".Length : "after ".Length);
                                 if (eventName.Contains("@"))
                                 {
-                                    int start = eventValue.StartChar + eventValue.Text.IndexOf('@');
-                                    int end = eventValue.StartChar + eventValue.Text.LastIndexOf('@');
-                                    Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
+                                    Range? atRange = ContainsObjectNotation(eventName);
+                                    if (atRange != null)
+                                    {
+                                        int start = eventValue.StartChar + atRange.Value.Start.Value;
+                                        int end = eventValue.StartChar + atRange.Value.End.Value;
+                                        Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
+                                    }
                                 }
                                 eventName = "on " + eventName;
                                 if (!MetaDocs.CurrentMeta.Events.ContainsKey(eventName))
@@ -1117,6 +1136,36 @@ namespace SharpDenizenTools.ScriptAnalysis
                     LogInternalMessage($"Script check exception: {ex}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Matcher for the letter right before the '@' symbol in existing ObjectTag types.
+        /// </summary>
+        public static readonly AsciiMatcher OBJECT_NOTATION_LAST_LETTER_MATCHER = new AsciiMatcher("mdlipqsebhounwr");
+
+        /// <summary>
+        /// Checks whether a line contains object notation, and returns a range of matches if so.
+        /// </summary>
+        /// <param name="line">The line to check.</param>
+        /// <returns>The match range, or null.</returns>
+        public Range? ContainsObjectNotation(string line)
+        {
+            int first = line.Length;
+            int last = -1;
+            int atIndex = -1;
+            while ((atIndex = line.IndexOf('@', atIndex + 1)) != -1)
+            {
+                if (atIndex > 0 && OBJECT_NOTATION_LAST_LETTER_MATCHER.IsMatch(line[atIndex - 1]))
+                {
+                    first = Math.Min(first, atIndex - 1);
+                    last = Math.Max(last, atIndex);
+                }
+            }
+            if (last != -1)
+            {
+                return new Range(first, last);
+            }
+            return null;
         }
 
         /// <summary>
