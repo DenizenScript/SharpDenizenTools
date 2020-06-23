@@ -972,7 +972,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 checkAsScript(keyPairList, new HashSet<string>());
                             }
-                            else if (typeString.Text != "yaml data")
+                            else if (typeString.Text != "data")
                             {
                                 checkBasicList(keyPairList);
                             }
@@ -1028,7 +1028,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText)
                                 || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
                             {
-                                if (typeString.Text != "yaml data")
+                                if (typeString.Text != "data")
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
@@ -1039,7 +1039,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                if (typeString.Text != "yaml data")
+                                if (typeString.Text != "data")
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
