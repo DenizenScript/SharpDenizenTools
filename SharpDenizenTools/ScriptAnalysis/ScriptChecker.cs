@@ -898,9 +898,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         return keySet.Contains(key) || keySet.Contains($"{key}.*") || keySet.Contains("*");
                     }
-                    foreach (KeyValuePair<LineTrackedString, object> keyPair in scriptSection)
+                    foreach ((LineTrackedString keyLine, object valueAtKey) in scriptSection)
                     {
-                        string keyName = keyPair.Key.Text;
+                        string keyName = keyLine.Text;
                         if (keyName == "debug" || keyName == "speed" || keyName == "type")
                         {
                             continue;
@@ -946,58 +946,58 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 }
                                 else
                                 {
-                                    warnScript(Warnings, keyPair.Key.Line, "script_should_be_list", $"Key `{keyName.Replace('`', '\'')}` appears to contain a script, when a data list was expected (check `!lang {typeString.Text} script containers` for format rules).");
+                                    warnScript(Warnings, keyLine.Line, "script_should_be_list", $"Key `{keyName.Replace('`', '\'')}` appears to contain a script, when a data list was expected (check `!lang {typeString.Text} script containers` for format rules).");
                                 }
                             }
                         }
-                        if (keyPair.Value is List<object> keyPairList)
+                        if (valueAtKey is List<object> listAtKey)
                         {
                             if (matchesSet(keyName, scriptType.ScriptKeys))
                             {
-                                checkAsScript(keyPairList, new HashSet<string>());
+                                checkAsScript(listAtKey, new HashSet<string>());
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys))
                             {
-                                checkBasicList(keyPairList);
+                                checkBasicList(listAtKey);
                             }
                             else if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                warnScript(Warnings, keyPair.Key.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
+                                warnScript(Warnings, keyLine.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else if (scriptType.Strict)
                             {
-                                warnScript(Warnings, keyPair.Key.Line, "unknown_key_" + typeString.Text, $"Unexpected list key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
+                                warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected list key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else if (scriptType.CanHaveRandomScripts)
                             {
-                                checkAsScript(keyPairList, new HashSet<string>());
+                                checkAsScript(listAtKey, new HashSet<string>());
                             }
                             else if (typeString.Text != "data")
                             {
-                                checkBasicList(keyPairList);
+                                checkBasicList(listAtKey);
                             }
 
                         }
-                        else if (keyPair.Value is LineTrackedString keyPairLine)
+                        else if (valueAtKey is LineTrackedString lineAtKey)
                         {
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyPair.Key.Line, keyPair.Key.StartChar, keyPairLine.Text);
+                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
-                                warnScript(Warnings, keyPair.Key.Line, "bad_key_" + typeString.Text, $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a list or script, but was instead a direct Value - check `!lang {typeString.Text} script containers` for format rules)!");
+                                warnScript(Warnings, keyLine.Line, "bad_key_" + typeString.Text, $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a list or script, but was instead a direct Value - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else if (scriptType.Strict)
                             {
-                                warnScript(Warnings, keyPair.Key.Line, "unknown_key_" + typeString.Text, $"Unexpected value key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
+                                warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected value key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else
                             {
-                                CheckSingleArgument(keyPair.Key.Line, keyPair.Key.StartChar, keyPairLine.Text);
+                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text);
                             }
                         }
-                        else if (keyPair.Value is Dictionary<LineTrackedString, object> keyPairMap)
+                        else if (valueAtKey is Dictionary<LineTrackedString, object> keyPairMap)
                         {
                             string keyText = keyName + ".*";
                             void checkSubMaps(Dictionary<LineTrackedString, object> subMap)
@@ -1035,7 +1035,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else if (scriptType.Strict)
                             {
-                                warnScript(Warnings, keyPair.Key.Line, "unknown_key_" + typeString.Text, $"Unexpected submapping key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
+                                warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected submapping key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else
                             {
