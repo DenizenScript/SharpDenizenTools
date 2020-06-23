@@ -861,18 +861,18 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void CheckAllContainers(Dictionary<LineTrackedString, object> scriptContainers)
         {
-            foreach (KeyValuePair<LineTrackedString, object> scriptPair in scriptContainers)
+            foreach ((LineTrackedString scriptTitle, object scriptData) in scriptContainers)
             {
                 void warnScript(List<ScriptWarning> warns, int line, string key, string warning)
                 {
-                    Warn(warns, line, key, $"In script `{scriptPair.Key.Text.Replace('`', '\'')}`: {warning}", 0, Lines[line].Length);
+                    Warn(warns, line, key, $"In script `{scriptTitle.Text.Replace('`', '\'')}`: {warning}", 0, Lines[line].Length);
                 }
                 try
                 {
-                    Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptPair.Value;
+                    Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptData;
                     if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
                     {
-                        warnScript(Errors, scriptPair.Key.Line, "no_type_key", "Missing 'type' key!");
+                        warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
                         continue;
                     }
                     if (!KnownScriptTypes.TryGetValue(typeString.Text, out KnownScriptType scriptType))
@@ -918,7 +918,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             // Default run command definitions get used sometimes
                             definitionsKnown.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-                            if (Injects.Contains(scriptPair.Key.Text) || Injects.Contains("*"))
+                            if (Injects.Contains(scriptTitle.Text) || Injects.Contains("*"))
                             {
                                 definitionsKnown.Add("*");
                             }
@@ -1132,7 +1132,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 catch (Exception ex)
                 {
-                    warnScript(Warnings, scriptPair.Key.Line, "exception_internal", $"Internal exception (check internal debug console)!");
+                    warnScript(Warnings, scriptTitle.Line, "exception_internal", $"Internal exception (check internal debug console)!");
                     LogInternalMessage($"Script check exception: {ex}");
                 }
             }
