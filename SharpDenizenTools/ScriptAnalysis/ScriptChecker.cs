@@ -694,11 +694,11 @@ namespace SharpDenizenTools.ScriptAnalysis
             int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
             {
-                Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {arguments.Length}.", startChar, startChar + commandText.Length);
+                Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {argCount}.", startChar, startChar + commandText.Length);
             }
             if (argCount > command.Maximum)
             {
-                Warn(Errors, line, "too_many_args", $"Too many arguments... the `{command.Name}` command requires no more than {command.Maximum} arguments, but you provided {arguments.Length}. Did you forget 'quotes'?", startChar, startChar + commandText.Length);
+                Warn(Errors, line, "too_many_args", $"Too many arguments... the `{command.Name}` command requires no more than {command.Maximum} arguments, but you provided {argCount}. Did you forget 'quotes'?", startChar, startChar + commandText.Length);
             }
             if (commandName == "if" || commandName == "waituntil" || commandName == "while")
             {
