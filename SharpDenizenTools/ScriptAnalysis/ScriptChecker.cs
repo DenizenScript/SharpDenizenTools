@@ -1110,7 +1110,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     }
                                 }
                                 eventName = "on " + eventName;
-                                if (!MetaDocs.CurrentMeta.Events.ContainsKey(eventName))
+                                eventName = SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
+                                if (!MetaDocs.CurrentMeta.Events.TryGetValue(eventName, out MetaEvent realEvt))
                                 {
                                     bool exists = false;
                                     foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
@@ -1118,12 +1119,44 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         if (evt.RegexMatcher.IsMatch(eventName))
                                         {
                                             exists = true;
+                                            realEvt = evt;
                                             break;
                                         }
                                     }
                                     if (!exists)
                                     {
                                         warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
+                                    }
+                                }
+                                if (realEvt != null)
+                                {
+                                    foreach (KeyValuePair<string, string> switchPair in switches)
+                                    {
+                                        if (switchPair.Key == "cancelled" || switchPair.Key == "ignorecancelled")
+                                        {
+                                            if (switchPair.Value.ToLowerFast() != "true" && switchPair.Value.ToLowerFast() != "false")
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Cancellation event switch invalid: must be 'true' or 'false'.");
+                                            }
+                                        }
+                                        else if (switchPair.Key == "priority")
+                                        {
+                                            if (!double.TryParse(switchPair.Value, out _))
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Priority switch invalid: must be a decimal number.");
+                                            }
+                                        }
+                                        else if (switchPair.Key == "bukkit_priority" || switchPair.Key == "flagged" || switchPair.Key == "permission")
+                                        {
+                                            // Ignore, these are global
+                                        }
+                                        else
+                                        {
+                                            if (!realEvt.SwitchNames.Contains(switchPair.Key))
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"Switch given is unrecognized.");
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1136,6 +1169,32 @@ namespace SharpDenizenTools.ScriptAnalysis
                     LogInternalMessage($"Script check exception: {ex}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Separates the switches from an event line.
+        /// </summary>
+        /// <param name="eventLine">The original full event line.</param>
+        /// <param name="switches">The output switch list.</param>
+        /// <returns>The cleaned event line.</returns>
+        public static string SeparateSwitches(string eventLine, out List<KeyValuePair<string, string>> switches)
+        {
+            string[] parts = eventLine.SplitFast(' ');
+            StringBuilder output = new StringBuilder();
+            switches = new List<KeyValuePair<string, string>>();
+            foreach (string part in parts)
+            {
+                if (part.Contains(':'))
+                {
+                    string switchName = part.BeforeAndAfter(':', out string switchVal);
+                    switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
+                }
+                else
+                {
+                    output.Append(part).Append(" ");
+                }
+            }
+            return output.ToString().Trim();
         }
 
         /// <summary>

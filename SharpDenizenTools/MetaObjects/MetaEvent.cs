@@ -44,6 +44,11 @@ namespace SharpDenizenTools.MetaObjects
         public List<string> Switches = new List<string>();
 
         /// <summary>
+        /// Just the names of the event's switches.
+        /// </summary>
+        public List<string> SwitchNames = new List<string>();
+
+        /// <summary>
         /// The regex matcher.
         /// </summary>
         public Regex RegexMatcher = null;
@@ -102,6 +107,7 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "switch":
                     Switches.Add(value);
+                    SwitchNames.Add(value.Before(" ").Before(":"));
                     return true;
                 case "context":
                     Context = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
