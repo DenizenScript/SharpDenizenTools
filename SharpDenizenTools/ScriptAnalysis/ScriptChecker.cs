@@ -1356,6 +1356,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, i, "key_line_no_content", "key line missing contents (misplaced a `:`)?", 0, line.Length);
                     continue;
                 }
+                if (startofline.Contains("<"))
+                {
+                    Warn(Warnings, i, "tag_in_key", "Keys cannot contain tags.", 0, line.Length);
+                }
                 string[] inputArgs = startofline.SplitFast(' ');
                 if ((inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
