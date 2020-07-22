@@ -28,7 +28,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// </summary>
         public static readonly string[] DENIZEN_SOURCES = new string[]
         {
-            "https://github.com/DenizenScript/Denizen-For-Bukkit/archive/dev.zip",
+            "https://github.com/DenizenScript/Denizen/archive/dev.zip",
             "https://github.com/DenizenScript/Denizen-Core/archive/master.zip"
         };
 

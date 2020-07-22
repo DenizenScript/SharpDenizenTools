@@ -716,7 +716,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (commandName == "adjust")
             {
-                CommandArgument mechanism = arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Text.Contains("<"));
+                CommandArgument mechanism = arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Text.Contains("<") && s.Text != "server");
                 if (mechanism == null)
                 {
                     Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.", startChar, startChar + commandText.Length);
