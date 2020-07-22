@@ -251,7 +251,7 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Zip download exception {ex}");
+                        Console.Error.WriteLine($"Zip download exception {ex}");
                         LoadErrors.Add($"Zip download error: {ex.GetType().Name}: {ex.Message}");
                     }
                     evt.Set();
@@ -271,7 +271,7 @@ namespace SharpDenizenTools.MetaHandlers
                 catch (Exception ex)
                 {
                     LoadErrors.Add($"Internal exception - {ex.GetType().FullName} ... see bot console for details.");
-                    Console.WriteLine($"Error: {ex}");
+                    Console.Error.WriteLine($"Error: {ex}");
                 }
             }
             try
@@ -281,7 +281,7 @@ namespace SharpDenizenTools.MetaHandlers
             catch (Exception ex)
             {
                 LoadErrors.Add($"Internal exception - {ex.GetType().FullName} ... see bot console for details.");
-                Console.WriteLine($"Error: {ex}");
+                Console.Error.WriteLine($"Error: {ex}");
             }
             foreach (MetaObject obj in AllMetaObjects())
             {
@@ -293,12 +293,12 @@ namespace SharpDenizenTools.MetaHandlers
                 catch (Exception ex)
                 {
                     LoadErrors.Add($"Internal exception while checking {obj.Type.Name} '{obj.Name}' - {ex.GetType().FullName} ... see bot console for details.");
-                    Console.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
+                    Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
                 }
             }
             foreach (string str in LoadErrors)
             {
-                Console.WriteLine($"Load error: {str}");
+                Console.Error.WriteLine($"Load error: {str}");
             }
         }
 
@@ -488,7 +488,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in file {file} for object type {objectType}: {ex}");
+                Console.Error.WriteLine($"Error in file {file} for object type {objectType}: {ex}");
                 LoadErrors.Add($"Error in file {file} for object type {objectType}: {ex.GetType().Name}: {ex.Message} ... see console for details.");
             }
         }
