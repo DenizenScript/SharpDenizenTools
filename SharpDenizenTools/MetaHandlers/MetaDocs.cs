@@ -151,7 +151,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>
         /// A set of all known tag bases.
         /// </summary>
-        public HashSet<string> TagBases = new HashSet<string>(512) { "permission", "text", "name" };
+        public HashSet<string> TagBases = new HashSet<string>(512) { "permission", "text", "name", "amount" };
 
         /// <summary>
         /// A set of all known tag bits.
