@@ -65,6 +65,56 @@ namespace SharpDenizenTools.MetaObjects
         public string Guide = "";
 
         /// <summary>
+        /// A list of argument prefixes this command has in its syntax line.
+        /// </summary>
+        public Tuple<string, string>[] ArgPrefixes = new Tuple<string, string>[0];
+
+        /// <summary>
+        /// A list of plaintext no-tag arguments this command has in its syntax line.
+        /// </summary>
+        public Tuple<string, string>[] FlatArguments = new Tuple<string, string>[0];
+
+        /// <summary>
+        /// Parses this command's syntax data to create a list of helper data about the known arguments.
+        /// </summary>
+        public void ParseSyntax()
+        {
+            int firstSpace = Syntax.IndexOf(' ');
+            if (firstSpace < 0)
+            {
+                ArgPrefixes = new Tuple<string, string>[0];
+                FlatArguments = new Tuple<string, string>[0];
+                return;
+            }
+            List<Tuple<string, string>> prefixes = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> flatArgs = new List<Tuple<string, string>>();
+            string cleaned = Syntax[firstSpace..].Replace('/', ' ');
+            foreach (string arg in cleaned.Split(' '))
+            {
+                string cleanedArg = arg.Replace('[', '{').Replace(']', '{').Replace('(', '{').Replace(')', '{').Replace('}', '{').Replace("{", "");
+                if (string.IsNullOrWhiteSpace(cleanedArg))
+                {
+                    continue;
+                }
+                int colonIndex = cleanedArg.IndexOf(':');
+                if (colonIndex > 0)
+                {
+                    string prefix = cleanedArg[..colonIndex];
+                    if (!prefix.Contains('<'))
+                    {
+                        prefixes.Add(new Tuple<string, string>(prefix, arg));
+                    }
+                }
+                else if (!cleanedArg.Contains('<') && !cleanedArg.Contains('|'))
+                {
+                    flatArgs.Add(new Tuple<string, string>(cleanedArg, arg));
+                }
+            }
+            ArgPrefixes = prefixes.ToArray();
+            FlatArguments = flatArgs.ToArray();
+        }
+
+        /// <summary>
         /// Sample usages.
         /// </summary>
         public List<string> Usages = new List<string>();
@@ -113,6 +163,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             Require(docs, Short, Description, Syntax, CommandName);
+            ParseSyntax();
             PostCheckTags(docs, Tags);
             PostCheckLinkableText(docs, Description);
         }
