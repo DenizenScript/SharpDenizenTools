@@ -1184,7 +1184,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             switches = new List<KeyValuePair<string, string>>();
             foreach (string part in parts)
             {
-                if (part.Contains(':'))
+                if (part.Contains(':') && !part.StartsWith("regex:"))
                 {
                     string switchName = part.BeforeAndAfter(':', out string switchVal);
                     switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
