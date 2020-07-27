@@ -691,6 +691,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 return;
             }
+            if (commandText.Contains("parse_tag"))
+            {
+                definitions.Add("parse_value");
+            }
+            if (commandText.Contains("filter_tag"))
+            {
+                definitions.Add("filter_value");
+            }
             int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
             {
