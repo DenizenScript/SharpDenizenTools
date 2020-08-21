@@ -1401,6 +1401,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     continue;
                 }
                 clist = null;
+                spacedlists.Remove(spaces);
                 string startofline;
                 string endofline = "";
                 int endIndex = cleanStartCut;
