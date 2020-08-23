@@ -106,8 +106,11 @@ namespace SharpDenizenTools.MetaObjects
                     RegexMatcher = new Regex(value, RegexOptions.Compiled);
                     return true;
                 case "switch":
-                    Switches.Add(value);
-                    SwitchNames.Add(value.Before(" ").Before(":"));
+                    foreach (string switchLine in value.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        Switches.Add(switchLine);
+                        SwitchNames.Add(switchLine.Before(" ").Before(":").ToLowerFast());
+                    }
                     return true;
                 case "context":
                     Context = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
