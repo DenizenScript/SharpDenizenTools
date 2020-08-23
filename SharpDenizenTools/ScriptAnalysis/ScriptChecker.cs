@@ -1121,17 +1121,33 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 eventName = SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
                                 if (!MetaDocs.CurrentMeta.Events.TryGetValue(eventName, out MetaEvent realEvt))
                                 {
-                                    bool exists = false;
+                                    int matchQuality = 0;
                                     foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                     {
+                                        int potentialMatch = 0;
                                         if (evt.RegexMatcher.IsMatch(eventName))
                                         {
-                                            exists = true;
+                                            potentialMatch = 1;
+                                            if (evt.MultiNames.Any(name => AlphabetMatcher.TrimToMatches(name).Contains(eventName)))
+                                            {
+                                                potentialMatch++;
+                                            }
+                                            if (switches.All(s => EverywhereSwitches.Contains(s.Key) || evt.SwitchNames.Contains(s.Key)))
+                                            {
+                                                potentialMatch++;
+                                            }
+                                        }
+                                        if (potentialMatch > matchQuality)
+                                        {
+                                            matchQuality = potentialMatch;
                                             realEvt = evt;
-                                            break;
+                                            if (matchQuality == 3)
+                                            {
+                                                break;
+                                            }
                                         }
                                     }
-                                    if (!exists)
+                                    if (matchQuality == 0)
                                     {
                                         warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
                                     }
@@ -1178,6 +1194,16 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
             }
         }
+
+        /// <summary>
+        /// The set of event switches that are always (or almost always) valid.
+        /// </summary>
+        public static readonly HashSet<string> EverywhereSwitches = new HashSet<string>() { "cancelled", "ignorecancelled", "priority", "bukkit_priority", "flagged", "permissions" };
+
+        /// <summary>
+        /// Matcher for A-Z only.
+        /// </summary>
+        public static readonly AsciiMatcher AlphabetMatcher = new AsciiMatcher(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
         /// <summary>
         /// Separates the switches from an event line.
