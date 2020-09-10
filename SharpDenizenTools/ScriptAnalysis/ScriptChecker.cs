@@ -789,7 +789,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     else
                     {
-                        keyArgument = asArgument.Substring("key:".Length);
+                        keyArgument = keyArgument.Substring("key:".Length);
                     }
                 }
             }
