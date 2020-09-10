@@ -776,7 +776,22 @@ namespace SharpDenizenTools.ScriptAnalysis
                     asArgument = asArgument.Substring("as:".Length);
                 }
                 definitions.Add(asArgument.ToLowerFast());
-                definitions.Add("loop_index");
+                if (commandName != "repeat")
+                {
+                    definitions.Add("loop_index");
+                }
+                if (commandName == "foreach")
+                {
+                    string keyArgument = arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("key:"))?.Text;
+                    if (keyArgument == null)
+                    {
+                        keyArgument = "key";
+                    }
+                    else
+                    {
+                        keyArgument = asArgument.Substring("key:".Length);
+                    }
+                }
             }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
