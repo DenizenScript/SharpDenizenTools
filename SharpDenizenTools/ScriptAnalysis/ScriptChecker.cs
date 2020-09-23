@@ -1221,6 +1221,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         public static readonly AsciiMatcher AlphabetMatcher = new AsciiMatcher(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
         /// <summary>
+        /// Matcher for numerical digits 0-9 only.
+        /// </summary>
+        public static readonly AsciiMatcher NumbersMatcher = new AsciiMatcher(c => c >= '0' && c <= '9');
+
+        /// <summary>
         /// Separates the switches from an event line.
         /// </summary>
         /// <param name="eventLine">The original full event line.</param>
@@ -1233,7 +1238,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             switches = new List<KeyValuePair<string, string>>();
             foreach (string part in parts)
             {
-                if (part.Contains(':') && !part.StartsWith("regex:"))
+                if (part.Contains(':') && !part.StartsWith("regex:") && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
                 {
                     string switchName = part.BeforeAndAfter(':', out string switchVal);
                     switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
