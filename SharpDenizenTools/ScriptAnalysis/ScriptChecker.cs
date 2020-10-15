@@ -791,6 +791,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         keyArgument = keyArgument.Substring("key:".Length);
                     }
+                    definitions.Add(keyArgument.ToLowerFast());
                 }
             }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
