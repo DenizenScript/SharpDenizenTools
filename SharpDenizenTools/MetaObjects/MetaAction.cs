@@ -67,14 +67,23 @@ namespace SharpDenizenTools.MetaObjects
                     Actions = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     CleanActions = Actions.Select(s => s.ToLowerFast()).ToArray();
                     HasMultipleNames = Actions.Length > 1;
-                    string regexable = Actions.FirstOrDefault(s => s.Contains("<")) ?? Actions[0];
-                    if (regexable.Contains("<"))
+                    string outRegex = "";
+                    foreach (string action in Actions)
                     {
-                        int start = regexable.IndexOf('<');
-                        int end = regexable.IndexOf('>');
-                        regexable = regexable.Substring(0, start) + "[^\\s]+" + regexable.Substring(end + 1);
+                        string regexable = action;
+                        if (regexable.Contains("<"))
+                        {
+                            int start = regexable.IndexOf('<');
+                            int end = regexable.IndexOf('>');
+                            regexable = regexable.Substring(0, start) + "[^\\s]+" + regexable.Substring(end + 1);
+                        }
+                        outRegex += $"({regexable})|";
                     }
-                    RegexMatcher = new Regex(regexable, RegexOptions.Compiled);
+                    if (outRegex.EndsWith("|"))
+                    {
+                        outRegex = outRegex[0..^1];
+                    }
+                    RegexMatcher = new Regex(outRegex, RegexOptions.Compiled);
                     return true;
                 case "triggers":
                     Triggers = value;
