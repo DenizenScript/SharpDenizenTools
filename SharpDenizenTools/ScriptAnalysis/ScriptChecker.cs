@@ -795,6 +795,20 @@ namespace SharpDenizenTools.ScriptAnalysis
                     definitions.Add(keyArgument.ToLowerFast());
                 }
             }
+            else if (commandName == "give")
+            {
+                if (arguments.Any(a => a.Text == "<player>" || a.Text == "<player.name>" || a.Text == "<npc>"))
+                {
+                    Warn(Warnings, line, "give_player", "The 'give' will automatically give to the linked player, so you do not need to specify that. To specify a different target, use the 'to:<inventory>' argument.", startChar, startChar + commandText.Length);
+                }
+            }
+            else if (commandName == "take")
+            {
+                if (arguments.Any(a => !a.Text.Contains(':') && a.Text != "money" && a.Text != "xp" && a.Text != "iteminhand" && a.Text != "cursoritem"))
+                {
+                    Warn(MinorWarnings, line, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take scriptname:myitem' or 'take material:stone'.", startChar, startChar + commandText.Length);
+                }
+            }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
             {
