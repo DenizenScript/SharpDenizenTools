@@ -1091,13 +1091,20 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     if (typeString.Text == "command")
                     {
-                        if (scriptSection.TryGetValue(new LineTrackedString(0, "name", 0), out object nameValue) && scriptSection.TryGetValue(new LineTrackedString(0, "usage", 0), out object usageValue))
+                        if (scriptSection.TryGetValue(new LineTrackedString(0, "name", 0), out object nameValue) && nameValue is LineTrackedString nameString)
                         {
-                            if (usageValue is LineTrackedString usageString && nameValue is LineTrackedString nameString)
+                            if (scriptSection.TryGetValue(new LineTrackedString(0, "usage", 0), out object usageValue) && usageValue is LineTrackedString usageString)
                             {
                                 if (!usageString.Text.StartsWith($"/{nameString.Text} ") && usageString.Text != $"/{nameString.Text}")
                                 {
                                     warnScript(MinorWarnings, usageString.Line, "command_script_usage", "Command script usage key doesn't match the name key (the name is the actual thing you need to type in-game, the usage is for '/help' - refer to `!lang command script containers`)!");
+                                }
+                            }
+                            if (scriptSection.TryGetValue(new LineTrackedString(0, "aliases", 0), out object aliasValue) && aliasValue is List<object> aliasList && !aliasList.IsEmpty())
+                            {
+                                if (aliasList.FirstOrDefault(o => o is LineTrackedString s && s.Text == nameString.Text) is LineTrackedString badAlias)
+                                {
+                                    warnScript(Warnings, badAlias.Line, "command_script_aliasname", "A command script alias should not be the same as the command script's name.");
                                 }
                             }
                         }
