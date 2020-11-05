@@ -941,6 +941,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 // Workaround the weird way shoot command does things
                                 definitionsKnown.UnionWith(new[] { "shot_entities", "last_entity", "location", "hit_entities" });
                             }
+                            else if (typeString.Text == "economy")
+                            {
+                                definitionsKnown.UnionWith(new[] { "amount" });
+                            }
                             // Default run command definitions get used sometimes
                             definitionsKnown.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
                             if (Injects.Contains(scriptTitle.Text) || Injects.Contains("*"))
