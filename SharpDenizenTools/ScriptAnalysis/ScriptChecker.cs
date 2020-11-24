@@ -1240,7 +1240,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// The set of event switches that are always (or almost always) valid.
         /// </summary>
-        public static readonly HashSet<string> EverywhereSwitches = new HashSet<string>() { "cancelled", "ignorecancelled", "priority", "bukkit_priority", "flagged", "permissions" };
+        public static readonly HashSet<string> EverywhereSwitches = new HashSet<string>() { "cancelled", "ignorecancelled", "priority", "bukkit_priority", "flagged", "permissions", "server_flagged" };
 
         /// <summary>
         /// Matcher for A-Z only.
