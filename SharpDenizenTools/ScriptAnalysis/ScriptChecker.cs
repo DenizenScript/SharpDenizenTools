@@ -252,7 +252,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     int dashIndex = Lines[i].IndexOf('-');
                     result.Append(Lines[i].Substring(0, dashIndex + 1)).Append(" ^1^");
-                    result.Append(Lines[i].Substring(dashIndex + 1).Replace(": ", "<&co>").Replace("#", "<&ns>")).Append("\n");
+                    result.Append(Lines[i][(dashIndex + 1)..].Replace(": ", "<&co>").Replace("#", "<&ns>")).Append("\n");
                 }
                 else if (line.EndsWith(":") && !line.StartsWith("-"))
                 {
@@ -292,7 +292,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (CleanedLines[i].StartsWith("- inject "))
                 {
-                    string line = CleanedLines[i].Substring("- inject ".Length);
+                    string line = CleanedLines[i]["- inject ".Length..];
                     if (line.Contains("locally"))
                     {
                         for (int x = i; x >= 0; x--)
@@ -481,7 +481,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         tagParts.Add(tag[start..i]);
                     }
-                    CheckSingleArgument(line, startChar + i + 2, tag.Substring(i + 2));
+                    CheckSingleArgument(line, startChar + i + 2, tag[(i + 2)..]);
                     foundABracket = true;
                     break;
                 }
@@ -653,7 +653,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (start < len)
             {
-                matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = stringArgs.Substring(start) });
+                matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = stringArgs[start..] });
             }
             return matchList.ToArray();
         }
@@ -681,7 +681,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             string commandName = parts[0].ToLowerFast();
             if (commandName.StartsWith("~") || commandName.StartsWith("^"))
             {
-                commandName = commandName.Substring(1);
+                commandName = commandName[1..];
             }
             CommandArgument[] arguments = parts.Length == 1 ? new CommandArgument[0] : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
             if (!MetaDocs.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
@@ -774,7 +774,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 else
                 {
-                    asArgument = asArgument.Substring("as:".Length);
+                    asArgument = asArgument["as:".Length..];
                 }
                 definitions.Add(asArgument.ToLowerFast());
                 if (commandName != "repeat")
@@ -790,7 +790,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     else
                     {
-                        keyArgument = keyArgument.Substring("key:".Length);
+                        keyArgument = keyArgument["key:".Length..];
                     }
                     definitions.Add(keyArgument.ToLowerFast());
                 }
@@ -812,7 +812,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
             {
-                definitions.Add(ENTRY_PREFIX + saveArgument.Substring("save:".Length).ToLowerFast());
+                definitions.Add(ENTRY_PREFIX + saveArgument["save:".Length..].ToLowerFast());
                 if (saveArgument.Contains("<"))
                 {
                     definitions.Add(ENTRY_PREFIX + "*");
@@ -1123,7 +1123,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             foreach (LineTrackedString actionValue in actionsMap.Keys)
                             {
-                                string actionName = actionValue.Text.Substring("on ".Length);
+                                string actionName = actionValue.Text["on ".Length..];
                                 if (actionName.Contains("@"))
                                 {
                                     int start = actionValue.StartChar + actionValue.Text.IndexOf('@');
@@ -1156,7 +1156,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             foreach (LineTrackedString eventValue in eventsMap.Keys)
                             {
-                                string eventName = eventValue.Text.Substring(eventValue.Text.StartsWith("on") ? "on ".Length : "after ".Length);
+                                string eventName = eventValue.Text[(eventValue.Text.StartsWith("on") ? "on ".Length : "after ".Length)..];
                                 if (eventName.Contains("@"))
                                 {
                                     Range? atRange = ContainsObjectNotation(eventName);
@@ -1476,7 +1476,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     else
                     {
-                        clist.Add(new LineTrackedString(i, cleaned.Substring("- ".Length), cleanStartCut + 2));
+                        clist.Add(new LineTrackedString(i, cleaned["- ".Length..], cleanStartCut + 2));
                     }
                     pspaces = spaces;
                     continue;
