@@ -1380,6 +1380,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             Dictionary<int, Dictionary<LineTrackedString, object>> spacedsections = new Dictionary<int, Dictionary<LineTrackedString, object>>() { { 0, rootScriptSection } };
             Dictionary<int, List<object>> spacedlists = new Dictionary<int, List<object>>();
             Dictionary<LineTrackedString, object> currentSection = rootScriptSection;
+            Dictionary<LineTrackedString, object> currentRootSection = null;
             int pspaces = 0;
             LineTrackedString secwaiting = null;
             List<object> clist = null;
@@ -1512,7 +1513,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 string[] inputArgs = startofline.SplitFast(' ');
                 if (spaces > 0 && (inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
-                    Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
+                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString) || (typeString.Text.ToLowerFast() != "data"))
+                    {
+                        Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
+                    }
                 }
                 if (spaces > pspaces)
                 {
@@ -1523,6 +1527,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                         continue;
                     }
                     Dictionary<LineTrackedString, object> sect = new Dictionary<LineTrackedString, object>();
+                    if (currentSection == rootScriptSection)
+                    {
+                        currentRootSection = sect;
+                    }
                     currentSection[secwaiting] = sect;
                     currentSection = sect;
                     spacedsections[spaces] = sect;
