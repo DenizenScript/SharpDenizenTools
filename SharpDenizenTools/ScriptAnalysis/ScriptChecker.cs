@@ -908,6 +908,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 try
                 {
+                    if (scriptTitle.Text.Trim().Contains(' '))
+                    {
+                        warnScript(MinorWarnings, scriptTitle.Line, "spaced_script_name", "Script titles should not contain spaces - consider the '_' underscore symbol instead.");
+                    }
+                    if (scriptTitle.Text.Length < 4)
+                    {
+                        warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
+                    }
                     Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptData;
                     if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
                     {
@@ -1502,7 +1510,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, i, "tag_in_key", "Keys cannot contain tags.", 0, line.Length);
                 }
                 string[] inputArgs = startofline.SplitFast(' ');
-                if ((inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
+                if (spaces > 0 && (inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
                     Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                 }
