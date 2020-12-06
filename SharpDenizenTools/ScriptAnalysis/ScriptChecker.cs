@@ -516,6 +516,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 lenThusFar += 1 + tagParts[i].Length;
             }
+            for (int i = 0; i < tagParts.Count; i++)
+            {
+                if (MetaDocs.CurrentMeta.TagDeprecations.TryGetValue(tagParts[i], out string notice))
+                {
+                    Warn(MinorWarnings, line, "deprecated_tag_part", $"Deprecated tag part `{tagParts[i].Replace('`', '\'')}`: {notice}", lenThusFar, lenThusFar + tagParts[i].Length);
+                }
+            }
         }
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };
@@ -692,6 +699,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 return;
             }
+            if (!string.IsNullOrWhiteSpace(command.Deprecated))
+            {
+                Warn(Errors, line, "deprecated_command", $"Command '{command.Name}' is deprecated: {command.Deprecated}", startChar, startChar + commandName.Length);
+            }
             if (commandText.Contains("parse_tag"))
             {
                 definitions.Add("parse_value");
@@ -733,9 +744,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else
                 {
                     string mechanismName = mechanism.Text.Before(':').ToLowerFast();
-                    if (!MetaDocs.CurrentMeta.Mechanisms.Values.Any(mech => mech.MechName == mechanismName))
+                    MetaMechanism mech = MetaDocs.CurrentMeta.Mechanisms.Values.FirstOrDefault(mech => mech.MechName == mechanismName);
+                    if (mech is null)
                     {
                         Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(mech.Deprecated))
+                    {
+                        Warn(Errors, line, "bad_adjust_deprecated_mech", $"Mechanism '{mech.Name}' is deprecated: {mech.Deprecated}", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
                     }
                 }
             }
@@ -917,7 +933,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
                     Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptData;
-                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
+                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString)
                     {
                         warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
                         continue;
@@ -1513,7 +1529,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 string[] inputArgs = startofline.SplitFast(' ');
                 if (spaces > 0 && (inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
-                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString) || (typeString.Text.ToLowerFast() != "data"))
+                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString || (typeString.Text.ToLowerFast() != "data"))
                     {
                         Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                     }

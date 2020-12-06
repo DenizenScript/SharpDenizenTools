@@ -159,6 +159,11 @@ namespace SharpDenizenTools.MetaHandlers
         public HashSet<string> TagParts = new HashSet<string>(2048);
 
         /// <summary>
+        /// A mapping of tag bits to deprecation notices.
+        /// </summary>
+        public Dictionary<string, string> TagDeprecations = new Dictionary<string, string>(32);
+
+        /// <summary>
         /// Returns an enumerable of all objects in the meta documentation.
         /// </summary>
         /// <returns>All objects.</returns>
@@ -216,11 +221,11 @@ namespace SharpDenizenTools.MetaHandlers
                 if (tagBase == "playertag" || tagBase == "npctag")
                 {
                     // TODO: Object meta, to inform of down-typing like this?
-                    secondarySearch = "entitytag" + cleaned.Substring(dotIndex);
+                    secondarySearch = "entitytag" + cleaned[dotIndex..];
                 }
                 else if (!tagBase.EndsWith("tag"))
                 {
-                    secondarySearch = tagBase + "tag" + cleaned.Substring(dotIndex);
+                    secondarySearch = tagBase + "tag" + cleaned[dotIndex..];
                 }
                 else
                 {
@@ -318,7 +323,7 @@ namespace SharpDenizenTools.MetaHandlers
                 LoadErrors.Add("Guide page did not match expected format (table of contents div missing).");
                 return;
             }
-            page = page.Substring(contentIndex);
+            page = page[contentIndex..];
             int linkIndex = 0;
             const string link_reference_text = "<a class=\"reference internal\" href=\"";
             while ((linkIndex = page.IndexOf(link_reference_text, linkIndex)) >= 0)
@@ -382,7 +387,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 using Stream entryStream = entry.Open();
                 lines.Add(START_OF_FILE_PREFIX + entry.FullName);
-                lines.AddRange(entryStream.AllLinesOfText().Where((s) => s.TrimStart().StartsWith("// ")).Select((s) => s.Trim().Substring("// ".Length).Replace("\r", "")));
+                lines.AddRange(entryStream.AllLinesOfText().Where((s) => s.TrimStart().StartsWith("// ")).Select((s) => s.Trim()["// ".Length..].Replace("\r", "")));
                 lines.Add(END_OF_FILE_MARK);
             }
             return lines.ToArray();
@@ -399,7 +404,7 @@ namespace SharpDenizenTools.MetaHandlers
                 string line = lines[i];
                 if (line.StartsWith(START_OF_FILE_PREFIX))
                 {
-                    file = line.Substring(START_OF_FILE_PREFIX.Length);
+                    file = line[START_OF_FILE_PREFIX.Length..];
                 }
                 else if (line.StartsWith("<--[") && line.EndsWith("]"))
                 {
@@ -469,7 +474,7 @@ namespace SharpDenizenTools.MetaHandlers
                         int space = line.IndexOf(' ');
                         if (space == -1)
                         {
-                            curKey = line.Substring(1);
+                            curKey = line[1..];
                             if (curKey == "end_meta")
                             {
                                 break;
@@ -477,7 +482,7 @@ namespace SharpDenizenTools.MetaHandlers
                             continue;
                         }
                         curKey = line[1..space];
-                        curValue = line.Substring(space + 1);
+                        curValue = line[(space + 1)..];
                     }
                     else
                     {

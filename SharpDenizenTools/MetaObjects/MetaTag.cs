@@ -30,6 +30,13 @@ namespace SharpDenizenTools.MetaObjects
             {
                 docs.TagParts.Add(bit);
             }
+            if (!string.IsNullOrWhiteSpace(Deprecated))
+            {
+                foreach (string bit in CleanName.Split('.'))
+                {
+                    docs.TagDeprecations[bit] = Deprecated;
+                }
+            }
         }
 
         /// <summary>
