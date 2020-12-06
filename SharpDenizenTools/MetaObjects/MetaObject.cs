@@ -63,6 +63,11 @@ namespace SharpDenizenTools.MetaObjects
         public string Searchable;
 
         /// <summary>
+        /// A deprecation notice, if any.
+        /// </summary>
+        public string Deprecated;
+
+        /// <summary>
         /// Apply a setting value to this meta object.
         /// </summary>
         /// <param name="key">The setting key.</param>
@@ -80,6 +85,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "plugin":
                     Plugin = value;
+                    return true;
+                case "deprecated":
+                    Deprecated = value;
                     return true;
                 default:
                     return false;
@@ -178,7 +186,7 @@ namespace SharpDenizenTools.MetaObjects
                         return;
                     }
                     string type = metaCommand.Substring(0, firstSpace).ToLowerFast();
-                    string searchText = metaCommand.Substring(firstSpace + 1).ToLowerFast();
+                    string searchText = metaCommand[(firstSpace + 1)..].ToLowerFast();
                     bool exists;
                     if (type.Equals("command"))
                     {
@@ -196,7 +204,7 @@ namespace SharpDenizenTools.MetaObjects
                     {
                         if (searchText.StartsWith("on "))
                         {
-                            searchText = searchText.Substring("on ".Length);
+                            searchText = searchText["on ".Length..];
                         }
                         exists = docs.Events.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
                         if (!exists)
@@ -208,7 +216,7 @@ namespace SharpDenizenTools.MetaObjects
                     {
                         if (searchText.StartsWith("on "))
                         {
-                            searchText = searchText.Substring("on ".Length);
+                            searchText = searchText["on ".Length..];
                         }
                         exists = docs.Actions.Values.Any(a => a.CleanActions.Any(s => s.Contains(searchText)));
                     }
