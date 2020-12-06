@@ -933,7 +933,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
                     Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptData;
-                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString)
+                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
                     {
                         warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
                         continue;
@@ -1529,7 +1529,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 string[] inputArgs = startofline.SplitFast(' ');
                 if (spaces > 0 && (inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
                 {
-                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString || (typeString.Text.ToLowerFast() != "data"))
+                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString) || (typeString.Text.ToLowerFast() != "data"))
                     {
                         Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                     }
