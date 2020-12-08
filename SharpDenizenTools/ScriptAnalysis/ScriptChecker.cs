@@ -1466,6 +1466,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         else if (buildingSubList)
                         {
+                            if (spaces <= pspaces)
+                            {
+                                Warn(Errors, secwaiting.Line, "empty_command_section", "Script section within command is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
+                            }
                             List<object> newclist = new List<object>();
                             clist.Add(new Dictionary<LineTrackedString, object>() { { secwaiting, newclist } });
                             secwaiting = null;
@@ -1554,6 +1558,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (endofline.Length == 0)
                 {
+                    if (secwaiting != null && spaces <= pspaces)
+                    {
+                        Warn(Errors, secwaiting.Line, "empty_section", "Script section is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
+                    }
                     secwaiting = new LineTrackedString(i, startofline.ToLowerFast(), cleanStartCut);
                 }
                 else
