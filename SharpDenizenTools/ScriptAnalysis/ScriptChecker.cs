@@ -344,6 +344,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     Warn(Warnings, i, "useless_invalid_line", "Useless/invalid line (possibly missing a `-` or a `:`, or just accidentally hit enter or paste).", Lines[i].IndexOf(CleanedLines[i][0]), Lines[i].Length - 1);
                 }
+                int sectionSymbol = line.IndexOf('§');
+                if (sectionSymbol != -1)
+                {
+                    Warn(MinorWarnings, i, "color_code_misformat", "Don't use the section symbol for color codes, instead use tags: like <&c>, <red> or <&color[red]>.", sectionSymbol, sectionSymbol + 2);
+                }
             }
         }
 
