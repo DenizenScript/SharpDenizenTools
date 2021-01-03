@@ -1100,12 +1100,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText)
                                 || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
                             {
-                                if (typeString.Text != "data")
+                                if (typeString.Text != "data" && keyText != "data")
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
                             }
-                            else if (scriptType.Strict)
+                            else if (scriptType.Strict && keyText != "data")
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected submapping key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
