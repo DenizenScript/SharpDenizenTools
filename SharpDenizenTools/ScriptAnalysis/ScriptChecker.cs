@@ -1536,12 +1536,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, i, "tag_in_key", "Keys cannot contain tags.", 0, line.Length);
                 }
                 string[] inputArgs = startofline.SplitFast(' ');
-                if (spaces > 0 && (inputArgs.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(inputArgs[0].ToLowerFast()))
+                if (spaces > 0 && CanWarnAboutCommandMissingDash(inputArgs, currentRootSection))
                 {
-                    if (currentRootSection == null || !currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString) || (typeString.Text.ToLowerFast() != "data"))
-                    {
-                        Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
-                    }
+                    Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                 }
                 if (spaces > pspaces)
                 {
@@ -1576,6 +1573,39 @@ namespace SharpDenizenTools.ScriptAnalysis
                 pspaces = spaces;
             }
             return rootScriptSection;
+        }
+
+        /// <summary>
+        /// Helper method to determine whether a section key that looks like it might have been meant as a command should actually show a warning or not.
+        /// </summary>
+        public bool CanWarnAboutCommandMissingDash(string[] args, Dictionary<LineTrackedString, object> currentRootSection)
+        {
+            string cmdName = args[0].ToLowerFast();
+            if (!(args.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(cmdName))
+            {
+                return false;
+            }
+            if (currentRootSection == null)
+            {
+                return true;
+            }
+            if (!currentRootSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue))
+            {
+                return true;
+            }
+            if (!(typeValue is LineTrackedString typeString))
+            {
+                return true;
+            }
+            if (typeString.Text.ToLowerFast() == "data")
+            {
+                return false;
+            }
+            if (typeString.Text.ToLowerFast() == "command" && cmdName == "default")
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
