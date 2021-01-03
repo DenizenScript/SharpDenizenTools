@@ -8,7 +8,7 @@
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\Release\SharpDenizenTools.xml</DocumentationFile>
     <Product>SharpDenizenTools</Product>
-    <Copyright>Copyright (C) The DenizenScript Team 2020</Copyright>
+    <Copyright>Copyright (C) The DenizenScript Team 2020-2021</Copyright>
     <Configurations>Debug;Release</Configurations>
     <Version>1.0.0</Version>
     <ProjectGuid>{3DB47D69-4228-4F22-1763-152292496865}</ProjectGuid>
