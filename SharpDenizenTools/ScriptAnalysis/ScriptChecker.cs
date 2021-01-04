@@ -1241,7 +1241,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                                 warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Priority switch invalid: must be a decimal number.");
                                             }
                                         }
-                                        else if (switchPair.Key == "bukkit_priority" || switchPair.Key == "flagged" || switchPair.Key == "permission")
+                                        else if (EverywhereSwitches.Contains(switchPair.Key))
                                         {
                                             // Ignore, these are global
                                         }
