@@ -551,7 +551,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
                 }
             }
-            string argNoArrows = argument.Replace("<-", "al").Replace("->", "ar");
+            string argNoArrows = argument.Replace("<-", "al").Replace(":->", "arr");
             if (argument.Length > 2 && argNoArrows.CountCharacter('<') != argNoArrows.CountCharacter('>'))
             {
                 int start = startChar + argument.IndexOfAny(tagMarksChars);
