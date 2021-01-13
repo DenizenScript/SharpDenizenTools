@@ -46,7 +46,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Just the names of the event's switches.
         /// </summary>
-        public List<string> SwitchNames = new List<string>();
+        public HashSet<string> SwitchNames = new HashSet<string>();
 
         /// <summary>
         /// The regex matcher.
@@ -82,6 +82,39 @@ namespace SharpDenizenTools.MetaObjects
         /// Whether the event is cancellable.
         /// </summary>
         public bool Cancellable = false;
+
+        /// <summary>
+        /// Whether the event has a location for location switches.
+        /// </summary>
+        public bool HasLocation = false;
+
+        /// <summary>
+        /// Returns whether the switch name given is valid for this event.
+        /// </summary>
+        public bool IsValidSwitch(string switchName)
+        {
+            if (SwitchNames.Contains(switchName))
+            {
+                return true;
+            }
+            else if (switchName == "flagged" || switchName == "permission")
+            {
+                return !string.IsNullOrWhiteSpace(Player);
+            }
+            else if (switchName == "in" || switchName == "location_flagged")
+            {
+                return HasLocation;
+            }
+            else if (switchName == "cancelled" || switchName == "ignorecancelled")
+            {
+                return Cancellable;
+            }
+            else if (switchName == "priority" || switchName == "bukkit_priority" || switchName == "server_flagged")
+            {
+                return true;
+            }
+            return false;
+        }
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)
@@ -120,6 +153,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "cancellable":
                     Cancellable = value.Trim().ToLowerFast() == "true";
+                    return true;
+                case "location":
+                    HasLocation = value.Trim().ToLowerFast() == "true";
                     return true;
                 default:
                     return base.ApplyValue(key, value);

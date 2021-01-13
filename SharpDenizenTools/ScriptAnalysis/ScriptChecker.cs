@@ -1203,7 +1203,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                             {
                                                 potentialMatch++;
                                             }
-                                            if (switches.All(s => EverywhereSwitches.Contains(s.Key) || evt.SwitchNames.Contains(s.Key)))
+                                            if (switches.All(s => evt.IsValidSwitch(s.Key)))
                                             {
                                                 potentialMatch++;
                                             }
@@ -1241,13 +1241,23 @@ namespace SharpDenizenTools.ScriptAnalysis
                                                 warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Priority switch invalid: must be a decimal number.");
                                             }
                                         }
-                                        else if (EverywhereSwitches.Contains(switchPair.Key))
+                                        else if (switchPair.Key == "in" || switchPair.Key == "location_flagged")
                                         {
-                                            // Ignore, these are global
+                                            if (!realEvt.HasLocation)
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'in' and 'location_flagged' switches are only supported on events that have a known location.");
+                                            }
+                                        }
+                                        else if (switchPair.Key == "flagged" || switchPair.Key == "permission")
+                                        {
+                                            if (string.IsNullOrWhiteSpace(realEvt.Player))
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'flagged' and 'permission' switches are only supported on events that have a linked player.");
+                                            }
                                         }
                                         else
                                         {
-                                            if (!realEvt.SwitchNames.Contains(switchPair.Key))
+                                            if (!realEvt.IsValidSwitch(switchPair.Key))
                                             {
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"Switch given is unrecognized.");
                                             }
@@ -1265,11 +1275,6 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
             }
         }
-
-        /// <summary>
-        /// The set of event switches that are always (or almost always) valid.
-        /// </summary>
-        public static readonly HashSet<string> EverywhereSwitches = new HashSet<string>() { "cancelled", "ignorecancelled", "priority", "bukkit_priority", "flagged", "permissions", "server_flagged" };
 
         /// <summary>
         /// Matcher for A-Z only.
