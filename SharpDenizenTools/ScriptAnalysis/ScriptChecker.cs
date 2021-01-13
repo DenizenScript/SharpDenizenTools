@@ -1299,7 +1299,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             switches = new List<KeyValuePair<string, string>>();
             foreach (string part in parts)
             {
-                if (part.Contains(':') && !part.StartsWith("regex:") && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
+                if (part.Contains(':') && !part.StartsWith("regex:") && !part.StartsWith("item_flagged:") && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
                 {
                     string switchName = part.BeforeAndAfter(':', out string switchVal);
                     switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
