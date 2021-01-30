@@ -937,7 +937,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
-                    Dictionary<LineTrackedString, object> scriptSection = (Dictionary<LineTrackedString, object>)scriptData;
+                    if (!(scriptData is Dictionary<LineTrackedString, object> scriptSection))
+                    {
+                        continue;
+                    }
                     if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
                     {
                         warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
