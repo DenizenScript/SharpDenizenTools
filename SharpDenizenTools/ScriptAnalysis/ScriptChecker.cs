@@ -1295,6 +1295,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         public static readonly AsciiMatcher NumbersMatcher = new AsciiMatcher(c => c >= '0' && c <= '9');
 
         /// <summary>
+        /// Switch-prefixes that definitely aren't real switches.
+        /// </summary>
+        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged" };
+
+        /// <summary>
         /// Separates the switches from an event line.
         /// </summary>
         /// <param name="eventLine">The original full event line.</param>
@@ -1307,7 +1312,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             switches = new List<KeyValuePair<string, string>>();
             foreach (string part in parts)
             {
-                if (part.Contains(':') && !part.StartsWith("regex:") && !part.StartsWith("item_flagged:") && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
+                if (part.Contains(':') && !NotSwitches.Contains(part.Before(":")) && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
                 {
                     string switchName = part.BeforeAndAfter(':', out string switchVal);
                     switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
