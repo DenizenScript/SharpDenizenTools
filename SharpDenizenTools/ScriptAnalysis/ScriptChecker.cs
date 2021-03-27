@@ -712,6 +712,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             void trackDefinition(string def)
             {
                 definitions.Add(def.Before('.'));
+                if (def.Contains("<"))
+                {
+                    definitions.Add("*");
+                }
             }
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
             {
@@ -790,10 +794,11 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 string defName = arguments[0].Text.Before(":").ToLowerFast();
                 trackDefinition(defName);
-                if (defName.Contains("<"))
-                {
-                    definitions.Add("*");
-                }
+            }
+            else if (commandName == "definemap" && arguments.Length >= 1)
+            {
+                string defName = arguments[0].Text.ToLowerFast();
+                trackDefinition(defName);
             }
             else if ((commandName == "foreach" || commandName == "while" || commandName == "repeat") && arguments.Length >= 1)
             {
@@ -1016,7 +1021,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 {
                                     KeyValuePair<LineTrackedString, object> onlyEntry = subMap.First();
                                     CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, definitionsKnown);
-                                    checkAsScript((List<object>)onlyEntry.Value, definitionsKnown);
+                                    if (!onlyEntry.Key.Text.StartsWith("definemap"))
+                                    {
+                                        checkAsScript((List<object>)onlyEntry.Value, definitionsKnown);
+                                    }
                                 }
                             }
                         }
