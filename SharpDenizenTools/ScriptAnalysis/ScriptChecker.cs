@@ -709,17 +709,21 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 return;
             }
+            void trackDefinition(string def)
+            {
+                definitions.Add(def.Before('.'));
+            }
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
             {
                 Warn(Errors, line, "deprecated_command", $"Command '{command.Name}' is deprecated: {command.Deprecated}", startChar, startChar + commandName.Length);
             }
             if (commandText.Contains("parse_tag"))
             {
-                definitions.Add("parse_value");
+                trackDefinition("parse_value");
             }
             if (commandText.Contains("filter_tag"))
             {
-                definitions.Add("filter_value");
+                trackDefinition("filter_value");
             }
             int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
@@ -785,7 +789,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             else if (commandName == "define" && arguments.Length >= 1)
             {
                 string defName = arguments[0].Text.Before(":").ToLowerFast();
-                definitions.Add(defName);
+                trackDefinition(defName);
                 if (defName.Contains("<"))
                 {
                     definitions.Add("*");
@@ -802,10 +806,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     asArgument = asArgument["as:".Length..];
                 }
-                definitions.Add(asArgument.ToLowerFast());
+                trackDefinition(asArgument.ToLowerFast());
                 if (commandName != "repeat")
                 {
-                    definitions.Add("loop_index");
+                    trackDefinition("loop_index");
                 }
                 if (commandName == "foreach")
                 {
@@ -818,7 +822,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         keyArgument = keyArgument["key:".Length..];
                     }
-                    definitions.Add(keyArgument.ToLowerFast());
+                    trackDefinition(keyArgument.ToLowerFast());
                 }
             }
             else if (commandName == "give")
