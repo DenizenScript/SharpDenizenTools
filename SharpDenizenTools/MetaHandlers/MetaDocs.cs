@@ -206,7 +206,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <returns>The matching tag, or null if not found.</returns>
         public MetaTag FindTag(string tagText)
         {
-            string cleaned = MetaTag.CleanTag(tagText);
+            string cleaned = MetaTag.CleanTag(tagText).ToLowerFast();
             if (Tags.TryGetValue(cleaned, out MetaTag result))
             {
                 return result;
@@ -240,7 +240,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// </summary>
         public void DownloadAll()
         {
-            ConcurrentBag<ZipArchive> zips = new ConcurrentBag<ZipArchive>();
+            ConcurrentDictionary<string, ZipArchive> zips = new ConcurrentDictionary<string, ZipArchive>();
             List<ManualResetEvent> resets = new List<ManualResetEvent>();
             foreach (string src in SourcesToUse)
             {
@@ -251,7 +251,7 @@ namespace SharpDenizenTools.MetaHandlers
                     try
                     {
                         ZipArchive zip = DownloadZip(src);
-                        zips.Add(zip);
+                        zips[src] = zip;
                     }
                     catch (Exception ex)
                     {
@@ -265,12 +265,12 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 evt.WaitOne();
             }
-            foreach (ZipArchive zip in zips)
+            foreach (string src in SourcesToUse)
             {
                 try
                 {
-                    string[] fullLines = ReadLines(zip);
-                    LoadDataFromLines(fullLines);
+                    (int, string, string)[] fullLines = ReadLines(zips[src]);
+                    LoadDataFromLines(src, fullLines);
                 }
                 catch (Exception ex)
                 {
@@ -371,9 +371,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>
         /// Read lines of meta docs from Java files in a zip.
         /// </summary>
-        public static string[] ReadLines(ZipArchive zip, string folderLimit = null)
+        public static (int, string, string)[] ReadLines(ZipArchive zip, string folderLimit = null)
         {
-            List<string> lines = new List<string>();
+            List<(int, string, string)> lines = new List<(int, string, string)>();
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 if (folderLimit != null && !entry.FullName.StartsWith(folderLimit))
@@ -385,9 +385,15 @@ namespace SharpDenizenTools.MetaHandlers
                     continue;
                 }
                 using Stream entryStream = entry.Open();
-                lines.Add(START_OF_FILE_PREFIX + entry.FullName);
-                lines.AddRange(entryStream.AllLinesOfText().Where((s) => s.TrimStart().StartsWith("// ")).Select((s) => s.Trim()["// ".Length..].Replace("\r", "")));
-                lines.Add(END_OF_FILE_MARK);
+                int lineNum = 0;
+                foreach (string line in entryStream.AllLinesOfText())
+                {
+                    lineNum++;
+                    if (line.TrimStart().StartsWith("// "))
+                    {
+                        lines.Add((lineNum, entry.FullName, line.Trim()["// ".Length..].Replace("\r", "")));
+                    }
+                }
             }
             return lines.ToArray();
         }
@@ -395,51 +401,58 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>
         /// Load the meta doc data from lines.
         /// </summary>
-        public void LoadDataFromLines(string[] lines)
+        public void LoadDataFromLines(string websrc, (int, string, string)[] lines)
         {
-            string file = "<unknown>";
             for (int i = 0; i < lines.Length; i++)
             {
-                string line = lines[i];
-                if (line.StartsWith(START_OF_FILE_PREFIX))
-                {
-                    file = line[START_OF_FILE_PREFIX.Length..];
-                }
-                else if (line.StartsWith("<--[") && line.EndsWith("]"))
+                (int lineNum, string file, string line) = lines[i];
+                if (line.StartsWith("<--[") && line.EndsWith("]"))
                 {
                     string objectType = line.Substring("<--[".Length, line.Length - "<--[]".Length);
                     List<string> objectData = new List<string>();
                     for (i++; i < lines.Length; i++)
                     {
-                        if (lines[i] == "-->")
+                        if (lines[i].Item3 == "-->")
                         {
                             break;
                         }
-                        else if (lines[i].StartsWith("<--["))
+                        else if (lines[i].Item3.StartsWith("<--["))
                         {
                             LoadErrors.Add($"While processing {file} at line {i + 1} found the start of a meta block, while still processing the previous meta block.");
                             break;
                         }
-                        else if (lines[i] == END_OF_FILE_MARK || lines[i].StartsWith(START_OF_FILE_PREFIX))
+                        else if (lines[i].Item2 != file)
                         {
                             LoadErrors.Add($"While processing {file} was not able to find the end of an object's documentation!");
                             objectData = null;
                             break;
                         }
-                        objectData.Add(lines[i]);
+                        objectData.Add(lines[i].Item3);
                     }
                     if (objectData == null)
                     {
                         continue;
                     }
                     objectData.Add("@end_meta");
-                    LoadInObject(objectType, file, objectData.ToArray());
+                    LoadInObject(objectType, GetCorrectURL(websrc, file, lineNum), objectData.ToArray());
                 }
                 else if (line.StartsWith("<--"))
                 {
                     LoadErrors.Add($"While processing {file} at line {i + 1} found the '<--' meta starter, but not a valid meta start.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets a clean proper URL for a file path, if possible.
+        /// </summary>
+        public static string GetCorrectURL(string webSource, string file, int line)
+        {
+            if (webSource.StartsWith("https://github"))
+            {
+                return webSource[..^(".zip".Length)].Replace("/archive/", "/blob/") + "/" + file.After('/') + "#L" + line;
+            }
+            return $"Web source {webSource} file {file} line {line}";
         }
 
         /// <summary>
@@ -455,6 +468,8 @@ namespace SharpDenizenTools.MetaHandlers
                     return;
                 }
                 MetaObject obj = getter();
+                obj.SourceFile = file;
+                obj.Meta = this;
                 string curKey = null;
                 string curValue = null;
                 foreach (string line in objectData)

@@ -57,7 +57,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Tags documented for this command. One tag per string.
         /// </summary>
-        public string[] Tags = new string[0];
+        public string[] Tags = Array.Empty<string>();
 
         /// <summary>
         /// An associated beginner's guide link.
@@ -67,12 +67,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// A list of argument prefixes this command has in its syntax line.
         /// </summary>
-        public Tuple<string, string>[] ArgPrefixes = new Tuple<string, string>[0];
+        public Tuple<string, string>[] ArgPrefixes = Array.Empty<Tuple<string, string>>();
 
         /// <summary>
         /// A list of plaintext no-tag arguments this command has in its syntax line.
         /// </summary>
-        public Tuple<string, string>[] FlatArguments = new Tuple<string, string>[0];
+        public Tuple<string, string>[] FlatArguments = Array.Empty<Tuple<string, string>>();
 
         /// <summary>
         /// Parses this command's syntax data to create a list of helper data about the known arguments.
@@ -82,8 +82,8 @@ namespace SharpDenizenTools.MetaObjects
             int firstSpace = Syntax.IndexOf(' ');
             if (firstSpace < 0)
             {
-                ArgPrefixes = new Tuple<string, string>[0];
-                FlatArguments = new Tuple<string, string>[0];
+                ArgPrefixes = Array.Empty<Tuple<string, string>>();
+                FlatArguments = Array.Empty<Tuple<string, string>>();
                 return;
             }
             List<Tuple<string, string>> prefixes = new List<Tuple<string, string>>();

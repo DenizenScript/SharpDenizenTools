@@ -44,7 +44,6 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public static string CleanTag(string text)
         {
-            text = text.ToLowerFast();
             StringBuilder cleaned = new StringBuilder(text.Length);
             bool skipping = false;
             for (int i = 0; i < text.Length; i++)
@@ -79,6 +78,12 @@ namespace SharpDenizenTools.MetaObjects
         public string CleanedName;
 
         /// <summary>
+        /// The text before the first dot (with tag cleaning applied).
+        /// Will have capitalized characters.
+        /// </summary>
+        public string BeforeDot;
+
+        /// <summary>
         /// The text after the first dot (with tag cleaning applied).
         /// </summary>
         public string AfterDotCleaned;
@@ -111,7 +116,16 @@ namespace SharpDenizenTools.MetaObjects
                 case "attribute":
                     TagFull = value;
                     CleanedName = CleanTag(TagFull);
-                    AfterDotCleaned = CleanedName.After('.');
+                    if (CleanedName.Contains('.'))
+                    {
+                        BeforeDot = CleanedName.Before('.');
+                    }
+                    else
+                    {
+                        BeforeDot = "Base";
+                    }
+                    CleanedName = CleanedName.ToLowerFast();
+                    AfterDotCleaned = TagFull.After('.').ToLowerFast();
                     return true;
                 case "returns":
                     Returns = value;

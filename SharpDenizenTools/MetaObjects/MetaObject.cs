@@ -68,6 +68,11 @@ namespace SharpDenizenTools.MetaObjects
         public string Deprecated;
 
         /// <summary>
+        /// The backing <see cref="MetaDocs"/> instance.
+        /// </summary>
+        public MetaDocs Meta;
+
+        /// <summary>
         /// Apply a setting value to this meta object.
         /// </summary>
         /// <param name="key">The setting key.</param>
