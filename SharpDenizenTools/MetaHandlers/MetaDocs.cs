@@ -39,8 +39,7 @@ namespace SharpDenizenTools.MetaHandlers
         {
             "https://github.com/DenizenScript/Depenizen/archive/master.zip",
             "https://github.com/DenizenScript/dDiscordBot/archive/master.zip",
-            "https://github.com/DenizenScript/Webizen/archive/master.zip",
-            "https://github.com/DenizenScript/dIRCBot/archive/master.zip"
+            "https://github.com/DenizenScript/Webizen/archive/master.zip"
         };
 
         /// <summary>
