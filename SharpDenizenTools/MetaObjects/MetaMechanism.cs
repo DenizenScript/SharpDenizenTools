@@ -33,7 +33,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Both forms of the mech name (the full name, and the partial name).
         /// </summary>
-        public string[] NameForms = new string[0];
+        public string[] NameForms = Array.Empty<string>();
 
         /// <summary>
         /// The full mechanism name (Object.Name).
@@ -63,7 +63,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Tags documented for this mechanism. One tag per string.
         /// </summary>
-        public string[] Tags = new string[0];
+        public string[] Tags = Array.Empty<string>();
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)

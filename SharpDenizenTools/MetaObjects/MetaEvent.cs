@@ -31,12 +31,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// The names of the event.
         /// </summary>
-        public string[] Events = new string[0];
+        public string[] Events = Array.Empty<string>();
 
         /// <summary>
         /// The names of the events, autocleaned.
         /// </summary>
-        public string[] CleanEvents = new string[0];
+        public string[] CleanEvents = Array.Empty<string>();
 
         /// <summary>
         /// Switches available to the event.
@@ -61,12 +61,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Context tags. One tag per string.
         /// </summary>
-        public string[] Context = new string[0];
+        public string[] Context = Array.Empty<string>();
 
         /// <summary>
         /// Determination options. One Determination per string.
         /// </summary>
-        public string[] Determinations = new string[0];
+        public string[] Determinations = Array.Empty<string>();
 
         /// <summary>
         /// Whether there's a player attached to the event.

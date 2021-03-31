@@ -31,12 +31,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// The names of the action.
         /// </summary>
-        public string[] Actions = new string[0];
+        public string[] Actions = Array.Empty<string>();
 
         /// <summary>
         /// The names of the actions, autocleaned.
         /// </summary>
-        public string[] CleanActions = new string[0];
+        public string[] CleanActions = Array.Empty<string>();
 
         /// <summary>
         /// The trigger reason.
@@ -51,12 +51,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Context tags. One tag per string.
         /// </summary>
-        public string[] Context = new string[0];
+        public string[] Context = Array.Empty<string>();
 
         /// <summary>
         /// Determination options. One Determination per string.
         /// </summary>
-        public string[] Determinations = new string[0];
+        public string[] Determinations = Array.Empty<string>();
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)
@@ -75,7 +75,7 @@ namespace SharpDenizenTools.MetaObjects
                         {
                             int start = regexable.IndexOf('<');
                             int end = regexable.IndexOf('>');
-                            regexable = regexable.Substring(0, start) + "[^\\s]+" + regexable.Substring(end + 1);
+                            regexable = regexable.Substring(0, start) + "[^\\s]+" + regexable[(end + 1)..];
                         }
                         outRegex += $"({regexable})|";
                     }
