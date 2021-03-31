@@ -198,7 +198,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="message">The warning message.</param>
         /// <param name="start">The starting character index.</param>
         /// <param name="end">The ending character index.</param>
-        public void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
+        public static void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
         {
             foreach (ScriptWarning warning in warnType)
             {
@@ -257,18 +257,18 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     int dashIndex = Lines[i].IndexOf('-');
                     result.Append(Lines[i].Substring(0, dashIndex + 1)).Append(" ^1^");
-                    result.Append(Lines[i][(dashIndex + 1)..].Replace(": ", "<&co>").Replace("#", "<&ns>")).Append("\n");
+                    result.Append(Lines[i][(dashIndex + 1)..].Replace(": ", "<&co>").Replace("#", "<&ns>")).Append('\n');
                 }
                 else if (line.EndsWith(":") && !line.StartsWith("-"))
                 {
-                    result.Append(Lines[i].Replace("*", "asterisk").Replace(".", "dot")).Append("\n");
+                    result.Append(Lines[i].Replace("*", "asterisk").Replace(".", "dot")).Append('\n');
                 }
                 else
                 {
-                    result.Append(Lines[i]).Append("\n");
+                    result.Append(Lines[i]).Append('\n');
                 }
             }
-            result.Append("\n");
+            result.Append('\n');
             return result.ToString();
         }
 
@@ -1331,7 +1331,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 else
                 {
-                    output.Append(part).Append(" ");
+                    output.Append(part).Append(' ');
                 }
             }
             return output.ToString().Trim();
@@ -1347,7 +1347,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         /// <param name="line">The line to check.</param>
         /// <returns>The match range, or null.</returns>
-        public Range? ContainsObjectNotation(string line)
+        public static Range? ContainsObjectNotation(string line)
         {
             int first = line.Length;
             int last = -1;
@@ -1608,7 +1608,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Helper method to determine whether a section key that looks like it might have been meant as a command should actually show a warning or not.
         /// </summary>
-        public bool CanWarnAboutCommandMissingDash(string[] args, Dictionary<LineTrackedString, object> currentRootSection)
+        public static bool CanWarnAboutCommandMissingDash(string[] args, Dictionary<LineTrackedString, object> currentRootSection)
         {
             string cmdName = args[0].ToLowerFast();
             if (!(args.Length == 1 ? CommandsWithColonsButNoArguments : CommandsWithColonsAndArguments).Contains(cmdName))
