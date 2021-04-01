@@ -15,7 +15,7 @@ namespace SharpDenizenTools.MetaObjects
         public string Name;
 
         /// <summary>
-        /// The webpath for this object meta type (eg "cmds").
+        /// The webpath for this object meta type (eg "Commands").
         /// </summary>
         public string WebPath;
     }

@@ -60,32 +60,32 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>
         /// The "command" meta type.
         /// </summary>
-        public static MetaType META_TYPE_COMMAND = new MetaType() { Name = "Command", WebPath = "cmds" };
+        public static MetaType META_TYPE_COMMAND = new MetaType() { Name = "Command", WebPath = "Commands" };
 
         /// <summary>
         /// The "mechanism" meta type.
         /// </summary>
-        public static MetaType META_TYPE_MECHANISM = new MetaType() { Name = "Mechanism", WebPath = "mecs" };
+        public static MetaType META_TYPE_MECHANISM = new MetaType() { Name = "Mechanism", WebPath = "Mechanisms" };
 
         /// <summary>
         /// The "event" meta type.
         /// </summary>
-        public static MetaType META_TYPE_EVENT = new MetaType() { Name = "Event", WebPath = "evts" };
+        public static MetaType META_TYPE_EVENT = new MetaType() { Name = "Event", WebPath = "Events" };
 
         /// <summary>
         /// The "action" meta type.
         /// </summary>
-        public static MetaType META_TYPE_ACTION = new MetaType() { Name = "Action", WebPath = "acts" };
+        public static MetaType META_TYPE_ACTION = new MetaType() { Name = "Action", WebPath = "Actions" };
 
         /// <summary>
         /// The "language" meta type.
         /// </summary>
-        public static MetaType META_TYPE_LANGUAGE = new MetaType() { Name = "Language", WebPath = "lngs" };
+        public static MetaType META_TYPE_LANGUAGE = new MetaType() { Name = "Language", WebPath = "Languages" };
 
         /// <summary>
         /// The "tag" meta type.
         /// </summary>
-        public static MetaType META_TYPE_TAG = new MetaType() { Name = "Tag", WebPath = "tags" };
+        public static MetaType META_TYPE_TAG = new MetaType() { Name = "Tag", WebPath = "Tags" };
 
         /// <summary>
         /// The "guide page" meta type.
