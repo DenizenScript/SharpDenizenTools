@@ -41,7 +41,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             { "format", new KnownScriptType() { RequiredKeys = new[] { "format" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "format" }, Strict = true, CanHaveRandomScripts = false } },
             { "interact", new KnownScriptType() { RequiredKeys = new[] { "steps" }, LikelyBadKeys = new[] { "script", "actions", "events" }, ScriptKeys = new[] { "steps.*" }, Strict = true } },
             { "inventory", new KnownScriptType() { RequiredKeys = new[] { "inventory" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "inventory", "title", "size", "definitions.*", "gui" }, ScriptKeys = new[] { "procedural items" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } },
-            { "item", new KnownScriptType() { RequiredKeys = new[] { "material" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book" }, ListKeys = new[] { "mechanisms.*", "lore", "enchantments", "recipes.*" }, Strict = false, CanHaveRandomScripts = false } },
+            { "item", new KnownScriptType() { RequiredKeys = new[] { "material" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book" }, ListKeys = new[] { "mechanisms.*", "lore", "enchantments", "recipes.*" }, Strict = true, CanHaveRandomScripts = false } },
             { "map", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "original", "display name", "auto update", "objects.*" }, Strict = true, CanHaveRandomScripts = false } }
         };
 
@@ -1056,6 +1056,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 warnScript(Warnings, keyLine.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
+                            else if (typeString.Text == "data" || keyName == "data")
+                            {
+                                // Always allow 'data'
+                            }
                             else if (scriptType.Strict)
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected list key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
@@ -1064,7 +1068,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 checkAsScript(listAtKey, new HashSet<string>());
                             }
-                            else if (typeString.Text != "data")
+                            else
                             {
                                 checkBasicList(listAtKey);
                             }
@@ -1079,6 +1083,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
                                 warnScript(Warnings, keyLine.Line, "bad_key_" + typeString.Text, $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a list or script, but was instead a direct Value - check `!lang {typeString.Text} script containers` for format rules)!");
+                            }
+                            else if (typeString.Text == "data" || keyName == "data")
+                            {
+                                // Always allow 'data'
                             }
                             else if (scriptType.Strict)
                             {
@@ -1120,12 +1128,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText)
                                 || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
                             {
-                                if (typeString.Text != "data" && keyText != "data")
+                                if (typeString.Text != "data" && keyName != "data")
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
                             }
-                            else if (scriptType.Strict && keyText != "data")
+                            else if (scriptType.Strict && keyName != "data")
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected submapping key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
