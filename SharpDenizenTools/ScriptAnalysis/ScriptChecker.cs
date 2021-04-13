@@ -1317,7 +1317,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Switch-prefixes that definitely aren't real switches.
         /// </summary>
-        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged" };
+        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged" };
 
         /// <summary>
         /// Separates the switches from an event line.
