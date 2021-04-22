@@ -700,7 +700,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 commandName = commandName[1..];
             }
-            CommandArgument[] arguments = parts.Length == 1 ? new CommandArgument[0] : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
+            CommandArgument[] arguments = parts.Length == 1 ? Array.Empty<CommandArgument>() : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
             if (!MetaDocs.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
@@ -897,27 +897,27 @@ namespace SharpDenizenTools.ScriptAnalysis
             /// <summary>
             /// Keys that must always be present.
             /// </summary>
-            public string[] RequiredKeys = new string[0];
+            public string[] RequiredKeys = Array.Empty<string>();
 
             /// <summary>
             /// Keys that generally shouldn't be present unless something's gone wrong.
             /// </summary>
-            public string[] LikelyBadKeys = new string[0];
+            public string[] LikelyBadKeys = Array.Empty<string>();
 
             /// <summary>
             /// Value-based keys.
             /// </summary>
-            public string[] ValueKeys = new string[0];
+            public string[] ValueKeys = Array.Empty<string>();
 
             /// <summary>
             /// Data list keys.
             /// </summary>
-            public string[] ListKeys = new string[0];
+            public string[] ListKeys = Array.Empty<string>();
 
             /// <summary>
             /// Script keys.
             /// </summary>
-            public string[] ScriptKeys = new string[0];
+            public string[] ScriptKeys = Array.Empty<string>();
 
             /// <summary>
             /// Whether to be strict in checks (if true, unrecognize keys will receive a warning).
@@ -951,11 +951,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
-                    if (!(scriptData is Dictionary<LineTrackedString, object> scriptSection))
+                    if (scriptData is not Dictionary<LineTrackedString, object> scriptSection)
                     {
                         continue;
                     }
-                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || !(typeValue is LineTrackedString typeString))
+                    if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString)
                     {
                         warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
                         continue;
@@ -1631,7 +1631,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 return true;
             }
-            if (!(typeValue is LineTrackedString typeString))
+            if (typeValue is not LineTrackedString typeString)
             {
                 return true;
             }
