@@ -41,7 +41,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             { "format", new KnownScriptType() { RequiredKeys = new[] { "format" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "format" }, Strict = true, CanHaveRandomScripts = false } },
             { "interact", new KnownScriptType() { RequiredKeys = new[] { "steps" }, LikelyBadKeys = new[] { "script", "actions", "events" }, ScriptKeys = new[] { "steps.*" }, Strict = true } },
             { "inventory", new KnownScriptType() { RequiredKeys = new[] { "inventory" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "inventory", "title", "size", "definitions.*", "gui" }, ScriptKeys = new[] { "procedural items" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } },
-            { "item", new KnownScriptType() { RequiredKeys = new[] { "material" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book", "flags.*" }, ListKeys = new[] { "mechanisms.*", "lore", "enchantments", "recipes.*", "flags.*" }, Strict = true, CanHaveRandomScripts = false } },
+            { "item", new KnownScriptType() { RequiredKeys = new[] { "material" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book", "flags.*", "allow in material recipes" }, ListKeys = new[] { "mechanisms.*", "lore", "enchantments", "recipes.*", "flags.*" }, Strict = true, CanHaveRandomScripts = false } },
             { "map", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "original", "display name", "auto update", "objects.*" }, Strict = true, CanHaveRandomScripts = false } }
         };
 
@@ -1321,7 +1321,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Switch-prefixes that definitely aren't real switches.
         /// </summary>
-        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged" };
+        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "raw_exact" };
 
         /// <summary>
         /// Separates the switches from an event line.
