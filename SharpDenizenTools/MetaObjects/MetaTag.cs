@@ -145,6 +145,10 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             Require(docs, TagFull, Returns, Description);
+            if (TagFull.Contains(' '))
+            {
+                docs.LoadErrors.Add($"Tag '{TagFull}' contains spaces.");
+            }
             if (!string.IsNullOrWhiteSpace(Mechanism))
             {
                 if (!docs.Mechanisms.ContainsKey(Mechanism.ToLowerFast()))

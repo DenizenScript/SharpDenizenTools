@@ -653,7 +653,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string matched = stringArgs[start..i];
                                 matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = matched });
-                                if (!matched.Contains(" "))
+                                if (!matched.Contains(" ") && !matched.EndsWith(":"))
                                 {
                                     Warn(MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
                                 }
@@ -848,6 +848,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(MinorWarnings, line, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take scriptname:myitem' or 'take material:stone'.", startChar, startChar + commandText.Length);
                 }
             }
+            else if (commandName == "case" && arguments.Length == 1 && arguments[0].Text.ToLowerFast().Replace(":", "") == "default")
+            {
+                Warn(MinorWarnings, line, "case_default", "'- case default:' is a likely mistake - you probably meant '- default:'", startChar, startChar + commandText.Length);
+            }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
             {
@@ -934,9 +938,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             public bool CanHaveRandomScripts = true;
         }
 
-        /// <summary>
-        /// Checks a dictionary full of script containers, performing all checks on the scripts from there on.
-        /// </summary>
+        /// <summary>A matcher for the set of characters that a script title is allowed to have.</summary>
+        public static AsciiMatcher ScriptTitleCharactersAllowed = new AsciiMatcher("abcdefghijklmnopqrstuvwxyz0123456789_");
+
+        /// <summary>Checks a dictionary full of script containers, performing all checks on the scripts from there on.</summary>
         public void CheckAllContainers(Dictionary<LineTrackedString, object> scriptContainers)
         {
             foreach ((LineTrackedString scriptTitle, object scriptData) in scriptContainers)
@@ -950,6 +955,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                     if (scriptTitle.Text.Trim().Contains(' '))
                     {
                         warnScript(MinorWarnings, scriptTitle.Line, "spaced_script_name", "Script titles should not contain spaces - consider the '_' underscore symbol instead.");
+                    }
+                    else if (!ScriptTitleCharactersAllowed.IsOnlyMatches(scriptTitle.Text.Trim().ToLowerFast()))
+                    {
+                        warnScript(MinorWarnings, scriptTitle.Line, "non_alphanumeric_script_name", "Script titles should be primarily alphanumeric, and shouldn't contain symbols other than '_' underscores.");
                     }
                     if (scriptTitle.Text.Length < 4)
                     {
