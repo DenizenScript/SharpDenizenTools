@@ -792,12 +792,16 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             else if (commandName == "define" && arguments.Length >= 1)
             {
-                string defName = arguments[0].Text.Before(":").ToLowerFast();
+                string defName = arguments[0].Text.Before(":").ToLowerFast().Before('.');
                 trackDefinition(defName);
             }
             else if (commandName == "definemap" && arguments.Length >= 1)
             {
-                string defName = arguments[0].Text.ToLowerFast();
+                string defName = arguments[0].Text.ToLowerFast().Before('.');
+                if (defName.EndsWith(":"))
+                {
+                    defName = defName[..^1];
+                }
                 trackDefinition(defName);
             }
             else if ((commandName == "foreach" || commandName == "while" || commandName == "repeat") && arguments.Length >= 1)
@@ -877,7 +881,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     int endSpot = argument.Text.IndexOf("]", defSpot);
                     if (endSpot != -1)
                     {
-                        string defText = argument.Text[defSpot..endSpot].ToLowerFast();
+                        string defText = argument.Text[defSpot..endSpot].ToLowerFast().Before('.');
                         if (!definitions.Contains(defText) && !definitions.Contains("*"))
                         {
                             Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", argument.StartChar + defSpot, argument.StartChar + endSpot);
@@ -1139,7 +1143,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                if (typeString.Text != "data")
+                                if (typeString.Text != "data" && !keyName.StartsWith("definemap"))
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
@@ -1430,9 +1434,21 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Gathers a dictionary of all actual containers, checking for errors as it goes, and returning the dictionary.
-        /// </summary>
+        /// <summary>Counts the number of spaces in front of a line.</summary>
+        public static int CountPreSpaces(string line)
+        {
+            int spaces;
+            for (spaces = 0; spaces < line.Length; spaces++)
+            {
+                if (line[spaces] != ' ')
+                {
+                    break;
+                }
+            }
+            return spaces;
+        }
+
+        /// <summary>Gathers a dictionary of all actual containers, checking for errors as it goes, and returning the dictionary.</summary>
         public Dictionary<LineTrackedString, object> GatherActualContainers()
         {
             Dictionary<LineTrackedString, object> rootScriptSection = new Dictionary<LineTrackedString, object>();
@@ -1453,14 +1469,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     continue;
                 }
-                int spaces;
-                for (spaces = 0; spaces < line.Length; spaces++)
-                {
-                    if (line[spaces] != ' ')
-                    {
-                        break;
-                    }
-                }
+                int spaces = CountPreSpaces(line);
                 if (spaces < pspaces)
                 {
                     if (spacedlists.TryGetValue(spaces, out List<object> tempList))
@@ -1535,8 +1544,27 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     if (cleaned.EndsWith(":"))
                     {
-                        secwaiting = new LineTrackedString(i, cleaned.Substring("- ".Length, cleaned.Length - "- :".Length), cleanStartCut + 2);
-                        buildingSubList = true;
+                        if (cleaned.StartsWith("- definemap "))
+                        {
+                            clist.Add(new LineTrackedString(i, cleaned["- ".Length..], cleanStartCut + 2));
+                            while (i + 1 < Lines.Length)
+                            {
+                                string subLine = Lines[i + 1].Replace("\t", "    ");
+                                if (string.IsNullOrWhiteSpace(subLine) || CountPreSpaces(subLine) > spaces)
+                                {
+                                    i++;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            secwaiting = new LineTrackedString(i, cleaned.Substring("- ".Length, cleaned.Length - "- :".Length), cleanStartCut + 2);
+                            buildingSubList = true;
+                        }
                     }
                     else
                     {
