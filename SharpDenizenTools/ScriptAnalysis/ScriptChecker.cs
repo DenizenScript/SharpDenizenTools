@@ -114,6 +114,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         public int CodeLines = 0;
 
         /// <summary>
+        /// The number of warnings that were ignored.
+        /// </summary>
+        public int IgnoredWarnings = 0;
+
+        /// <summary>
         /// Represents a warning about a script.
         /// </summary>
         public class ScriptWarning
@@ -175,6 +180,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         public List<string> Injects = new List<string>();
 
         /// <summary>
+        /// A user-specified list of warning types to ignore.
+        /// </summary>
+        public HashSet<string> IgnoredWarningTypes = new HashSet<string>();
+
+        /// <summary>
         /// Construct the ScriptChecker instance from a script string.
         /// </summary>
         /// <param name="script">The script contents string.</param>
@@ -198,8 +208,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="message">The warning message.</param>
         /// <param name="start">The starting character index.</param>
         /// <param name="end">The ending character index.</param>
-        public static void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
+        public void Warn(List<ScriptWarning> warnType, int line, string key, string message, int start, int end)
         {
+            if (IgnoredWarningTypes.Contains(key))
+            {
+                IgnoredWarnings++;
+                return;
+            }
             foreach (ScriptWarning warning in warnType)
             {
                 if (warning.Line == line && warning.WarningUniqueKey == key)
@@ -219,6 +234,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (CleanedLines[i].StartsWith("#"))
                 {
+                    if (Lines[i].StartsWith("##") && CleanedLines[i].StartsWith("##ignorewarning "))
+                    {
+                        IgnoredWarningTypes.Add(CleanedLines[i]["##ignorewarning ".Length..]);
+                    }
                     string comment = CleanedLines[i][1..].Trim();
                     if (comment.ToLowerFast().StartsWith("todo"))
                     {
@@ -1692,6 +1711,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             Warn(Infos, -1, "stat_livecode", $"(Statistics) Total live code lines: {CodeLines}", 0, 0);
             Warn(Infos, -1, "stat_comment", $"(Statistics) Total comment lines: {CommentLines}", 0, 0);
             Warn(Infos, -1, "stat_blank", $"(Statistics) Total blank lines: {BlankLines}", 0, 0);
+            if (IgnoredWarnings > 0)
+            {
+                Warn(Infos, -1, "stat_ignore_warnings", $"(Statistics) Total ignored warnings: {IgnoredWarnings}", 0, 0);
+            }
         }
 
         /// <summary>
