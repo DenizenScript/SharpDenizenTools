@@ -160,7 +160,7 @@ namespace SharpDenizenTools.MetaHandlers
                     docs.LoadErrors.Add("Guide sub-page did not match expected format (title or table of contents div missing).");
                     return;
                 }
-                string pageTitle = subpageContent[pageTitleIndex..pageTitleEndIndex].Before(" &mdash");
+                string pageTitle = subpageContent[(pageTitleIndex + "<title>".Length)..pageTitleEndIndex].Before(" &mdash");
                 int tableEndIndex = subpageContent.IndexOf("</div>", tableIndex);
                 if (tableEndIndex == -1)
                 {
