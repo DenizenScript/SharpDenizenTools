@@ -38,6 +38,11 @@ namespace SharpDenizenTools.MetaObjects
         public virtual string CleanName => Name.ToLowerFast();
 
         /// <summary>
+        /// Other words that mean the same thing.
+        /// </summary>
+        public List<string> Synonyms = new List<string>();
+
+        /// <summary>
         /// What categorization group the object is in.
         /// </summary>
         public string Group;
@@ -93,6 +98,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "deprecated":
                     Deprecated = value;
+                    return true;
+                case "synonyms":
+                    Synonyms.AddRange(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(s => s.ToLowerFast()));
                     return true;
                 default:
                     return false;
@@ -270,8 +278,7 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public virtual string GetAllSearchableText()
         {
-            string warningFlat = string.Join('\n', Warnings);
-            return $"{Name}\n{CleanName}\n{Group}\n{warningFlat}\n{Plugin}\n{SourceFile}";
+            return $"{Name}\n{CleanName}\n{string.Join('\n', Synonyms)}\n{Group}\n{string.Join('\n', Warnings)}\n{Plugin}\n{SourceFile}";
         }
     }
 }
