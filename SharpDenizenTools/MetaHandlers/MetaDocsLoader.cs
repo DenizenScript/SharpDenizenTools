@@ -180,7 +180,7 @@ namespace SharpDenizenTools.MetaHandlers
                         continue;
                     }
                     string link = DENIZEN_GUIDE_SOURCE + subPage + line[hrefIndex..hrefEndIndex];
-                    string title = line[titleStartIndex..titleEndIndex].Replace("&quot:", "\"");
+                    string title = line[titleStartIndex..titleEndIndex].Replace("&quot;", "\"");
                     MetaGuidePage guidePage = new MetaGuidePage
                     {
                         URL = link,
