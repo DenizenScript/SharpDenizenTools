@@ -303,7 +303,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             catch (Exception ex)
             {
                 Warn(Errors, 0, "yaml_load", "Invalid YAML! Error message: " + ex.Message, 0, 0);
-                LogInternalMessage($"YAML error: {ex}\n\nFrom:\n{CleanScriptForYAMLProcessing()}");
+                LogInternalMessage($"YAML error: {ex}");
             }
         }
 

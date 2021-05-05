@@ -40,6 +40,12 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Source link for the Denizen beginner's guide.</summary>
         public static string DENIZEN_GUIDE_SOURCE = "https://guide.denizenscript.com/";
 
+        /// <summary>Guide sub-pages to scan headers from.</summary>
+        public static string[] DENIZEN_GUIDE_SUBPAGES = new string[] { "guides/troubleshooting/common-mistakes.html" };
+
+        /// <summary>Whether links to the guides need to be loaded. Defaults to false.</summary>
+        public static bool LoadGuideData = false;
+
         /// <summary>Download all docs.</summary>
         public static MetaDocs DownloadAll()
         {
@@ -83,17 +89,20 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 catch (Exception ex)
                 {
-                    docs.LoadErrors.Add($"Internal exception - {ex.GetType().FullName} ... see bot console for details.");
+                    docs.LoadErrors.Add($"Internal exception while reading meta - {ex.GetType().FullName} ... see bot console for details.");
                     Console.Error.WriteLine($"Error: {ex}");
                 }
             }
             try
             {
-                ReadGuides(docs);
+                if (LoadGuideData)
+                {
+                    ReadGuides(docs, webClient);
+                }
             }
             catch (Exception ex)
             {
-                docs.LoadErrors.Add($"Internal exception - {ex.GetType().FullName} ... see bot console for details.");
+                docs.LoadErrors.Add($"Internal exception while loading guides - {ex.GetType().FullName} ... see bot console for details.");
                 Console.Error.WriteLine($"Error: {ex}");
             }
             foreach (MetaObject obj in docs.AllMetaObjects())
@@ -119,12 +128,8 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>
         /// Downloads guide source info.
         /// </summary>
-        public static void ReadGuides(MetaDocs docs)
+        public static void ReadGuides(MetaDocs docs, HttpClient client)
         {
-            HttpClient client = new HttpClient
-            {
-                Timeout = new TimeSpan(0, 2, 0)
-            };
             string page = client.GetStringAsync(DENIZEN_GUIDE_SOURCE).Result;
             int contentIndex = page.IndexOf("<div class=\"section\" id=\"contents\">");
             if (contentIndex == -1)
@@ -143,6 +148,47 @@ namespace SharpDenizenTools.MetaHandlers
                 guidePage.URL = linkBody.BeforeAndAfter("\">", out guidePage.PageName);
                 guidePage.AddTo(docs);
                 linkIndex = linkEndIndex;
+            }
+            foreach (string subPage in DENIZEN_GUIDE_SUBPAGES)
+            {
+                string subpageContent = client.GetStringAsync(DENIZEN_GUIDE_SOURCE + subPage).Result;
+                int pageTitleIndex = subpageContent.IndexOf("<title>");
+                int pageTitleEndIndex = subpageContent.IndexOf("</title>");
+                int tableIndex = subpageContent.IndexOf("<div class=\"contents local topic\" id=\"table-of-contents\">");
+                if (pageTitleIndex == -1 || pageTitleEndIndex == -1 || tableIndex == -1)
+                {
+                    docs.LoadErrors.Add("Guide sub-page did not match expected format (title or table of contents div missing).");
+                    return;
+                }
+                string pageTitle = subpageContent[pageTitleIndex..pageTitleEndIndex].Before(" &mdash");
+                int tableEndIndex = subpageContent.IndexOf("</div>", tableIndex);
+                if (tableEndIndex == -1)
+                {
+                    docs.LoadErrors.Add("Guide sub-page did not match expected format (table of contents div never ends).");
+                    return;
+                }
+                string[] table = subpageContent[tableIndex..tableEndIndex].Replace('\r', '\n').Split('\n');
+                foreach (string line in table.Where(line => line.StartsWith("<li><p><a class=") && line.EndsWith("</a></p>")))
+                {
+                    int hrefIndex = line.IndexOf("href=\"") + "href=\"".Length;
+                    int hrefEndIndex = line.IndexOf('\"', hrefIndex);
+                    int titleStartIndex = line.IndexOf('>', hrefEndIndex + 1) + 1;
+                    int titleEndIndex = line.IndexOf("</a>", titleStartIndex);
+                    if (hrefEndIndex < 10 || hrefEndIndex == -1 || titleStartIndex == 0 || titleEndIndex == -1)
+                    {
+                        docs.LoadErrors.Add("Guide sub-page table-of-contents did not match expected format (table of contents contains at least one invalid line).");
+                        continue;
+                    }
+                    string link = DENIZEN_GUIDE_SOURCE + subPage + line[hrefIndex..hrefEndIndex];
+                    string title = line[titleStartIndex..titleEndIndex].Replace("&quot:", "\"");
+                    MetaGuidePage guidePage = new MetaGuidePage
+                    {
+                        URL = link,
+                        PageName = pageTitle + " - " + title,
+                        IsSubPage = true
+                    };
+                    guidePage.AddTo(docs);
+                }
             }
         }
 
