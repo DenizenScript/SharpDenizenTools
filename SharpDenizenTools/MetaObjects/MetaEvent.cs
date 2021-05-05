@@ -165,6 +165,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.PostCheck(MetaDocs)"/></summary>
         public override void PostCheck(MetaDocs docs)
         {
+            PostCheckSynonyms(docs, docs.Events);
             Require(docs, Events[0], Triggers, RegexMatcher);
             PostCheckLinkableText(docs, Triggers);
             foreach (string context in Context)

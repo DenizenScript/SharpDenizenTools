@@ -166,6 +166,18 @@ namespace SharpDenizenTools.MetaObjects
         }
 
         /// <summary>
+        /// Post-check handler to validate synonyms don't duplicate existing values.
+        /// </summary>
+        public void PostCheckSynonyms<T>(MetaDocs docs, Dictionary<string, T> objects)
+        {
+            IEnumerable<string> badSynonyms = Synonyms.Where(s => objects.ContainsKey(s));
+            if (badSynonyms.Any())
+            {
+                docs.LoadErrors.Add($"Object {Name} has synonyms '{string.Join(',', badSynonyms)}' that match existing objects and will break meta searches.");
+            }
+        }
+
+        /// <summary>
         /// Post-check handler for linkable text, to find bad links.
         /// </summary>
         /// <param name="docs">The relevant docs object.</param>

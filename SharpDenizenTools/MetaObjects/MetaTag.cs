@@ -144,6 +144,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.PostCheck(MetaDocs)"/></summary>
         public override void PostCheck(MetaDocs docs)
         {
+            PostCheckSynonyms(docs, docs.Tags);
             Require(docs, TagFull, Returns, Description);
             if (TagFull.Contains(' '))
             {
