@@ -168,7 +168,7 @@ namespace SharpDenizenTools.MetaHandlers
                     return;
                 }
                 string[] table = subpageContent[tableIndex..tableEndIndex].Replace('\r', '\n').Split('\n');
-                foreach (string line in table.Where(line => line.StartsWith("<li><p><a class=") && line.EndsWith("</a></p>")))
+                foreach (string line in table.Where(line => line.StartsWith("<li><p><a class=") && line.Contains("</a></p>")))
                 {
                     int hrefIndex = line.IndexOf("href=\"") + "href=\"".Length;
                     int hrefEndIndex = line.IndexOf('\"', hrefIndex);
