@@ -748,7 +748,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 trackDefinition("filter_value");
             }
-            int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
+            int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("if:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
             {
                 Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {argCount}.", startChar, startChar + commandText.Length);
