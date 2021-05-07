@@ -52,8 +52,7 @@ namespace SharpDenizenTools.MetaHandlers
             { "tag", () => new MetaTag() },
             { "event", () => new MetaEvent() },
             { "action", () => new MetaAction() },
-            { "language", () => new MetaLanguage() },
-            { "GuidePage", () => new MetaGuidePage() }
+            { "language", () => new MetaLanguage() }
         };
 
         /// <summary>All known commands.</summary>

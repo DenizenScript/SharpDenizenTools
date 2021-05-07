@@ -35,7 +35,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static string[] SourcesToUse = DENIZEN_SOURCES.JoinWith(DENIZEN_ADDON_SOURCES);
 
         /// <summary>Optional alternative source for zips (for things like caching).</summary>
-        public static Func<string, byte[]> AlternateZipSourcer = null;
+        public static Func<string, HttpClient, byte[]> AlternateZipSourcer = null;
 
         /// <summary>Source link for the Denizen beginner's guide.</summary>
         public static string DENIZEN_GUIDE_SOURCE = "https://guide.denizenscript.com/";
@@ -49,7 +49,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Download all docs.</summary>
         public static MetaDocs DownloadAll()
         {
-            HttpClient webClient = new HttpClient
+            using HttpClient webClient = new HttpClient
             {
                 Timeout = new TimeSpan(0, 2, 0)
             };
@@ -200,7 +200,7 @@ namespace SharpDenizenTools.MetaHandlers
             byte[] zipDataBytes;
             if (AlternateZipSourcer != null)
             {
-                zipDataBytes = AlternateZipSourcer(url);
+                zipDataBytes = AlternateZipSourcer(url, webClient);
             }
             else
             {

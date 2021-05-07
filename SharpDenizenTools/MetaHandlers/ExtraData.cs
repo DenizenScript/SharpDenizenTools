@@ -42,7 +42,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 if (content == null)
                 {
-                    HttpClient webClient = new HttpClient
+                    using HttpClient webClient = new HttpClient
                     {
                         Timeout = new TimeSpan(0, 2, 0)
                     };
