@@ -1171,7 +1171,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                if (typeString.Text != "data" && !keyName.StartsWith("definemap"))
+                                if (typeString.Text != "data" && !keyName.StartsWith("definemap") && keyName != "data")
                                 {
                                     checkSubMaps(keyPairMap);
                                 }
