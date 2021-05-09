@@ -231,9 +231,11 @@ namespace SharpDenizenTools.MetaHandlers
                 foreach (string line in entryStream.AllLinesOfText())
                 {
                     lineNum++;
-                    if (line.TrimStart().StartsWith("// "))
+                    string trimmed = line.Trim().Replace("\r", "");
+                    if (trimmed.StartsWith("//"))
                     {
-                        lines.Add((lineNum, entry.FullName, line.Trim()["// ".Length..].Replace("\r", "")));
+                        string actualContent = trimmed.Length == "//".Length ? "" : trimmed["// ".Length..];
+                        lines.Add((lineNum, entry.FullName, actualContent));
                     }
                 }
             }
