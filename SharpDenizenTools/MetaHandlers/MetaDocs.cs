@@ -84,7 +84,7 @@ namespace SharpDenizenTools.MetaHandlers
         public Dictionary<string, MetaGuidePage> GuidePages = new Dictionary<string, MetaGuidePage>(512);
 
         /// <summary>A set of all known tag bases.</summary>
-        public HashSet<string> TagBases = new HashSet<string>(512) { "permission", "text", "name", "amount" };
+        public HashSet<string> TagBases = new HashSet<string>(512) { "permission", "text", "name", "amount", "context", "entry" };
 
         /// <summary>A set of all known tag bits.</summary>
         public HashSet<string> TagParts = new HashSet<string>(2048);

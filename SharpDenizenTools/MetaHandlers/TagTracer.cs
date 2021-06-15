@@ -28,23 +28,28 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 return;
             }
-            if (Docs.Tags.TryGetValue(Tag.Parts[0].Text, out MetaTag realBaseTag))
+            string root = Tag.Parts[0].Text;
+            if (root == "context" || root == "entry")
+            {
+                TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
+            }
+            else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
                 TraceTagParts(ParsePossibleTypes(realBaseTag.Returns, realBaseTag.ReturnType), 1);
             }
-            else if (Docs.ObjectTypes.TryGetValue(Tag.Parts[0].Text, out MetaObjectType documentedObjectBase))
+            else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
             {
                 TraceTagParts(new HashSet<MetaObjectType>() { documentedObjectBase }, 1);
             }
-            else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(Tag.Parts[0].Text + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
+            else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
             {
                 TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
             }
-            else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(Tag.Parts[0].Text + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
+            else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
             {
                 TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
             }
-            else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(Tag.Parts[0].Text + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
+            else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
             {
                 TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
             }
