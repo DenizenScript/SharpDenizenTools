@@ -37,6 +37,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The "tag" meta type.</summary>
         public static MetaType META_TYPE_TAG = new MetaType() { Name = "Tag", WebPath = "Tags" };
 
+        /// <summary>The "object type" meta type.</summary>
+        public static MetaType META_TYPE_OBJECT = new MetaType() { Name = "ObjectType", WebPath = "ObjectTypes" };
+
         /// <summary>The "guide page" meta type.</summary>
         public static MetaType META_TYPE_GUIDEPAGE = new MetaType() { Name = "GuidePage", WebPath = null };
 
@@ -50,6 +53,7 @@ namespace SharpDenizenTools.MetaHandlers
             { "command", () => new MetaCommand() },
             { "mechanism", () => new MetaMechanism() },
             { "tag", () => new MetaTag() },
+            { "objecttype", () => new MetaObjectType() },
             { "event", () => new MetaEvent() },
             { "action", () => new MetaAction() },
             { "language", () => new MetaLanguage() }
@@ -63,6 +67,9 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>All known tags.</summary>
         public Dictionary<string, MetaTag> Tags = new Dictionary<string, MetaTag>(2048);
+
+        /// <summary>All known object types.</summary>
+        public Dictionary<string, MetaObjectType> ObjectTypes = new Dictionary<string, MetaObjectType>(512);
 
         /// <summary>All known events.</summary>
         public Dictionary<string, MetaEvent> Events = new Dictionary<string, MetaEvent>(1024);
@@ -99,6 +106,10 @@ namespace SharpDenizenTools.MetaHandlers
             foreach (MetaTag tag in Tags.Values)
             {
                 yield return tag;
+            }
+            foreach (MetaObjectType objType in ObjectTypes.Values)
+            {
+                yield return objType;
             }
             foreach (MetaEvent evt in Events.Values)
             {
