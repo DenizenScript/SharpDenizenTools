@@ -26,6 +26,10 @@ namespace SharpDenizenTools.MetaObjects
         public override void AddTo(MetaDocs docs)
         {
             docs.ObjectTypes.Add(CleanName, this);
+            if (CleanName == "objecttag")
+            {
+                docs.ObjectTagType = this;
+            }
         }
 
         /// <summary>
@@ -62,6 +66,11 @@ namespace SharpDenizenTools.MetaObjects
         /// The names of other types or pseudo-types implemented by this type.
         /// </summary>
         public string[] ImplementsNames = Array.Empty<string>();
+
+        /// <summary>
+        /// All tags available directly to this base (not counting base/implements).
+        /// </summary>
+        public Dictionary<string, MetaTag> SubTags = new Dictionary<string, MetaTag>();
 
         /// <summary>
         /// Other types or pseudo-types implemented by this type.
@@ -125,6 +134,24 @@ namespace SharpDenizenTools.MetaObjects
             if (Prefix != "none" && docs.ObjectTypes.Values.Any(t => t != this && t.Prefix == Prefix))
             {
                 docs.LoadErrors.Add($"Object type name '{TypeName}' uses prefix '{Prefix}' which is also used by another object type.");
+            }
+            string lowName = CleanName;
+            foreach (MetaTag tag in docs.Tags.Values.Where(t => t.BeforeDot.ToLowerFast() == lowName))
+            {
+                SubTags.Add(tag.AfterDotCleaned, tag);
+            }
+            MetaObjectType subType = BaseType;
+            for (int i = 0; i < 20; i++)
+            {
+                if (subType == null)
+                {
+                    break;
+                }
+                subType = docs.ObjectTypes.GetValueOrDefault(subType.BaseTypeName.ToLowerFast());
+            }
+            if (subType != null)
+            {
+                docs.LoadErrors.Add($"Object type name '{subType.Name}' has base type '{subType.BaseTypeName}' which appears to be a recursive loop.");
             }
             PostCheckLinkableText(docs, Description);
         }

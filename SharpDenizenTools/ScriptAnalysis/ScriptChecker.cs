@@ -468,62 +468,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="tag">The text of the tag.</param>
         public void CheckSingleTag(int line, int startChar, string tag)
         {
-            tag = tag.ToLowerFast();
-            int brackets = 0;
-            List<string> tagParts = new List<string>(tag.CountCharacter('.'));
-            int firstBracket = 0;
-            int start = 0;
-            bool foundABracket = false;
-            for (int i = 0; i < tag.Length; i++)
+            SingleTag parsed = TagHelper.Parse(tag, (s) =>
             {
-                if (tag[i] == '[')
-                {
-                    brackets++;
-                    if (brackets == 1)
-                    {
-                        tagParts.Add(tag[start..i]);
-                        foundABracket = true;
-                        start = i;
-                        firstBracket = i;
-                    }
-                }
-                else if (tag[i] == ']')
-                {
-                    brackets--;
-                    if (brackets == 0)
-                    {
-                        CheckSingleArgument(line, startChar + firstBracket + 1, tag.Substring(firstBracket + 1, i - firstBracket - 1));
-                    }
-                }
-                else if (tag[i] == '.' && brackets == 0)
-                {
-                    if (!foundABracket)
-                    {
-                        tagParts.Add(tag[start..i]);
-                    }
-                    foundABracket = false;
-                    start = i + 1;
-                }
-                else if (tag[i] == '|' && brackets == 0 && i + 1 < tag.Length && tag[i + 1] == '|')
-                {
-                    if (!foundABracket)
-                    {
-                        tagParts.Add(tag[start..i]);
-                    }
-                    CheckSingleArgument(line, startChar + i + 2, tag[(i + 2)..]);
-                    foundABracket = true;
-                    break;
-                }
-            }
-            if (!foundABracket)
-            {
-                tagParts.Add(tag[start..]);
-            }
-            string tagName = tagParts[0].ToLowerFast();
-            if (tagName == "entry" || tagName == "context")
-            {
-                return;
-            }
+                Warn(Warnings, line, "tag_format_break", $"Tag parse error: {s}", startChar, startChar + tag.Length);
+            });
+            string tagName = parsed.Parts[0].Text.ToLowerFast();
             if (!MetaDocs.CurrentMeta.TagBases.Contains(tagName) && tagName.Length > 0)
             {
                 Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar, startChar + tagName.Length);
@@ -532,26 +481,37 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar, startChar + tagName.Length);
             }
-            int lenThusFar = startChar + tagName.Length;
-            for (int i = 1; i < tagParts.Count; i++)
+            for (int i = 1; i < parsed.Parts.Count; i++)
             {
-                if (!MetaDocs.CurrentMeta.TagParts.Contains(tagParts[i]))
+                SingleTag.Part part = parsed.Parts[i];
+                if (!MetaDocs.CurrentMeta.TagParts.Contains(part.Text))
                 {
-                    Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{tagParts[i].Replace('`', '\'')}` (check `!tag ...` to find valid tags).", lenThusFar, lenThusFar + tagParts[i].Length);
-                    if (tagParts[i].EndsWith("tag"))
+                    if (i != 1 || (tagName != "entry" && tagName != "context"))
                     {
-                        Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", lenThusFar, lenThusFar + tagParts[i].Length);
+                        Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{part.Text.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
+                        if (part.Text.EndsWith("tag"))
+                        {
+                            Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
+                        }
                     }
                 }
-                lenThusFar += 1 + tagParts[i].Length;
             }
-            for (int i = 0; i < tagParts.Count; i++)
+            foreach (SingleTag.Part part in parsed.Parts)
             {
-                if (MetaDocs.CurrentMeta.TagDeprecations.TryGetValue(tagParts[i], out string notice))
+                if (MetaDocs.CurrentMeta.TagDeprecations.TryGetValue(part.Text, out string notice))
                 {
-                    Warn(MinorWarnings, line, "deprecated_tag_part", $"Deprecated tag part `{tagParts[i].Replace('`', '\'')}`: {notice}", lenThusFar, lenThusFar + tagParts[i].Length);
+                    Warn(MinorWarnings, line, "deprecated_tag_part", $"Deprecated tag part `{part.Text.Replace('`', '\'')}`: {notice}", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
+                }
+                if (part.Context != null)
+                {
+                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context);
                 }
             }
+            if (parsed.Fallback != null)
+            {
+                CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback);
+            }
+            new TagTracer() { Docs = MetaDocs.CurrentMeta, Tag = parsed, Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); } }.Trace();
         }
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };

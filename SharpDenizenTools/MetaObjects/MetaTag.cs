@@ -104,6 +104,11 @@ namespace SharpDenizenTools.MetaObjects
         public MetaObjectType ReturnType;
 
         /// <summary>
+        /// The base tag type (if any).
+        /// </summary>
+        public MetaObjectType BaseType;
+
+        /// <summary>
         /// The long-form description.
         /// </summary>
         public string Description;
@@ -130,7 +135,7 @@ namespace SharpDenizenTools.MetaObjects
                         BeforeDot = "Base";
                     }
                     CleanedName = CleanedName.ToLowerFast();
-                    AfterDotCleaned = TagFull.After('.').ToLowerFast();
+                    AfterDotCleaned = CleanedName.After('.');
                     return true;
                 case "returns":
                     Returns = value;
@@ -175,6 +180,7 @@ namespace SharpDenizenTools.MetaObjects
             {
                 docs.LoadErrors.Add($"Tag '{Name}' specifies return type '{Returns}' which does not appear to be a valid object type.");
             }
+            BaseType = docs.ObjectTypes.GetValueOrDefault(BeforeDot.ToLowerFast());
             PostCheckLinkableText(docs, Description);
         }
 

@@ -92,6 +92,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>A mapping of tag bits to deprecation notices.</summary>
         public Dictionary<string, string> TagDeprecations = new Dictionary<string, string>(32);
 
+        /// <summary>The "ObjectTag" meta type.</summary>
+        public MetaObjectType ObjectTagType;
+
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {
