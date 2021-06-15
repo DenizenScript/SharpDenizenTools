@@ -168,12 +168,17 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Post-check handler to validate synonyms don't duplicate existing values.
         /// </summary>
-        public void PostCheckSynonyms<T>(MetaDocs docs, Dictionary<string, T> objects)
+        public void PostCheckSynonyms<T>(MetaDocs docs, Dictionary<string, T> objects) where T : MetaObject
         {
             IEnumerable<string> badSynonyms = Synonyms.Where(s => objects.ContainsKey(s));
             if (badSynonyms.Any())
             {
                 docs.LoadErrors.Add($"Object {Name} has synonyms '{string.Join(',', badSynonyms)}' that match existing objects and will break meta searches.");
+            }
+            IEnumerable<string> dupSynonyms = Synonyms.Where(s => objects.Values.Any(t => t != this && t.Synonyms.Contains(s)));
+            if (dupSynonyms.Any())
+            {
+                docs.LoadErrors.Add($"Object {Name} has synonyms '{string.Join(',', dupSynonyms)}' that match other objects existing synonyms and will be invalid for searches.");
             }
         }
 
@@ -248,6 +253,10 @@ namespace SharpDenizenTools.MetaObjects
                     else if (type.Equals("language"))
                     {
                         exists = docs.Languages.Keys.Any(s => s.Contains(searchText));
+                    }
+                    else if (type.Equals("objecttype"))
+                    {
+                        exists = docs.ObjectTypes.Keys.Any(s => s.Contains(searchText));
                     }
                     else
                     {

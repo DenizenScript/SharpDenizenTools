@@ -99,6 +99,11 @@ namespace SharpDenizenTools.MetaObjects
         public string Returns;
 
         /// <summary>
+        /// The return object type.
+        /// </summary>
+        public MetaObjectType ReturnType;
+
+        /// <summary>
         /// The long-form description.
         /// </summary>
         public string Description;
@@ -164,6 +169,11 @@ namespace SharpDenizenTools.MetaObjects
                 {
                     docs.LoadErrors.Add($"Tag '{Name}' has no mechanism link, but has the same name as an existing mechanism. A link should be added.");
                 }
+            }
+            ReturnType = docs.ObjectTypes.GetValueOrDefault(Returns.ToLowerFast().Before('('));
+            if (ReturnType == null)
+            {
+                docs.LoadErrors.Add($"Tag '{Name}' specifies return type '{Returns}' which does not appear to be a valid object type.");
             }
             PostCheckLinkableText(docs, Description);
         }

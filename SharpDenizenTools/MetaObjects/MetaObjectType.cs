@@ -41,7 +41,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// The name of the base type.
         /// </summary>
-        public string BaseType;
+        public string BaseTypeName;
+
+        /// <summary>
+        /// The base type.
+        /// </summary>
+        public MetaObjectType BaseType;
 
         /// <summary>
         /// A human-readable explanation of the identity format of the tag.
@@ -54,9 +59,14 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>
+        /// The names of other types or pseudo-types implemented by this type.
+        /// </summary>
+        public string[] ImplementsNames = Array.Empty<string>();
+
+        /// <summary>
         /// Other types or pseudo-types implemented by this type.
         /// </summary>
-        public string[] Implements = Array.Empty<string>();
+        public MetaObjectType[] Implements = Array.Empty<MetaObjectType>();
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)
@@ -67,10 +77,10 @@ namespace SharpDenizenTools.MetaObjects
                     TypeName = value;
                     return true;
                 case "prefix":
-                    Prefix = value;
+                    Prefix = value.ToLowerFast();
                     return true;
                 case "base":
-                    BaseType = value;
+                    BaseTypeName = value;
                     return true;
                 case "format":
                     Format = value;
@@ -79,7 +89,7 @@ namespace SharpDenizenTools.MetaObjects
                     Description = value;
                     return true;
                 case "implements":
-                    Implements = value.Replace(" ", "").SplitFast(',');
+                    ImplementsNames = value.Replace(" ", "").SplitFast(',');
                     return true;
                 default:
                     return base.ApplyValue(key, value);
@@ -89,11 +99,32 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.PostCheck(MetaDocs)"/></summary>
         public override void PostCheck(MetaDocs docs)
         {
+            Require(docs, TypeName, Prefix, BaseTypeName, Format, Description);
+            if (BaseTypeName.ToLowerFast() != "none")
+            {
+                BaseType = docs.ObjectTypes.GetValueOrDefault(BaseTypeName.ToLowerFast());
+                if (BaseType == null)
+                {
+                    docs.LoadErrors.Add($"Object type name '{TypeName}' specifies basetype '{BaseType}' which is invalid.");
+                }
+            }
+            Implements = new MetaObjectType[ImplementsNames.Length];
+            for (int i = 0; i < Implements.Length; i++)
+            {
+                Implements[i] = docs.ObjectTypes.GetValueOrDefault(ImplementsNames[i].ToLowerFast());
+                if (Implements[i] == null)
+                {
+                    docs.LoadErrors.Add($"Object type name '{TypeName}' specifies implement type '{Implements[i]}' which is invalid.");
+                }
+            }
             PostCheckSynonyms(docs, docs.ObjectTypes);
-            Require(docs, TypeName, Prefix, BaseType, Format, Description);
             if (!TypeName.EndsWith("Tag") && !TypeName.EndsWith("Object"))
             {
                 docs.LoadErrors.Add($"Object type name '{TypeName}' has unrecognized format.");
+            }
+            if (Prefix != "none" && docs.ObjectTypes.Values.Any(t => t != this && t.Prefix == Prefix))
+            {
+                docs.LoadErrors.Add($"Object type name '{TypeName}' uses prefix '{Prefix}' which is also used by another object type.");
             }
             PostCheckLinkableText(docs, Description);
         }
