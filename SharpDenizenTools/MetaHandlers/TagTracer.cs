@@ -21,6 +21,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>An action to display error messages.</summary>
         public Action<string> Error;
 
+        /// <summary>Root tags that are valid always as a way to compensate for weird pseudo tags some containers use. See also <see cref="MetaDocs.TagBases"/>.</summary>
+        public static HashSet<string> PerpetuallyValidElementTagRoots = new HashSet<string>() { "permission", "text", "name", "amount" };
+
         /// <summary>Traces through a written tag, trying to find the documented tag parts inside it.</summary>
         public void Trace()
         {
@@ -37,6 +40,22 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
             }
+            else if (PerpetuallyValidElementTagRoots.Contains(root))
+            {
+                TraceTagParts(new HashSet<MetaObjectType>() { Docs.ElementTagType }, 1);
+            }
+            else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
+            {
+                TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
+            }
+            else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
+            {
+                TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
+            }
+            else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
+            {
+                TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
+            }
             else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
                 TraceTagParts(ParsePossibleTypes(realBaseTag.Returns, realBaseTag.ReturnType), 1);
@@ -44,18 +63,6 @@ namespace SharpDenizenTools.MetaHandlers
             else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
             {
                 TraceTagParts(new HashSet<MetaObjectType>() { documentedObjectBase }, 1);
-            }
-            else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
-            {
-                TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
-            }
-            else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
-            {
-                TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
-            }
-            else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
-            {
-                TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
             }
             else
             {
@@ -137,6 +144,13 @@ namespace SharpDenizenTools.MetaHandlers
                 foreach (MetaObjectType implType in type.Implements)
                 {
                     result.Add(implType);
+                }
+                foreach (MetaObjectType extendType in Docs.ObjectTypes.Values)
+                {
+                    if (extendType.Implements.Contains(type))
+                    {
+                        result.Add(extendType);
+                    }
                 }
             }
             result.Add(Docs.ObjectTagType);

@@ -1070,7 +1070,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text);
+                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {

@@ -30,6 +30,10 @@ namespace SharpDenizenTools.MetaObjects
             {
                 docs.ObjectTagType = this;
             }
+            else if (CleanName == "elementtag")
+            {
+                docs.ElementTagType = this;
+            }
         }
 
         /// <summary>

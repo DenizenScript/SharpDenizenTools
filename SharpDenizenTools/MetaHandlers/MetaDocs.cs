@@ -83,7 +83,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>All known guide pages.</summary>
         public Dictionary<string, MetaGuidePage> GuidePages = new Dictionary<string, MetaGuidePage>(512);
 
-        /// <summary>A set of all known tag bases.</summary>
+        /// <summary>A set of all known tag bases. See also <see cref="TagTracer.PerpetuallyValidElementTagRoots"/>.</summary>
         public HashSet<string> TagBases = new HashSet<string>(512) { "permission", "text", "name", "amount", "context", "entry" };
 
         /// <summary>A set of all known tag bits.</summary>
@@ -92,8 +92,8 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>A mapping of tag bits to deprecation notices.</summary>
         public Dictionary<string, string> TagDeprecations = new Dictionary<string, string>(32);
 
-        /// <summary>The "ObjectTag" meta type.</summary>
-        public MetaObjectType ObjectTagType;
+        /// <summary>Core object types.</summary>
+        public MetaObjectType ObjectTagType, ElementTagType;
 
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
