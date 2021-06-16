@@ -29,6 +29,10 @@ namespace SharpDenizenTools.MetaHandlers
                 return;
             }
             string root = Tag.Parts[0].Text;
+            if (root == "")
+            {
+                root = "definition";
+            }
             if (root == "context" || root == "entry")
             {
                 TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
