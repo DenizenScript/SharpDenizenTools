@@ -168,7 +168,11 @@ namespace SharpDenizenTools.MetaHandlers
             string part = Tag.Parts[index].Text.ToLowerFast();
             foreach (MetaObjectType type in GetFullComplexSetFrom(possibleRoots))
             {
-                if (index + 1 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text, out MetaTag complexTag))
+                if (index + 2 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text + "." + Tag.Parts[index + 2].Text, out MetaTag veryComplexTag))
+                {
+                    result.Add((veryComplexTag, 3));
+                }
+                else if (index + 1 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text, out MetaTag complexTag))
                 {
                     result.Add((complexTag, 2));
                 }
