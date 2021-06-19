@@ -736,7 +736,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 CommandArgument mechanism = arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Text.Contains("<") && s.Text != "server");
                 if (mechanism == null)
                 {
-                    Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.", startChar, startChar + commandText.Length);
+                    if (arguments.Length < 2 || !arguments[1].Text.StartsWith('<') || !arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
+                    {
+                        Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.", startChar, startChar + commandText.Length);
+                    }
                 }
                 else
                 {
