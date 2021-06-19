@@ -704,8 +704,14 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 trackDefinition("parse_value");
             }
+            if (commandText.Contains("parse_value_tag"))
+            {
+                trackDefinition("parse_value");
+                trackDefinition("parse_key");
+            }
             if (commandText.Contains("filter_tag"))
             {
+                trackDefinition("filter_key");
                 trackDefinition("filter_value");
             }
             int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("if:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
