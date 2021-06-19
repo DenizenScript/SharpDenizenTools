@@ -114,9 +114,24 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>
+        /// Whether a parameter is allowed on the first part of this tag.
+        /// </summary>
+        public bool AllowsParam;
+
+        /// <summary>
+        /// Whether a parameter is required on the first part of this tag.
+        /// </summary>
+        public bool RequiresParam;
+
+        /// <summary>
         /// The associated mechanism, if any.
         /// </summary>
         public string Mechanism = "";
+
+        /// <summary>
+        /// The parsed <see cref="SingleTag"/> of this tag.
+        /// </summary>
+        public SingleTag ParsedFormat;
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)
@@ -156,6 +171,10 @@ namespace SharpDenizenTools.MetaObjects
         {
             PostCheckSynonyms(docs, docs.Tags);
             Require(docs, TagFull, Returns, Description);
+            ParsedFormat = TagHelper.Parse(TagFull[1..^1], (s) => { docs.LoadErrors.Add($"Failed to parse meta tag '{TagFull}': {s}"); });
+            int firstPartIndex = ParsedFormat.Parts.Count == 1 ? 0 : 1;
+            AllowsParam = ParsedFormat.Parts[firstPartIndex].Context != null;
+            RequiresParam = AllowsParam && !ParsedFormat.Parts[firstPartIndex].Context.EndsWith(')');
             if (TagFull.Contains(' '))
             {
                 docs.LoadErrors.Add($"Tag '{TagFull}' contains spaces.");

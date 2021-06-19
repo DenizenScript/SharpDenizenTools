@@ -58,6 +58,22 @@ namespace SharpDenizenTools.MetaHandlers
             }
             else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
+                if (Tag.Parts[0].Context == null)
+                {
+                    if (realBaseTag.RequiresParam)
+                    {
+                        Error($"Tag base '{root}' requires an input [tag parameter] value.");
+                        return;
+                    }
+                }
+                else
+                {
+                    if (!realBaseTag.AllowsParam)
+                    {
+                        Error($"Tag base '{root}' cannot have a [tag parameter].");
+                        return;
+                    }
+                }
                 TraceTagParts(ParsePossibleTypes(realBaseTag.Returns, realBaseTag.ReturnType), 1);
             }
             else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
@@ -104,9 +120,9 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     return;
                 }
+                string part = Tag.Parts[index].Text.ToLowerFast();
                 if (result.IsEmpty())
                 {
-                    string part = Tag.Parts[index].Text.ToLowerFast();
                     if (possibleRoots.Count == 1)
                     {
                         Error($"Tag part '{part}' does not exist for object type {possibleRoots.First().Name}");
@@ -120,6 +136,24 @@ namespace SharpDenizenTools.MetaHandlers
                         Error($"Tag part '{part}' does not exist for any applicable object types");
                     }
                     return;
+                }
+                if (Tag.Parts[index].Context == null)
+                {
+                    result = result.Where(t => !t.Item1.RequiresParam).ToList();
+                    if (result.IsEmpty())
+                    {
+                        Error($"Tag part '{part}' requires an input [tag parameter] value.");
+                        return;
+                    }
+                }
+                else
+                {
+                    result = result.Where(t => t.Item1.AllowsParam).ToList();
+                    if (result.IsEmpty())
+                    {
+                        Error($"Tag part '{part}' cannot have a [tag parameter].");
+                        return;
+                    }
                 }
                 int longestPart = result.Max(p => p.Item2);
                 result = result.Where(p => p.Item2 == longestPart).ToList();
