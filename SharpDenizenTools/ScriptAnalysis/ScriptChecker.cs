@@ -467,7 +467,8 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this tag starts.</param>
         /// <param name="tag">The text of the tag.</param>
-        public void CheckSingleTag(int line, int startChar, string tag)
+        /// <param name="context">The script checking context (if any).</param>
+        public void CheckSingleTag(int line, int startChar, string tag, ScriptCheckContext context)
         {
             SingleTag parsed = TagHelper.Parse(tag, (s) =>
             {
@@ -481,6 +482,30 @@ namespace SharpDenizenTools.ScriptAnalysis
             else if (tagName.EndsWith("tag"))
             {
                 Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar, startChar + tagName.Length);
+            }
+            if (tagName == "" || tagName == "definition")
+            {
+                string param = parsed.Parts[0].Context;
+                if (param != null)
+                {
+                    param = param.ToLowerFast();
+                    if (!context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
+                    {
+                        Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
+                    }
+                }
+            }
+            else if (tagName == "entry")
+            {
+                string param = parsed.Parts[0].Context;
+                if (param != null)
+                {
+                    param = param.ToLowerFast();
+                    if (!context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
+                    {
+                        Warn(Warnings, line, "entry_of_nothing", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
+                    }
+                }
             }
             for (int i = 1; i < parsed.Parts.Count; i++)
             {
@@ -505,12 +530,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (part.Context != null)
                 {
-                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context);
+                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context, context);
                 }
             }
             if (parsed.Fallback != null)
             {
-                CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback);
+                CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context);
             }
             new TagTracer() { Docs = MetaDocs.CurrentMeta, Tag = parsed, Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); } }.Trace();
         }
@@ -523,8 +548,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="argument">The text of the argument.</param>
+        /// <param name="context">The script checking context (if any).</param>
         /// <param name="isCommand">Whether this is an argument to a command.</param>
-        public void CheckSingleArgument(int line, int startChar, string argument, bool isCommand = false)
+        public void CheckSingleArgument(int line, int startChar, string argument, ScriptCheckContext context, bool isCommand = false)
         {
             if (argument.Contains("@") && !isCommand)
             {
@@ -569,7 +595,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     break;
                 }
                 string tag = argNoArrows.Substring(tagIndex + 1, endIndex - tagIndex - 1);
-                CheckSingleTag(line, startChar + tagIndex + 1, tag);
+                CheckSingleTag(line, startChar + tagIndex + 1, tag, context);
                 tagIndex = argNoArrows.IndexOf('<', endIndex);
             }
         }
@@ -655,14 +681,30 @@ namespace SharpDenizenTools.ScriptAnalysis
             return matchList.ToArray();
         }
 
+        /// <summary>Context for checking a single script-container.</summary>
+        public class ScriptCheckContext
+        {
+            /// <summary>Known definition names.</summary>
+            public HashSet<string> Definitions = new HashSet<string>();
+
+            /// <summary>Known save-entry names.</summary>
+            public HashSet<string> SaveEntries = new HashSet<string>();
+
+            /// <summary>If true, there are injects or other issues that make def names unknownable.</summary>
+            public bool HasUnknowableDefinitions = false;
+
+            /// <summary>If true, there are injects or other issues that make save entries names unknownable.</summary>
+            public bool HasUnknowableSaveEntries = false;
+        }
+
         /// <summary>
         /// Performs the necessary checks on a single command line.
         /// </summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="commandText">The text of the command line.</param>
-        /// <param name="definitions">The definitions tracker.</param>
-        public void CheckSingleCommand(int line, int startChar, string commandText, HashSet<string> definitions)
+        /// <param name="context">The script checking context.</param>
+        public void CheckSingleCommand(int line, int startChar, string commandText, ScriptCheckContext context)
         {
             if (commandText.Contains("@"))
             {
@@ -691,10 +733,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             void trackDefinition(string def)
             {
-                definitions.Add(def.Before('.'));
+                context.Definitions.Add(def.Before('.'));
                 if (def.Contains("<"))
                 {
-                    definitions.Add("*");
+                    context.HasUnknowableDefinitions = true;
                 }
             }
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
@@ -773,7 +815,8 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             else if (commandName == "inject")
             {
-                definitions.Add("*");
+                context.HasUnknowableDefinitions = true;
+                context.HasUnknowableSaveEntries = true;
             }
             else if (commandName == "queue" && arguments.Length == 1 && (arguments[0].Text.ToLowerFast() == "stop" || arguments[0].Text.ToLowerFast() == "clear"))
             {
@@ -844,47 +887,17 @@ namespace SharpDenizenTools.ScriptAnalysis
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
             {
-                definitions.Add(ENTRY_PREFIX + saveArgument["save:".Length..].ToLowerFast());
+                context.SaveEntries.Add(saveArgument["save:".Length..].ToLowerFast());
                 if (saveArgument.Contains("<"))
                 {
-                    definitions.Add(ENTRY_PREFIX + "*");
+                    context.HasUnknowableSaveEntries = true;
                 }
             }
             foreach (CommandArgument argument in arguments)
             {
-                CheckSingleArgument(line, argument.StartChar, argument.Text, true);
-                int entrySpot = argument.Text.ToLowerFast().IndexOf("<entry[");
-                if (entrySpot != -1)
-                {
-                    entrySpot += "<entry[".Length;
-                    int endSpot = argument.Text.IndexOf("]", entrySpot);
-                    if (endSpot != -1)
-                    {
-                        string entryText = argument.Text[entrySpot..endSpot].ToLowerFast();
-                        if (!definitions.Contains(ENTRY_PREFIX + entryText) && !definitions.Contains(ENTRY_PREFIX + "*"))
-                        {
-                            Warn(Warnings, line, "entry_to_nowhere", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", argument.StartChar + entrySpot, argument.StartChar + endSpot);
-                        }
-                    }
-                }
-                int defSpot = argument.Text.IndexOf("<[");
-                if (defSpot != -1)
-                {
-                    defSpot += "<[".Length;
-                    int endSpot = argument.Text.IndexOf("]", defSpot);
-                    if (endSpot != -1)
-                    {
-                        string defText = argument.Text[defSpot..endSpot].ToLowerFast().Before('.');
-                        if (!definitions.Contains(defText) && !definitions.Contains("*"))
-                        {
-                            Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", argument.StartChar + defSpot, argument.StartChar + endSpot);
-                        }
-                    }
-                }
+                CheckSingleArgument(line, argument.StartChar, argument.Text, context, true);
             }
         }
-
-        private static readonly string ENTRY_PREFIX = ((char)0x01) + "entry_";
 
         /// <summary>
         /// Basic metadata about a known script type.
@@ -992,40 +1005,45 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             continue;
                         }
-                        void checkAsScript(List<object> list, HashSet<string> definitionsKnown)
+                        void checkAsScript(List<object> list, ScriptCheckContext context = null)
                         {
+                            if (context == null)
+                            {
+                                context = new ScriptCheckContext();
+                            }
                             if (scriptSection.TryGetValue(new LineTrackedString(0, "definitions", 0), out object defList) && defList is LineTrackedString defListVal)
                             {
-                                definitionsKnown.UnionWith(defListVal.Text.ToLowerFast().Split('|').Select(s => s.Trim()));
+                                context.Definitions.UnionWith(defListVal.Text.ToLowerFast().Split('|').Select(s => s.Trim()));
                             }
                             if (typeString.Text == "task")
                             {
                                 // Workaround the weird way shoot command does things
-                                definitionsKnown.UnionWith(new[] { "shot_entities", "last_entity", "location", "hit_entities" });
+                                context.Definitions.UnionWith(new[] { "shot_entities", "last_entity", "location", "hit_entities" });
                             }
                             else if (typeString.Text == "economy")
                             {
-                                definitionsKnown.UnionWith(new[] { "amount" });
+                                context.Definitions.UnionWith(new[] { "amount" });
                             }
                             // Default run command definitions get used sometimes
-                            definitionsKnown.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
+                            context.Definitions.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
                             if (Injects.Contains(scriptTitle.Text) || Injects.Contains("*"))
                             {
-                                definitionsKnown.Add("*");
+                                context.HasUnknowableDefinitions = true;
+                                context.HasUnknowableSaveEntries = true;
                             }
                             foreach (object entry in list)
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleCommand(str.Line, str.StartChar, str.Text, definitionsKnown);
+                                    CheckSingleCommand(str.Line, str.StartChar, str.Text, context);
                                 }
                                 else if (entry is Dictionary<LineTrackedString, object> subMap)
                                 {
                                     KeyValuePair<LineTrackedString, object> onlyEntry = subMap.First();
-                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, definitionsKnown);
+                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, context);
                                     if (!onlyEntry.Key.Text.StartsWith("definemap"))
                                     {
-                                        checkAsScript((List<object>)onlyEntry.Value, definitionsKnown);
+                                        checkAsScript((List<object>)onlyEntry.Value, context);
                                     }
                                 }
                             }
@@ -1036,7 +1054,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleArgument(str.Line, str.StartChar, str.Text);
+                                    CheckSingleArgument(str.Line, str.StartChar, str.Text, null);
                                 }
                                 else
                                 {
@@ -1048,7 +1066,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             if (matchesSet(keyName, scriptType.ScriptKeys))
                             {
-                                checkAsScript(listAtKey, new HashSet<string>());
+                                checkAsScript(listAtKey);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys))
                             {
@@ -1068,7 +1086,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else if (scriptType.CanHaveRandomScripts)
                             {
-                                checkAsScript(listAtKey, new HashSet<string>());
+                                checkAsScript(listAtKey);
                             }
                             else
                             {
@@ -1080,7 +1098,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text);
+                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, null);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
@@ -1096,7 +1114,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text);
+                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text, null);
                             }
                         }
                         else if (valueAtKey is Dictionary<LineTrackedString, object> keyPairMap)
@@ -1108,13 +1126,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 {
                                     if (subValue is LineTrackedString textLine)
                                     {
-                                        CheckSingleArgument(textLine.Line, textLine.StartChar, textLine.Text);
+                                        CheckSingleArgument(textLine.Line, textLine.StartChar, textLine.Text, null);
                                     }
                                     else if (subValue is List<object> listKey)
                                     {
                                         if (scriptType.ScriptKeys.Contains(keyText) || (!scriptType.ListKeys.Contains(keyText) && scriptType.CanHaveRandomScripts))
                                         {
-                                            checkAsScript(listKey, new HashSet<string>());
+                                            checkAsScript(listKey);
                                         }
                                         else
                                         {

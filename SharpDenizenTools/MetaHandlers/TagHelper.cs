@@ -28,7 +28,7 @@ namespace SharpDenizenTools.MetaHandlers
                     brackets++;
                     if (brackets == 1)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i });
                         foundABracket = true;
                         start = i;
                         firstBracket = i;
@@ -44,13 +44,14 @@ namespace SharpDenizenTools.MetaHandlers
                     if (brackets == 0)
                     {
                         output.Parts[^1].Context = tag.Substring(firstBracket + 1, i - firstBracket - 1);
+                        output.Parts[^1].EndChar = i;
                     }
                 }
                 else if (tag[i] == '.' && brackets == 0)
                 {
                     if (!foundABracket)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i - 1 });
                     }
                     foundABracket = false;
                     start = i + 1;
@@ -59,7 +60,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     if (!foundABracket)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i - 1 });
                     }
                     output.EndChar = i;
                     output.Fallback = tag[(i + 2)..];
@@ -77,7 +78,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (!foundABracket)
             {
-                output.Parts.Add(new SingleTag.Part() { Text = tag[start..], StartChar = start });
+                output.Parts.Add(new SingleTag.Part() { Text = tag[start..], StartChar = start, EndChar = tag.Length - 1 });
             }
             output.EndChar = tag.Length;
             return output;
@@ -98,6 +99,9 @@ namespace SharpDenizenTools.MetaHandlers
 
             /// <summary>The index in the original string where this tag-part started.</summary>
             public int StartChar;
+
+            /// <summary>The index in the original string where this tag-part ended.</summary>
+            public int EndChar;
         }
 
         /// <summary>The parts of the tag.</summary>
