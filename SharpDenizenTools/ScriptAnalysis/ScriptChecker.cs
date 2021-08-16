@@ -718,6 +718,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             string[] parts = commandText.Split(' ', 2);
             string commandName = parts[0].ToLowerFast();
+            int cmdLen = commandName.Length;
             if (commandName.StartsWith("~") || commandName.StartsWith("^"))
             {
                 commandName = commandName[1..];
@@ -727,7 +728,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (commandName != "case" && commandName != "default")
                 {
-                    Warn(Errors, line, "unknown_command", $"Unknown command `{commandName.Replace('`', '\'')}` (typo? Use `!command [...]` to find a valid command).", startChar, startChar + commandName.Length);
+                    Warn(Errors, line, "unknown_command", $"Unknown command `{commandName.Replace('`', '\'')}` (typo? Use `!command [...]` to find a valid command).", startChar, startChar + cmdLen);
                 }
                 return;
             }
@@ -741,7 +742,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
             {
-                Warn(Errors, line, "deprecated_command", $"Command '{command.Name}' is deprecated: {command.Deprecated}", startChar, startChar + commandName.Length);
+                Warn(Errors, line, "deprecated_command", $"Command '{command.Name}' is deprecated: {command.Deprecated}", startChar, startChar + cmdLen);
             }
             if (commandText.Contains("parse_tag"))
             {

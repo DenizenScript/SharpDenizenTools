@@ -100,7 +100,9 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (known != null)
             {
-                return new HashSet<MetaObjectType>() { known };
+                HashSet<MetaObjectType> result = new() { known };
+                result.UnionWith(known.ExtendedBy);
+                return result;
             }
             Error($"(Internal) Unknown object return type '{returnType}'");
             return null;

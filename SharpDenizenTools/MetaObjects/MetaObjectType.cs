@@ -81,6 +81,11 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public MetaObjectType[] Implements = Array.Empty<MetaObjectType>();
 
+        /// <summary>
+        /// Other types or pseudo-types that extend this type.
+        /// </summary>
+        public List<MetaObjectType> ExtendedBy = new List<MetaObjectType>();
+
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
         public override bool ApplyValue(string key, string value)
         {
@@ -120,6 +125,10 @@ namespace SharpDenizenTools.MetaObjects
                 {
                     docs.LoadErrors.Add($"Object type name '{TypeName}' specifies basetype '{BaseType}' which is invalid.");
                 }
+                else
+                {
+                    BaseType.ExtendedBy.Add(this);
+                }
             }
             Implements = new MetaObjectType[ImplementsNames.Length];
             for (int i = 0; i < Implements.Length; i++)
@@ -128,6 +137,10 @@ namespace SharpDenizenTools.MetaObjects
                 if (Implements[i] == null)
                 {
                     docs.LoadErrors.Add($"Object type name '{TypeName}' specifies implement type '{Implements[i]}' which is invalid.");
+                }
+                else
+                {
+                    Implements[i].ExtendedBy.Add(this);
                 }
             }
             PostCheckSynonyms(docs, docs.ObjectTypes);
