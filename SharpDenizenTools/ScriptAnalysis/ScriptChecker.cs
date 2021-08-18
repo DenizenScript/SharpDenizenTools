@@ -8,6 +8,7 @@ using YamlDotNet.RepresentationModel;
 using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.MetaObjects;
 using FreneticUtilities.FreneticToolkit;
+using YamlDotNet.Core;
 
 namespace SharpDenizenTools.ScriptAnalysis
 {
@@ -304,7 +305,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             catch (Exception ex)
             {
                 Warn(Errors, 0, "yaml_load", "Invalid YAML! Error message: " + ex.Message, 0, 0);
-                LogInternalMessage($"YAML error: {ex}");
+                if (ex is not SemanticErrorException)
+                {
+                    LogInternalMessage($"Unusual YAML error: {ex}");
+                }
             }
         }
 
@@ -489,7 +493,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 if (param != null)
                 {
                     param = param.ToLowerFast();
-                    if (!context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
+                    if (context != null && !context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
                     {
                         Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
                     }
@@ -501,7 +505,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 if (param != null)
                 {
                     param = param.ToLowerFast();
-                    if (!context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
+                    if (context != null && !context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
                     {
                         Warn(Warnings, line, "entry_of_nothing", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
                     }
