@@ -492,10 +492,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 string param = parsed.Parts[0].Context;
                 if (param != null)
                 {
-                    param = param.ToLowerFast();
+                    param = param.ToLowerFast().Before('.');
                     if (context != null && !context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
                     {
-                        Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
+                        Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].StartChar + param.Length);
                     }
                 }
             }
