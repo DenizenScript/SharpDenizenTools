@@ -102,6 +102,9 @@ namespace SharpDenizenTools.MetaHandlers
 
             /// <summary>The index in the original string where this tag-part ended.</summary>
             public int EndChar;
+
+            /// <summary>The traced possible tag object for this part (if known).</summary>
+            public List<MetaTag> PossibleTags = new List<MetaTag>();
         }
 
         /// <summary>The parts of the tag.</summary>

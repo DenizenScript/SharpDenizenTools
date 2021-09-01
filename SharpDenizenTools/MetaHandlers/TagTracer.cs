@@ -46,18 +46,31 @@ namespace SharpDenizenTools.MetaHandlers
             }
             else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
             {
+                for (int i = 0; i < 4; i++)
+                {
+                    Tag.Parts[i].PossibleTags.Add(superComplexBaseTag);
+                }
                 TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
             }
             else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
             {
+                for (int i = 0; i < 3; i++)
+                {
+                    Tag.Parts[i].PossibleTags.Add(veryComplexBaseTag);
+                }
                 TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
             }
             else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
             {
+                for (int i = 0; i < 2; i++)
+                {
+                    Tag.Parts[i].PossibleTags.Add(complexBaseTag);
+                }
                 TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
             }
             else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
+                Tag.Parts[0].PossibleTags.Add(realBaseTag);
                 if (Tag.Parts[0].Context == null)
                 {
                     if (realBaseTag.RequiresParam)
@@ -206,14 +219,23 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 if (index + 2 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text + "." + Tag.Parts[index + 2].Text, out MetaTag veryComplexTag))
                 {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Tag.Parts[index + i].PossibleTags.Add(veryComplexTag);
+                    }
                     result.Add((veryComplexTag, 3));
                 }
                 else if (index + 1 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text, out MetaTag complexTag))
                 {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Tag.Parts[index + i].PossibleTags.Add(complexTag);
+                    }
                     result.Add((complexTag, 2));
                 }
                 else if (type.SubTags.TryGetValue(part, out MetaTag subTag))
                 {
+                    Tag.Parts[index].PossibleTags.Add(subTag);
                     result.Add((subTag, 1));
                 }
             }
