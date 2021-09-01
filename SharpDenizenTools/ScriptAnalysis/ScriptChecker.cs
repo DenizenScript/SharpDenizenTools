@@ -48,23 +48,6 @@ namespace SharpDenizenTools.ScriptAnalysis
         };
 
         /// <summary>
-        /// A set of Bukkit commands that if they appear in an 'execute' script command should receive a warning automatically.
-        /// </summary>
-        public static HashSet<string> BadExecuteCommands = new HashSet<string>()
-        {
-            // From the vanilla command list
-            "advancement", "ban", "banlist", "bossbar", "clear", "clone", "data", "datapack", "deop", "detect", "difficulty", "effect", "enchant", "execute",
-            "exp", "experience", "fill", "forceload", "gamemode", "gamerule", "help", "kick", "kill", "list", "locate", "loot", "me", "msg", "op", "pardon",
-            "particle", "playsound", "recipe", "reload", "replaceitem", "say", "scoreboard", "seed", "setblock", "setmaxplayers", "setworldspawn",
-            "spawnpoint", "spectate", "spreadplayers", "stopsound", "summon", "tag", "team", "teammsg", "teleport", "tell", "tellraw", "testfor",
-            "testforblock", "testforblocks", "time", "title", "toggledownfall", "tp", "w", "weather", "whitelist", "worldborder", "worldbuilder", "xp",
-            // Based on seen misuses
-            "give", "take", "gmc", "gms", "gm", "warp",
-            // Obviously never run Denizen or Citizens commands
-            "ex", "denizen", "npc", "trait"
-        };
-
-        /// <summary>
         /// A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.
         /// </summary>
         public static HashSet<string> CommandsWithColonsAndArguments = new HashSet<string>()
@@ -736,33 +719,36 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 return;
             }
-            void trackDefinition(string def)
+            int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("if:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
+            ScriptCheckerCommandSpecifics.CommandCheckDetails details = new ScriptCheckerCommandSpecifics.CommandCheckDetails()
             {
-                context.Definitions.Add(def.Before('.'));
-                if (def.Contains("<"))
-                {
-                    context.HasUnknowableDefinitions = true;
-                }
-            }
+                StartChar = startChar,
+                Line = line,
+                CommandText = commandText,
+                ArgCount = argCount,
+                Arguments = arguments,
+                CommandName = commandName,
+                Context = context,
+                Checker = this
+            };
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
             {
                 Warn(Errors, line, "deprecated_command", $"Command '{command.Name}' is deprecated: {command.Deprecated}", startChar, startChar + cmdLen);
             }
-            if (commandText.Contains("parse_tag"))
+            if (commandText.Contains("parse_tag")) // TODO: Handle this locally to the tag, rather than globally pretending it exists
             {
-                trackDefinition("parse_value");
+                details.TrackDefinition("parse_value");
             }
             if (commandText.Contains("parse_value_tag"))
             {
-                trackDefinition("parse_value");
-                trackDefinition("parse_key");
+                details.TrackDefinition("parse_value");
+                details.TrackDefinition("parse_key");
             }
             if (commandText.Contains("filter_tag"))
             {
-                trackDefinition("filter_key");
-                trackDefinition("filter_value");
+                details.TrackDefinition("filter_key");
+                details.TrackDefinition("filter_value");
             }
-            int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("if:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
             if (argCount < command.Required)
             {
                 Warn(Errors, line, "too_few_args", $"Insufficient arguments... the `{command.Name}` command requires at least {command.Required} arguments, but you only provided {argCount}.", startChar, startChar + commandText.Length);
@@ -771,123 +757,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 Warn(Errors, line, "too_many_args", $"Too many arguments... the `{command.Name}` command requires no more than {command.Maximum} arguments, but you provided {argCount}. Did you forget 'quotes'?", startChar, startChar + commandText.Length);
             }
-            if (commandName == "if" || commandName == "waituntil" || commandName == "while")
+            if (ScriptCheckerCommandSpecifics.CommandCheckers.TryGetValue(commandName, out Action<ScriptCheckerCommandSpecifics.CommandCheckDetails> checker))
             {
-                int borkLen = " == true".Length;
-                int borkIndex = commandText.IndexOf(" == true");
-                if (borkIndex == -1)
-                {
-                    borkLen = " == false".Length;
-                    borkIndex = commandText.IndexOf(" == false");
-                }
-                if (borkIndex != -1)
-                {
-                    Warn(Errors, line, "truly_true", $"'== true' style checks are nonsense. Refer to <https://guide.denizenscript.com/guides/troubleshooting/common-mistakes.html#if-true-is-true-equal-to-truly-true-is-the-truth> for more info.", borkIndex, borkIndex + borkLen);
-                }
-            }
-            if (commandName == "adjust")
-            {
-                CommandArgument mechanism = arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? arguments.FirstOrDefault(s => !s.Text.Contains("<") && s.Text != "server");
-                if (mechanism == null)
-                {
-                    if (arguments.Length < 2 || !arguments[1].Text.StartsWith('<') || !arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
-                    {
-                        Warn(Errors, line, "bad_adjust_no_mech", $"Malformed adjust command. No mechanism input given.", startChar, startChar + commandText.Length);
-                    }
-                }
-                else
-                {
-                    string mechanismName = mechanism.Text.Before(':').ToLowerFast();
-                    MetaMechanism mech = MetaDocs.CurrentMeta.Mechanisms.Values.FirstOrDefault(mech => mech.MechName == mechanismName);
-                    if (mech is null)
-                    {
-                        Warn(Errors, line, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
-                    }
-                    else if (!string.IsNullOrWhiteSpace(mech.Deprecated))
-                    {
-                        Warn(Errors, line, "bad_adjust_deprecated_mech", $"Mechanism '{mech.Name}' is deprecated: {mech.Deprecated}", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
-                    }
-                }
-            }
-            else if (commandName == "execute" && arguments.Length >= 2)
-            {
-                string bukkitCommandArg = arguments[0].Text.ToLowerFast().StartsWith("as_") ? arguments[1].Text : arguments[0].Text;
-                string bukkitCommandName = bukkitCommandArg.Before(' ').ToLowerFast();
-                if (BadExecuteCommands.Contains(bukkitCommandName) || bukkitCommandName.StartsWith("minecraft:") || bukkitCommandName.StartsWith("bukkit:"))
-                {
-                    Warn(Warnings, line, "bad_execute", "Inappropriate usage of the 'execute' command. Execute is for external plugin interop, and should never be used for vanilla commands. Use the relevant Denizen script command or mechanism instead.", startChar, startChar + commandText.Length);
-                }
-            }
-            else if (commandName == "inject")
-            {
-                context.HasUnknowableDefinitions = true;
-                context.HasUnknowableSaveEntries = true;
-            }
-            else if (commandName == "queue" && arguments.Length == 1 && (arguments[0].Text.ToLowerFast() == "stop" || arguments[0].Text.ToLowerFast() == "clear"))
-            {
-                Warn(MinorWarnings, line, "queue_clear", "Old style 'queue clear'. Use the modern 'stop' command instead. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#stop-is-the-new-queue-clear> for more info.", startChar, startChar + commandText.Length);
-            }
-            else if (commandName == "define" && arguments.Length >= 1)
-            {
-                string defName = arguments[0].Text.Before(":").ToLowerFast().Before('.');
-                trackDefinition(defName);
-            }
-            else if (commandName == "definemap" && arguments.Length >= 1)
-            {
-                string defName = arguments[0].Text.ToLowerFast().Before('.');
-                if (defName.EndsWith(":"))
-                {
-                    defName = defName[..^1];
-                }
-                trackDefinition(defName);
-            }
-            else if ((commandName == "foreach" || commandName == "while" || commandName == "repeat") && arguments.Length >= 1)
-            {
-                string asArgument = arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("as:"))?.Text;
-                if (asArgument == null)
-                {
-                    asArgument = "value";
-                }
-                else
-                {
-                    asArgument = asArgument["as:".Length..];
-                }
-                trackDefinition(asArgument.ToLowerFast());
-                if (commandName != "repeat")
-                {
-                    trackDefinition("loop_index");
-                }
-                if (commandName == "foreach")
-                {
-                    string keyArgument = arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("key:"))?.Text;
-                    if (keyArgument == null)
-                    {
-                        keyArgument = "key";
-                    }
-                    else
-                    {
-                        keyArgument = keyArgument["key:".Length..];
-                    }
-                    trackDefinition(keyArgument.ToLowerFast());
-                }
-            }
-            else if (commandName == "give")
-            {
-                if (arguments.Any(a => a.Text == "<player>" || a.Text == "<player.name>" || a.Text == "<npc>"))
-                {
-                    Warn(Warnings, line, "give_player", "The 'give' will automatically give to the linked player, so you do not need to specify that. To specify a different target, use the 'to:<inventory>' argument.", startChar, startChar + commandText.Length);
-                }
-            }
-            else if (commandName == "take")
-            {
-                if (arguments.Any(a => !a.Text.Contains(':') && a.Text != "money" && a.Text != "xp" && a.Text != "iteminhand" && a.Text != "cursoritem"))
-                {
-                    Warn(MinorWarnings, line, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take scriptname:myitem' or 'take material:stone'.", startChar, startChar + commandText.Length);
-                }
-            }
-            else if (commandName == "case" && arguments.Length == 1 && arguments[0].Text.ToLowerFast().Replace(":", "") == "default")
-            {
-                Warn(MinorWarnings, line, "case_default", "'- case default:' is a likely mistake - you probably meant '- default:'", startChar, startChar + commandText.Length);
+                checker(details);
             }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
             if (saveArgument != null)
