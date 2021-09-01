@@ -63,14 +63,19 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A mapping from command names to checker methods.</summary>
-        public static Dictionary<string, Action<CommandCheckDetails>> CommandCheckers;
+        public static Dictionary<string, Action<CommandCheckDetails>> CommandCheckers = new Dictionary<string, Action<CommandCheckDetails>>(256);
 
         /// <summary>Registers a new command checker.</summary>
         public static void Register(string[] cmdNames, Action<CommandCheckDetails> method)
         {
             foreach (string cmd in cmdNames)
             {
-                CommandCheckers.Add(cmd, method);
+                if (CommandCheckers.TryGetValue(cmd, out Action<CommandCheckDetails> action))
+                {
+                    method += action;
+                    CommandCheckers[cmd] = action;
+                }
+                CommandCheckers[cmd] = method;
             }
         }
 
@@ -104,7 +109,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 if (borkIndex != -1)
                 {
                     const string warningMessage = "'== true' style checks are nonsense. Refer to <https://guide.denizenscript.com/guides/troubleshooting/common-mistakes.html#if-true-is-true-equal-to-truly-true-is-the-truth> for more info.";
-                    details.Warn(details.Checker.Errors, "truly_true", warningMessage, borkIndex, borkIndex + borkLen);
+                    details.Warn(details.Checker.Errors, "truly_true", warningMessage, details.StartChar + borkIndex, details.StartChar + borkIndex + borkLen);
                 }
             });
             Register(new[] { "adjust" }, (details) =>
@@ -166,7 +171,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "foreach", "repeat", "while" }, (details) =>
             {
-                if (details.ArgCount >= 1)
+                if (details.CommandName != "while")
                 {
                     string asArgument = details.Arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("as:"))?.Text;
                     if (asArgument == null)
@@ -178,24 +183,24 @@ namespace SharpDenizenTools.ScriptAnalysis
                         asArgument = asArgument["as:".Length..];
                     }
                     details.TrackDefinition(asArgument.ToLowerFast());
-                    if (details.CommandName != "repeat")
-                    {
-                        details.TrackDefinition("loop_index");
-                    }
-                    if (details.CommandName == "foreach")
-                    {
-                        string keyArgument = details.Arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("key:"))?.Text;
-                        if (keyArgument == null)
-                        {
-                            keyArgument = "key";
-                        }
-                        else
-                        {
-                            keyArgument = keyArgument["key:".Length..];
-                        }
-                        details.TrackDefinition(keyArgument.ToLowerFast());
-                    }
                 }
+                if (details.CommandName != "repeat")
+                {
+                    details.TrackDefinition("loop_index");
+                }
+            });
+            Register(new[] { "foreach" }, (details) =>
+            {
+                string keyArgument = details.Arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("key:"))?.Text;
+                if (keyArgument == null)
+                {
+                    keyArgument = "key";
+                }
+                else
+                {
+                    keyArgument = keyArgument["key:".Length..];
+                }
+                details.TrackDefinition(keyArgument.ToLowerFast());
             });
             Register(new[] { "give" }, (details) =>
             {
