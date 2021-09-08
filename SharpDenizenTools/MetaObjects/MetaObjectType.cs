@@ -180,9 +180,9 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.Strongs.Add(Prefix.ToLowerFast());
-            SearchHelper.Decents.Add(Description.ToLowerFast());
-            SearchHelper.Backups.Add(Format.ToLowerFast());
+            SearchHelper.Strongs.Add(Prefix);
+            SearchHelper.Decents.Add(Description);
+            SearchHelper.Backups.Add(Format);
         }
     }
 }

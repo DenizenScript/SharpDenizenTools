@@ -119,10 +119,10 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.PerfectMatches.AddRange(Actions.Select(s => s.ToLowerFast()));
-            SearchHelper.Strongs.Add(Triggers.ToLowerFast());
-            SearchHelper.Decents.AddRange(Context.Select(s => s.ToLowerFast()));
-            SearchHelper.Decents.AddRange(Determinations.Select(s => s.ToLowerFast()));
+            SearchHelper.PerfectMatches.AddRange(Actions);
+            SearchHelper.Strongs.Add(Triggers);
+            SearchHelper.Decents.AddRange(Context);
+            SearchHelper.Decents.AddRange(Determinations);
         }
     }
 }

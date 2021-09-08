@@ -339,6 +339,21 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
+        /// <summary>Cleans up and validates search data.</summary>
+        public void ValidateSearchables(MetaDocs docs)
+        {
+            if (SearchHelper.PerfectMatches.RemoveAll(null) + SearchHelper.Synonyms.RemoveAll(null)
+                + SearchHelper.Strongs.RemoveAll(null) + SearchHelper.Decents.RemoveAll(null) + SearchHelper.Backups.RemoveAll(null) > 0)
+            {
+                docs.LoadErrors.Add($"{Type.Name} object {CleanName} contains null values in searchable data");
+            }
+            SearchHelper.PerfectMatches = SearchHelper.PerfectMatches.Select(s => s.ToLowerFast()).ToList();
+            SearchHelper.Synonyms = SearchHelper.Synonyms.Select(s => s.ToLowerFast()).ToList();
+            SearchHelper.Strongs = SearchHelper.Strongs.Select(s => s.ToLowerFast()).ToList();
+            SearchHelper.Decents = SearchHelper.Decents.Select(s => s.ToLowerFast()).ToList();
+            SearchHelper.Backups = SearchHelper.Backups.Select(s => s.ToLowerFast()).ToList();
+        }
+
         /// <summary>Data to help object searches.</summary>
         public SearchableHelpers SearchHelper = new SearchableHelpers();
 
@@ -346,13 +361,13 @@ namespace SharpDenizenTools.MetaObjects
         public virtual void BuildSearchables()
         {
             SearchHelper.PerfectMatches.Add(CleanName);
-            SearchHelper.PerfectMatches.Add(Name.ToLowerFast());
-            SearchHelper.Synonyms.AddRange(Synonyms.Select(s => s.ToLowerFast()));
+            SearchHelper.PerfectMatches.Add(Name);
+            SearchHelper.Synonyms.AddRange(Synonyms);
             if (Group != null)
             {
                 SearchHelper.Strongs.Add(Group);
             }
-            SearchHelper.Decents.AddRange(Warnings.Select(w => w.ToLowerFast()));
+            SearchHelper.Decents.AddRange(Warnings);
             SearchHelper.Backups.Add(SourceFile);
         }
     }

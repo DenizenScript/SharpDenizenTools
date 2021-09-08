@@ -182,18 +182,18 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.PerfectMatches.AddRange(Events.Select(s => s.ToLowerFast()));
-            SearchHelper.Strongs.Add(Triggers.ToLowerFast());
-            SearchHelper.Decents.Add(RegexMatcher.ToString().ToLowerFast());
-            SearchHelper.Decents.AddRange(Context.Select(s => s.ToLowerFast()));
-            SearchHelper.Decents.AddRange(Determinations.Select(s => s.ToLowerFast()));
+            SearchHelper.PerfectMatches.AddRange(Events);
+            SearchHelper.Strongs.Add(Triggers);
+            SearchHelper.Decents.Add(RegexMatcher.ToString());
+            SearchHelper.Decents.AddRange(Context);
+            SearchHelper.Decents.AddRange(Determinations);
             if (NPC != null)
             {
-                SearchHelper.Backups.Add("NPC: " + NPC.ToLowerFast());
+                SearchHelper.Backups.Add("NPC: " + NPC);
             }
             if (Player != null)
             {
-                SearchHelper.Backups.Add("Player: " + Player.ToLowerFast());
+                SearchHelper.Backups.Add("Player: " + Player);
             }
         }
     }

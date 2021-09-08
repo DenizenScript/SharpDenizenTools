@@ -37,7 +37,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.PerfectMatches.Add(URL.ToLowerFast());
+            SearchHelper.PerfectMatches.Add(URL);
         }
     }
 }

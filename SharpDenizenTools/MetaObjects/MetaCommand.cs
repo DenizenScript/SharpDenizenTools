@@ -173,15 +173,15 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.Strongs.Add(Short.ToLowerFast());
-            SearchHelper.Decents.Add(Description.ToLowerFast());
-            SearchHelper.Backups.AddRange(Usages.Select(u => u.ToLowerFast()));
-            SearchHelper.Backups.Add(Syntax.ToLowerFast());
+            SearchHelper.Strongs.Add(Short);
+            SearchHelper.Decents.Add(Description);
+            SearchHelper.Backups.AddRange(Usages);
+            SearchHelper.Backups.Add(Syntax);
             if (Guide != null)
             {
-                SearchHelper.Backups.Add(Guide.ToLowerFast());
+                SearchHelper.Backups.Add(Guide);
             }
-            SearchHelper.Backups.AddRange(Tags.Select(t => t.ToLowerFast()));
+            SearchHelper.Backups.AddRange(Tags);
         }
     }
 }

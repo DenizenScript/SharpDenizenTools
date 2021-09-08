@@ -62,7 +62,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.Decents.Add(Description.ToLowerFast());
+            SearchHelper.Decents.Add(Description);
         }
     }
 }

@@ -110,11 +110,11 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.PerfectMatches.Add(MechName.ToLowerFast());
-            SearchHelper.Strongs.Add(MechObject.ToLowerFast());
-            SearchHelper.Decents.Add(Input.ToLowerFast());
-            SearchHelper.Decents.Add(Description.ToLowerFast());
-            SearchHelper.Backups.AddRange(Tags.Select(t => t.ToLowerFast()));
+            SearchHelper.PerfectMatches.Add(MechName);
+            SearchHelper.Strongs.Add(MechObject);
+            SearchHelper.Decents.Add(Input);
+            SearchHelper.Decents.Add(Description);
+            SearchHelper.Backups.AddRange(Tags);
         }
     }
 }

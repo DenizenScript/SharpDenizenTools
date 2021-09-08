@@ -207,12 +207,12 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
-            SearchHelper.Decents.Add(Description.ToLowerFast());
+            SearchHelper.Decents.Add(Description);
             if (Mechanism != null)
             {
-                SearchHelper.Backups.Add(Mechanism.ToLowerFast());
+                SearchHelper.Backups.Add(Mechanism);
             }
-            SearchHelper.Backups.Add(Returns.ToLowerFast());
+            SearchHelper.Backups.Add(Returns);
         }
     }
 }

@@ -111,6 +111,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     obj.PostCheck(docs);
                     obj.BuildSearchables();
+                    obj.ValidateSearchables(docs);
                 }
                 catch (Exception ex)
                 {
