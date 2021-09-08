@@ -115,14 +115,14 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            string allActions = string.Join('\n', Actions);
-            string allContexts = string.Join('\n', Context);
-            string allDeterminations = string.Join('\n', Determinations);
-            return $"{baseText}\n{allActions}\n{Triggers}\n{allContexts}\n{allDeterminations}";
+            base.BuildSearchables();
+            SearchHelper.PerfectMatches.AddRange(Actions.Select(s => s.ToLowerFast()));
+            SearchHelper.Strongs.Add(Triggers.ToLowerFast());
+            SearchHelper.Decents.AddRange(Context.Select(s => s.ToLowerFast()));
+            SearchHelper.Decents.AddRange(Determinations.Select(s => s.ToLowerFast()));
         }
     }
 }

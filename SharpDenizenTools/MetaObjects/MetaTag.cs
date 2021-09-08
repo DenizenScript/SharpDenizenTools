@@ -203,11 +203,16 @@ namespace SharpDenizenTools.MetaObjects
             PostCheckLinkableText(docs, Description);
         }
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            return $"{baseText}\n{TagFull}\n{Returns}\n{Description}\n{Mechanism}";
+            base.BuildSearchables();
+            SearchHelper.Decents.Add(Description.ToLowerFast());
+            if (Mechanism != null)
+            {
+                SearchHelper.Backups.Add(Mechanism.ToLowerFast());
+            }
+            SearchHelper.Backups.Add(Returns.ToLowerFast());
         }
     }
 }

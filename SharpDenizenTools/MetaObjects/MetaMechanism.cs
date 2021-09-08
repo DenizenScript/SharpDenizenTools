@@ -106,12 +106,15 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            string allTags = string.Join('\n', Tags);
-            return $"{baseText}\n{allTags}\n{Input}\n{Description}\n{MechObject}\n{MechName}";
+            base.BuildSearchables();
+            SearchHelper.PerfectMatches.Add(MechName.ToLowerFast());
+            SearchHelper.Strongs.Add(MechObject.ToLowerFast());
+            SearchHelper.Decents.Add(Input.ToLowerFast());
+            SearchHelper.Decents.Add(Description.ToLowerFast());
+            SearchHelper.Backups.AddRange(Tags.Select(t => t.ToLowerFast()));
         }
     }
 }

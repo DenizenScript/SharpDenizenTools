@@ -178,15 +178,23 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            string allEvents = string.Join('\n', Events);
-            string allContexts = string.Join('\n', Context);
-            string allDeterminations = string.Join('\n', Determinations);
-            string regex = RegexMatcher.ToString();
-            return $"{baseText}\n{allEvents}\n{Triggers}\n{Player}\n{NPC}\n{regex}\n{allContexts}\n{allDeterminations}";
+            base.BuildSearchables();
+            SearchHelper.PerfectMatches.AddRange(Events.Select(s => s.ToLowerFast()));
+            SearchHelper.Strongs.Add(Triggers.ToLowerFast());
+            SearchHelper.Decents.Add(RegexMatcher.ToString().ToLowerFast());
+            SearchHelper.Decents.AddRange(Context.Select(s => s.ToLowerFast()));
+            SearchHelper.Decents.AddRange(Determinations.Select(s => s.ToLowerFast()));
+            if (NPC != null)
+            {
+                SearchHelper.Backups.Add("NPC: " + NPC.ToLowerFast());
+            }
+            if (Player != null)
+            {
+                SearchHelper.Backups.Add("Player: " + Player.ToLowerFast());
+            }
         }
     }
 }

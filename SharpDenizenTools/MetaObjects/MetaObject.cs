@@ -63,11 +63,6 @@ namespace SharpDenizenTools.MetaObjects
         public string SourceFile;
 
         /// <summary>
-        /// The searchable text pile.
-        /// </summary>
-        public string Searchable;
-
-        /// <summary>
         /// A deprecation notice, if any.
         /// </summary>
         public string Deprecated;
@@ -294,12 +289,71 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Get all text for related to this object that may be useful for searches.
-        /// </summary>
-        public virtual string GetAllSearchableText()
+        /// <summary>Class that contains data to help searching. All strings are lowercase.</summary>
+        public class SearchableHelpers
         {
-            return $"{Name}\n{CleanName}\n{string.Join('\n', Synonyms)}\n{Group}\n{string.Join('\n', Warnings)}\n{Plugin}\n{SourceFile}";
+            /// <summary>Perfect match text, like a name.</summary>
+            public List<string> PerfectMatches = new List<string>();
+
+            /// <summary>Hand-chosen additional semiperfect search terms.</summary>
+            public List<string> Synonyms = new List<string>();
+
+            /// <summary>Very important matchables.</summary>
+            public List<string> Strongs = new List<string>();
+
+            /// <summary>Other normal matchables.</summary>
+            public List<string> Decents = new List<string>();
+
+            /// <summary>Any/all remaining text.</summary>
+            public List<string> Backups = new List<string>();
+
+            private static bool Try(List<string> list, string search, int val, out int toUse)
+            {
+                if (list.Contains(search))
+                {
+                    toUse = val;
+                    return true;
+                }
+                if (list.Any(s => s.Contains(search)))
+                {
+                    toUse = val - 1;
+                    return true;
+                }
+                toUse = 0;
+                return false;
+            }
+
+            /// <summary>Searches the object for text matches. Returns 0 for no match, 10 for a perfect match, 5 for an average match, etc.</summary>
+            /// <param name="search">Search text (all lowercase).</param>
+            public int GetMatchQuality(string search)
+            {
+                if (Try(PerfectMatches, search, 10, out int result)
+                    || Try(Synonyms, search, 8, out result)
+                    || Try(Strongs, search, 6, out result)
+                    || Try(Decents, search, 4, out result)
+                    || Try(Backups, search, 2, out result))
+                {
+                    return result;
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>Data to help object searches.</summary>
+        public SearchableHelpers SearchHelper = new SearchableHelpers();
+
+        /// <summary>Build the contents of <see cref="SearchHelper"/>.</summary>
+        public virtual void BuildSearchables()
+        {
+            SearchHelper.PerfectMatches.Add(CleanName);
+            SearchHelper.PerfectMatches.Add(Name.ToLowerFast());
+            SearchHelper.Synonyms.AddRange(Synonyms.Select(s => s.ToLowerFast()));
+            if (Group != null)
+            {
+                SearchHelper.Strongs.Add(Group);
+            }
+            SearchHelper.Decents.AddRange(Warnings.Select(w => w.ToLowerFast()));
+            SearchHelper.Backups.Add(SourceFile);
         }
     }
 }

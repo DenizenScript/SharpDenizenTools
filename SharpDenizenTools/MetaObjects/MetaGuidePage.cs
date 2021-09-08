@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using SharpDenizenTools.MetaHandlers;
+using FreneticUtilities.FreneticExtensions;
 
 namespace SharpDenizenTools.MetaObjects
 {
@@ -32,11 +33,11 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>If true, this is an entry within a page rather than its own page.</summary>
         public bool IsSubPage;
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            return $"{baseText}\n{URL}";
+            base.BuildSearchables();
+            SearchHelper.PerfectMatches.Add(URL.ToLowerFast());
         }
     }
 }

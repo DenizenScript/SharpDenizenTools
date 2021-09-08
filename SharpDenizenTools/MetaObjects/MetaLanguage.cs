@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using SharpDenizenTools.MetaHandlers;
+using FreneticUtilities.FreneticExtensions;
 
 namespace SharpDenizenTools.MetaObjects
 {
@@ -57,11 +58,11 @@ namespace SharpDenizenTools.MetaObjects
             PostCheckLinkableText(docs, Description);
         }
 
-        /// <summary><see cref="MetaObject.GetAllSearchableText"/></summary>
-        public override string GetAllSearchableText()
+        /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
+        public override void BuildSearchables()
         {
-            string baseText = base.GetAllSearchableText();
-            return $"{baseText}\n{Description}";
+            base.BuildSearchables();
+            SearchHelper.Decents.Add(Description.ToLowerFast());
         }
     }
 }

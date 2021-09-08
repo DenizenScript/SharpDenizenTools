@@ -110,7 +110,7 @@ namespace SharpDenizenTools.MetaHandlers
                 try
                 {
                     obj.PostCheck(docs);
-                    obj.Searchable = obj.GetAllSearchableText().ToLowerFast();
+                    obj.BuildSearchables();
                 }
                 catch (Exception ex)
                 {
