@@ -292,6 +292,22 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Class that contains data to help searching. All strings are lowercase.</summary>
         public class SearchableHelpers
         {
+            /// <summary>Names for search quality levels.</summary>
+            public static readonly string[] SearchQualityName = new string[]
+                {
+                    "Not Matched", // 0
+                    "Just Barely Matched", // 1
+                    "Backup Match", // 2
+                    "Semi-Decent Match", // 3
+                    "Decent Match", // 4
+                    "Semi-Strong Match", // 5
+                    "Strong Match", // 6
+                    "Partial Synonym Match", // 7
+                    "Perfect Synonym Match", // 8
+                    "Partial Name Match", // 9
+                    "Perfect Name Match", // 10
+                };
+
             /// <summary>Perfect match text, like a name.</summary>
             public List<string> PerfectMatches = new List<string>();
 
