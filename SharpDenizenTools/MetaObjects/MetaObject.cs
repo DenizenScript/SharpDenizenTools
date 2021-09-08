@@ -342,8 +342,8 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Cleans up and validates search data.</summary>
         public void ValidateSearchables(MetaDocs docs)
         {
-            if (SearchHelper.PerfectMatches.RemoveAll(null) + SearchHelper.Synonyms.RemoveAll(null)
-                + SearchHelper.Strongs.RemoveAll(null) + SearchHelper.Decents.RemoveAll(null) + SearchHelper.Backups.RemoveAll(null) > 0)
+            if (SearchHelper.PerfectMatches.RemoveAll(s => s is null) + SearchHelper.Synonyms.RemoveAll(s => s is null)
+                + SearchHelper.Strongs.RemoveAll(s => s is null) + SearchHelper.Decents.RemoveAll(s => s is null) + SearchHelper.Backups.RemoveAll(s => s is null) > 0)
             {
                 docs.LoadErrors.Add($"{Type.Name} object {CleanName} contains null values in searchable data");
             }
