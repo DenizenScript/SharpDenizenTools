@@ -148,6 +148,8 @@ namespace SharpDenizenTools.MetaHandlers
                 MetaGuidePage guidePage = new MetaGuidePage();
                 guidePage.URL = linkBody.BeforeAndAfter("\">", out guidePage.PageName);
                 guidePage.AddTo(docs);
+                guidePage.BuildSearchables();
+                guidePage.ValidateSearchables(docs);
                 linkIndex = linkEndIndex;
             }
             foreach (string subPage in DENIZEN_GUIDE_SUBPAGES)
@@ -189,6 +191,8 @@ namespace SharpDenizenTools.MetaHandlers
                         IsSubPage = true
                     };
                     guidePage.AddTo(docs);
+                    guidePage.BuildSearchables();
+                    guidePage.ValidateSearchables(docs);
                 }
             }
         }
