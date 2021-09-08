@@ -36,6 +36,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
         public override void BuildSearchables()
         {
+            SourceFile = URL;
             base.BuildSearchables();
             SearchHelper.PerfectMatches.Add(URL);
         }
