@@ -207,6 +207,10 @@ namespace SharpDenizenTools.MetaObjects
         public override void BuildSearchables()
         {
             base.BuildSearchables();
+            if (BeforeDot.ToLowerFast().EndsWith("tag"))
+            {
+                SearchHelper.Synonyms.Add(BeforeDot[..^"tag".Length] + '.' + AfterDotCleaned);
+            }
             SearchHelper.Decents.Add(Description);
             if (Mechanism != null)
             {
