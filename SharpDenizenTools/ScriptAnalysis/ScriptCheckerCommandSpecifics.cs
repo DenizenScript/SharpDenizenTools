@@ -91,7 +91,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             // Based on seen misuses
             "give", "take", "gmc", "gms", "gm", "warp",
             // Obviously never run Denizen or Citizens commands
-            "ex", "denizen", "npc", "trait"
+            "ex", "exs", "denizen", "npc", "trait"
         };
 
         /// <summary>Relevant command-specific error check impls.</summary>
@@ -140,7 +140,6 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (details.ArgCount >= 2)
                 {
-
                     string bukkitCommandArg = details.Arguments[0].Text.ToLowerFast().StartsWith("as_") ? details.Arguments[1].Text : details.Arguments[0].Text;
                     string bukkitCommandName = bukkitCommandArg.Before(' ').ToLowerFast();
                     if (BadExecuteCommands.Contains(bukkitCommandName) || bukkitCommandName.StartsWith("minecraft:") || bukkitCommandName.StartsWith("bukkit:"))

@@ -739,6 +739,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 details.TrackDefinition("parse_value");
             }
+            if (commandText.Contains("null_if_tag"))
+            {
+                details.TrackDefinition("null_if_value");
+            }
             if (commandText.Contains("parse_value_tag"))
             {
                 details.TrackDefinition("parse_value");
