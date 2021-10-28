@@ -91,6 +91,10 @@ namespace SharpDenizenTools.MetaHandlers
             }
             else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
             {
+                if (documentedObjectBase.Prefix.ToLowerFast() == "none")
+                {
+                    Error($"Tag base '{Tag.Parts[0].Text}' seems to refer to a pseudo-object-type, but not one that can be used as a free-standing tag base.");
+                }
                 TraceTagParts(new HashSet<MetaObjectType>() { documentedObjectBase }, 1);
             }
             else
