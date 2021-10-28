@@ -27,15 +27,6 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Root tags that are valid always as a way to compensate for weird pseudo tags some containers use. See also <see cref="MetaDocs.TagBases"/>.</summary>
         public static HashSet<string> PerpetuallyValidElementTagRoots = new HashSet<string>() { "permission", "text", "name", "amount" };
 
-        /// <summary>Checks if a part is deprecated and automatically warns if so.</summary>
-        public void CheckDeprecated(MetaTag tag, SingleTag.Part part)
-        {
-            if (tag.Deprecated != null)
-            {
-                DeprecationError($"Deprecated tag `{tag.CleanedName}`: {tag.Deprecated}", part);
-            }
-        }
-
         /// <summary>Traces through a written tag, trying to find the documented tag parts inside it.</summary>
         public void Trace()
         {
@@ -62,7 +53,6 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     Tag.Parts[i].PossibleTags.Add(superComplexBaseTag);
                 }
-                CheckDeprecated(superComplexBaseTag, Tag.Parts[3]);
                 TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
             }
             else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
@@ -71,7 +61,6 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     Tag.Parts[i].PossibleTags.Add(veryComplexBaseTag);
                 }
-                CheckDeprecated(veryComplexBaseTag, Tag.Parts[2]);
                 TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
             }
             else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
@@ -80,7 +69,6 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     Tag.Parts[i].PossibleTags.Add(complexBaseTag);
                 }
-                CheckDeprecated(complexBaseTag, Tag.Parts[1]);
                 TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
             }
             else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
@@ -102,7 +90,6 @@ namespace SharpDenizenTools.MetaHandlers
                         return;
                     }
                 }
-                CheckDeprecated(realBaseTag, Tag.Parts[0]);
                 TraceTagParts(ParsePossibleTypes(realBaseTag.Returns, realBaseTag.ReturnType), 1);
             }
             else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
@@ -116,6 +103,15 @@ namespace SharpDenizenTools.MetaHandlers
             else
             {
                 Error($"Tag base '{Tag.Parts[0].Text}' does not exist.");
+            }
+            foreach (SingleTag.Part part in Tag.Parts)
+            {
+                List<MetaTag> deprecated = part.PossibleTags.Where(p => p.Deprecated != null).ToList();
+                if (deprecated.Any() && deprecated.Count == part.PossibleTags.Count)
+                {
+                    MetaTag tag = deprecated[0];
+                    DeprecationError($"Deprecated tag `{tag.CleanedName}`: {tag.Deprecated}", part);
+                }
             }
         }
 
@@ -243,7 +239,6 @@ namespace SharpDenizenTools.MetaHandlers
                     {
                         Tag.Parts[index + i].PossibleTags.Add(veryComplexTag);
                     }
-                    CheckDeprecated(veryComplexTag, Tag.Parts[index + 2]);
                     result.Add((veryComplexTag, 3));
                 }
                 else if (index + 1 < Tag.Parts.Count && type.SubTags.TryGetValue(part + "." + Tag.Parts[index + 1].Text, out MetaTag complexTag))
@@ -252,12 +247,10 @@ namespace SharpDenizenTools.MetaHandlers
                     {
                         Tag.Parts[index + i].PossibleTags.Add(complexTag);
                     }
-                    CheckDeprecated(complexTag, Tag.Parts[index + 1]);
                     result.Add((complexTag, 2));
                 }
                 else if (type.SubTags.TryGetValue(part, out MetaTag subTag))
                 {
-                    CheckDeprecated(subTag, Tag.Parts[index]);
                     Tag.Parts[index].PossibleTags.Add(subTag);
                     result.Add((subTag, 1));
                 }
