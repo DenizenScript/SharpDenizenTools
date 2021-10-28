@@ -511,10 +511,6 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             foreach (SingleTag.Part part in parsed.Parts)
             {
-                if (MetaDocs.CurrentMeta.TagDeprecations.TryGetValue(part.Text, out string notice))
-                {
-                    Warn(MinorWarnings, line, "deprecated_tag_part", $"Deprecated tag part `{part.Text.Replace('`', '\'')}`: {notice}", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
-                }
                 if (part.Context != null)
                 {
                     CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context, context);
@@ -524,7 +520,13 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context);
             }
-            new TagTracer() { Docs = MetaDocs.CurrentMeta, Tag = parsed, Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); } }.Trace();
+            new TagTracer()
+            {
+                Docs = MetaDocs.CurrentMeta,
+                Tag = parsed,
+                Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); },
+                DeprecationError = (s, part) => { Warn(MinorWarnings, line, "deprecated_tag_part", s, startChar + part.StartChar, startChar + part.StartChar + part.Text.Length); }
+            }.Trace();
         }
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };
