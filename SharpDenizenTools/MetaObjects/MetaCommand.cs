@@ -7,9 +7,7 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented command.
-    /// </summary>
+    /// <summary>A documented command.</summary>
     public class MetaCommand : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -24,59 +22,37 @@ namespace SharpDenizenTools.MetaObjects
             docs.Commands.Add(CleanName, this);
         }
 
-        /// <summary>
-        /// The name of the command.
-        /// </summary>
+        /// <summary>The name of the command.</summary>
         public string CommandName;
 
-        /// <summary>
-        /// How many arguments are required, minimum.
-        /// </summary>
+        /// <summary>How many arguments are required, minimum.</summary>
         public int Required = 0;
 
-        /// <summary>
-        /// How many arguments are allowed, maximum.
-        /// </summary>
+        /// <summary>How many arguments are allowed, maximum.</summary>
         public int Maximum = int.MaxValue;
 
-        /// <summary>
-        /// The syntax guide.
-        /// </summary>
+        /// <summary>The syntax guide.</summary>
         public string Syntax;
 
-        /// <summary>
-        /// The short description.
-        /// </summary>
+        /// <summary>The short description.</summary>
         public string Short;
 
-        /// <summary>
-        /// The long-form description.
-        /// </summary>
+        /// <summary>The long-form description.</summary>
         public string Description;
 
-        /// <summary>
-        /// Tags documented for this command. One tag per string.
-        /// </summary>
+        /// <summary>Tags documented for this command. One tag per string.</summary>
         public string[] Tags = Array.Empty<string>();
 
-        /// <summary>
-        /// An associated beginner's guide link.
-        /// </summary>
+        /// <summary>An associated beginner's guide link.</summary>
         public string Guide = "";
 
-        /// <summary>
-        /// A list of argument prefixes this command has in its syntax line.
-        /// </summary>
+        /// <summary>A list of argument prefixes this command has in its syntax line.</summary>
         public Tuple<string, string>[] ArgPrefixes = Array.Empty<Tuple<string, string>>();
 
-        /// <summary>
-        /// A list of plaintext no-tag arguments this command has in its syntax line.
-        /// </summary>
+        /// <summary>A list of plaintext no-tag arguments this command has in its syntax line.</summary>
         public Tuple<string, string>[] FlatArguments = Array.Empty<Tuple<string, string>>();
 
-        /// <summary>
-        /// Parses this command's syntax data to create a list of helper data about the known arguments.
-        /// </summary>
+        /// <summary>Parses this command's syntax data to create a list of helper data about the known arguments.</summary>
         public void ParseSyntax()
         {
             int firstSpace = Syntax.IndexOf(' ');
@@ -114,9 +90,7 @@ namespace SharpDenizenTools.MetaObjects
             FlatArguments = flatArgs.ToArray();
         }
 
-        /// <summary>
-        /// Sample usages.
-        /// </summary>
+        /// <summary>Sample usages.</summary>
         public List<string> Usages = new List<string>();
 
         /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>

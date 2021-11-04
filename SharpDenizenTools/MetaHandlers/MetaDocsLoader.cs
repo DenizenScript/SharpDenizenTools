@@ -110,12 +110,23 @@ namespace SharpDenizenTools.MetaHandlers
                 try
                 {
                     obj.PostCheck(docs);
+                }
+                catch (Exception ex)
+                {
+                    docs.LoadErrors.Add($"Internal exception while checking {obj.Type.Name} '{obj.Name}' - {ex.GetType().FullName} ... see bot console for details.");
+                    Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
+                }
+            }
+            foreach (MetaObject obj in docs.AllMetaObjects())
+            {
+                try
+                {
                     obj.BuildSearchables();
                     obj.ValidateSearchables(docs);
                 }
                 catch (Exception ex)
                 {
-                    docs.LoadErrors.Add($"Internal exception while checking {obj.Type.Name} '{obj.Name}' - {ex.GetType().FullName} ... see bot console for details.");
+                    docs.LoadErrors.Add($"Internal exception while building searchables for {obj.Type.Name} '{obj.Name}' - {ex.GetType().FullName} ... see bot console for details.");
                     Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
                 }
             }
