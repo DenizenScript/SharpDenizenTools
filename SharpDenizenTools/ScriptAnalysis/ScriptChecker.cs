@@ -260,7 +260,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 if (!line.EndsWith(":") && line.StartsWith("-"))
                 {
                     int dashIndex = Lines[i].IndexOf('-');
-                    result.Append(Lines[i].Substring(0, dashIndex + 1)).Append(" ^1^");
+                    result.Append(Lines[i][..(dashIndex + 1)]).Append(" ^1^");
                     result.Append(Lines[i][(dashIndex + 1)..].Replace(": ", "<&co>").Replace("#", "<&ns>")).Append('\n');
                 }
                 else if (line.EndsWith(":") && !line.StartsWith("-"))
@@ -1220,7 +1220,8 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Switch-prefixes that definitely aren't real switches.
         /// </summary>
-        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged", "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "material_flagged", "raw_exact", "item_enchanted" };
+        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged",
+                "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "raw_exact", "item_enchanted", "material_flagged", "location_in", "block_flagged" };
 
         /// <summary>
         /// Separates the switches from an event line.
