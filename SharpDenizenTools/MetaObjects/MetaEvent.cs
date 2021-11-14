@@ -127,7 +127,7 @@ namespace SharpDenizenTools.MetaObjects
                     NPC = value;
                     return true;
                 case "regex": return true; // TODO: TEMPORARY
-#warning temporary
+#warning temporary: remove after all events are updated
                 case "switch":
                     foreach (string switchLine in value.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {

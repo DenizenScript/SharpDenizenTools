@@ -1124,7 +1124,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 MetaEvent matchedEvent = null;
                                 foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                 {
-                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts)))
+                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, false)))
                                     {
                                         matchedEvent = evt;
                                         break;
@@ -1132,7 +1132,22 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 }
                                 if (matchedEvent == null)
                                 {
-                                    warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
+                                    foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
+                                    {
+                                        if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, true)))
+                                        {
+                                            matchedEvent = evt;
+                                            break;
+                                        }
+                                    }
+                                    if (matchedEvent == null)
+                                    {
+                                        warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
+                                    }
+                                    else
+                                    {
+                                        warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. Got partial match for '" + matchedEvent.Name + "' - might be incomplete? Check documentation.");
+                                    }
                                 }
                                 else
                                 {

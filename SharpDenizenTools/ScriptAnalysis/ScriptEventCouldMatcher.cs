@@ -107,15 +107,18 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Returns true if the path could-match this event.</summary>
-        public bool DoesMatch(string[] pathBaseParts)
+        public bool DoesMatch(string[] pathBaseParts, bool allowPartial)
         {
             if (pathBaseParts.Length != Validators.Length)
             {
-                return false;
+                if (!allowPartial || pathBaseParts.Length > Validators.Length)
+                {
+                    return false;
+                }
             }
             foreach (int i in ArgOrder)
             {
-                if (!Validators[i](pathBaseParts[i]))
+                if (i < pathBaseParts.Length && !Validators[i](pathBaseParts[i]))
                 {
                     return false;
                 }

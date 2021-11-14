@@ -102,7 +102,7 @@ namespace SharpDenizenTools.MetaHandlers
         public List<MetaEvent> LegacyCouldMatchEvents = new List<MetaEvent>();
 
         /// <summary>Returns the event that best matches the input text.</summary>
-        public MetaEvent FindEventFor(string text)
+        public List<MetaEvent> FindEventsFor(string text, bool allowPartial)
         {
             text = text.ToLowerFast();
             if (text.StartsWith("on "))
@@ -115,27 +115,36 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (Events.TryGetValue(text, out MetaEvent evt))
             {
-                return evt;
+                return new List<MetaEvent>() { evt };
             }
+            List<MetaEvent> result = new List<MetaEvent>();
             string[] parts = text.SplitFast(' ');
             if (EventLookupOpti.TryGetValue(parts[0], out List<MetaEvent> possible))
             {
                 foreach (MetaEvent evt2 in possible)
                 {
-                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts)))
+                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial)))
                     {
-                        return evt2;
+                        result.Add(evt2);
+                        if (!allowPartial)
+                        {
+                            return result;
+                        }
                     }
                 }
             }
             foreach (MetaEvent evt2 in LegacyCouldMatchEvents)
             {
-                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts)))
+                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial)))
                 {
-                    return evt2;
+                    result.Add(evt2);
+                    if (!allowPartial)
+                    {
+                        return result;
+                    }
                 }
             }
-            return null;
+            return result.IsEmpty() ? null : result;
         }
 
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>

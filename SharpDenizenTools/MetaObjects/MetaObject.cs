@@ -232,7 +232,7 @@ namespace SharpDenizenTools.MetaObjects
                         {
                             searchText = searchText["on ".Length..];
                         }
-                        exists = docs.FindEventFor(searchText) != null;
+                        exists = docs.FindEventsFor(searchText, true) != null;
                         if (!exists)
                         {
                             exists = docs.Events.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
