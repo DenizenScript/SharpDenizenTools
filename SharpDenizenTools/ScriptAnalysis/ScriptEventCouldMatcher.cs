@@ -46,28 +46,28 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (string.IsNullOrEmpty(arg))
                 {
-                    Error("Event matcher format error: '" + Format + "' has a double space?");
+                    Error($"Event matcher format error: '{Format}' has a double space?");
                     continue;
                 }
                 if (arg.StartsWithFast('<'))
                 {
                     if (!arg.EndsWithFast('>'))
                     {
-                        Error("Event matcher format error: '" + Format + "' has an unclosed fill-in part.");
+                        Error($"Event matcher format error: '{Format}' has an unclosed fill-in part.");
                         continue;
                     }
                     string toUse = arg[1..^1];
                     if (toUse.StartsWithFast('\'') && toUse.EndsWithFast('\''))
                     {
                         string rawCopy = arg;
-                        validatorList.Add((word, precise) => rawCopy == word);
-                        argOrderList.Add(index++);
+                        validatorList.Add((word, precise) => true);
+                        secondaryArgList.Add(index++);
                     }
                     else
                     {
                         if (!KnownValidatorTypes.TryGetValue(toUse, out Func<string, bool, bool> validator))
                         {
-                            Error("Event matcher format error: '" + Format + "' has an unrecognized input type '" + toUse + "'");
+                            Error($"Event matcher format error: '{Format}' has an unrecognized input type '{toUse}'");
                             continue;
                         }
                         validatorList.Add(validator);
