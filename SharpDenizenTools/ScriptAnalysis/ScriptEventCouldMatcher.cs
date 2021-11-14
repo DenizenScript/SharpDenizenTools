@@ -20,7 +20,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public string[] Parts;
 
         /// <summary>The array of validator objects for this couldMatcher. The path length should equal the array length, and each argument match the validator.</summary>
-        public Func<string, bool, bool>[] Validators;
+        public Func<string, bool, int>[] Validators;
 
         /// <summary>Special optimization trick: an array of argument indices to control testing order. The simplest tests are run first.</summary>
         public int[] ArgOrder;
@@ -29,15 +29,15 @@ namespace SharpDenizenTools.ScriptAnalysis
         public Action<string> Error;
 
         /// <summary>Registry of validators, as a map from name to instance object.</summary>
-        public Dictionary<string, Func<string, bool, bool>> KnownValidatorTypes;
+        public Dictionary<string, Func<string, bool, int>> KnownValidatorTypes;
 
         /// <summary>Construct the could matcher from the given reference format and switch set.</summary>
-        public ScriptEventCouldMatcher(string _format, Action<string> _error, Dictionary<string, Func<string, bool, bool>> validatorTypes)
+        public ScriptEventCouldMatcher(string _format, Action<string> _error, Dictionary<string, Func<string, bool, int>> validatorTypes)
         {
             KnownValidatorTypes = validatorTypes;
             Error = _error;
             Format = _format;
-            List<Func<string, bool, bool>> validatorList = new List<Func<string, bool, bool>>();
+            List<Func<string, bool, int>> validatorList = new List<Func<string, bool, int>>();
             Parts = Format.Split(' ');
             List<int> argOrderList = new List<int>();
             List<int> secondaryArgList = new List<int>();
@@ -60,12 +60,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                     if (toUse.StartsWithFast('\'') && toUse.EndsWithFast('\''))
                     {
                         string rawCopy = arg;
-                        validatorList.Add((word, precise) => true);
+                        validatorList.Add((word, precise) => 1);
                         secondaryArgList.Add(index++);
                     }
                     else
                     {
-                        if (!KnownValidatorTypes.TryGetValue(toUse, out Func<string, bool, bool> validator))
+                        if (!KnownValidatorTypes.TryGetValue(toUse, out Func<string, bool, int> validator))
                         {
                             Error($"Event matcher format error: '{Format}' has an unrecognized input type '{toUse}'");
                             continue;
@@ -77,13 +77,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else if (arg.Contains('|'))
                 {
                     HashSet<string> rawValues = new HashSet<string>(arg.SplitFast('|'));
-                    validatorList.Add((word, price) => rawValues.Contains(word));
+                    validatorList.Add((word, price) => rawValues.Contains(word) ? 10 : 0);
                     argOrderList.Add(index++);
                 }
                 else
                 {
                     string rawCopy = arg;
-                    validatorList.Add((word, precise) => rawCopy == word);
+                    validatorList.Add((word, precise) => rawCopy == word ? 10 : 0);
                     argOrderList.Add(index++);
                 }
             }
@@ -105,14 +105,20 @@ namespace SharpDenizenTools.ScriptAnalysis
                     return false;
                 }
             }
+            int max = 0;
             foreach (int i in ArgOrder)
             {
-                if (i < pathBaseParts.Length && !Validators[i](pathBaseParts[i], precise))
+                if (i < pathBaseParts.Length)
                 {
-                    return false;
+                    int match = Validators[i](pathBaseParts[i], precise);
+                    if (match == 0)
+                    {
+                        return false;
+                    }
+                    max = Math.Max(max, match);
                 }
             }
-            return true;
+            return max > 1;
         }
     }
 }

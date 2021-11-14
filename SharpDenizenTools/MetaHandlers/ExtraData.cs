@@ -146,32 +146,32 @@ namespace SharpDenizenTools.MetaHandlers
         };
 
         /// <summary>Type matcher for EntityTag.</summary>
-        public bool MatchEntity(string word, bool precise)
+        public int MatchEntity(string word, bool precise)
         {
             if (word.StartsWith("entity_flagged:") || word.StartsWith("player_flagged:") || word.StartsWith("npc_flagged:")
                 || SpecialEntityMatchables.Contains(word)
                 || Entities.Contains(word))
             {
-                return true;
+                return 10;
             }
             if (precise)
             {
                 if (AdvancedMatcher.IsAdvancedMatchable(word))
                 {
                     AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
-                    return Entities.Any(e => matcher.DoesMatch(e));
+                    return Entities.Any(e => matcher.DoesMatch(e)) ? 7 : 0;
                 }
-                return false;
+                return 0;
             }
             if (AdvancedMatcher.IsAdvancedMatchable(word))
             {
-                return true;
+                return 5;
             }
             if (Blocks.Contains(word) || Items.Contains(word))
             {
-                return false;
+                return 0;
             }
-            return true;
+            return 1;
         }
 
         /// <summary>Known always-valid item labels.</summary>
@@ -181,36 +181,36 @@ namespace SharpDenizenTools.MetaHandlers
         };
 
         /// <summary>Type matcher for ItemTag.</summary>
-        public bool MatchItem(string word, bool precise)
+        public int MatchItem(string word, bool precise)
         {
             if (word == "block")
             {
-                return false;
+                return 0;
             }
             if (ItemCouldMatchPrefixes.Contains(word.Before(':'))
                 || word == "item" || word == "potion"
                 || Items.Contains(word))
             {
-                return true;
+                return 10;
             }
             if (precise)
             {
                 if (AdvancedMatcher.IsAdvancedMatchable(word))
                 {
                     AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
-                    return Items.Any(e => matcher.DoesMatch(e));
+                    return Items.Any(e => matcher.DoesMatch(e)) ? 7 : 0;
                 }
-                return false;
+                return 0;
             }
             if (AdvancedMatcher.IsAdvancedMatchable(word))
             {
-                return true;
+                return 5;
             }
             if (Blocks.Contains(word) || Entities.Contains(word))
             {
-                return false;
+                return 0;
             }
-            return true;
+            return 1;
         }
 
         /// <summary>Known always-valid inventory labels.</summary>
@@ -225,112 +225,112 @@ namespace SharpDenizenTools.MetaHandlers
         };
 
         /// <summary>Type matcher for InventoryTag.</summary>
-        public bool MatchInventory(string word, bool precise)
+        public int MatchInventory(string word, bool precise)
         {
             if (InventoryMatchers.Contains(word)
                 || word.StartsWith("inventory_flagged:"))
             {
-                return true;
+                return 10;
             }
             if (precise)
             {
                 if (AdvancedMatcher.IsAdvancedMatchable(word))
                 {
                     AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
-                    return InventoryMatchers.Any(e => matcher.DoesMatch(e));
+                    return InventoryMatchers.Any(e => matcher.DoesMatch(e)) ? 7 : 0;
                 }
-                return false;
+                return 0;
             }
             if (AdvancedMatcher.IsAdvancedMatchable(word))
             {
-                return true;
+                return 5;
             }
             if (Blocks.Contains(word) || Items.Contains(word) || Entities.Contains(word))
             {
-                return false;
+                return 0;
             }
-            return true;
+            return 1;
         }
 
         /// <summary>Type matcher for blocks.</summary>
-        public bool MatchBlock(string word, bool precise)
+        public int MatchBlock(string word, bool precise)
         {
             if (word == "item")
             {
-                return false;
+                return 0;
             }
             if (word == "material" || word == "block"
                 || word.StartsWith("vanilla_tagged:") || word.StartsWith("material_flagged:")
                 || Blocks.Contains(word))
             {
-                return true;
+                return 10;
             }
             if (precise)
             {
                 if (AdvancedMatcher.IsAdvancedMatchable(word))
                 {
                     AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
-                    return Blocks.Any(e => matcher.DoesMatch(e));
+                    return Blocks.Any(e => matcher.DoesMatch(e)) ? 7 : 0;
                 }
-                return false;
+                return 0;
             }
             if (AdvancedMatcher.IsAdvancedMatchable(word))
             {
-                return true;
+                return 5;
             }
             if (Items.Contains(word) || Entities.Contains(word))
             {
-                return false;
+                return 0;
             }
-            return true;
+            return 1;
         }
 
         /// <summary>Type matcher for MaterialTag.</summary>
-        public bool MatchMaterial(string word, bool precise)
+        public int MatchMaterial(string word, bool precise)
         {
-            return MatchBlock(word, precise) || MatchItem(word, precise);
+            return Math.Max(MatchBlock(word, precise), MatchItem(word, precise));
         }
 
         /// <summary>Type matcher for areas.</summary>
-        public bool MatchArea(string word, bool precise)
+        public int MatchArea(string word, bool precise)
         {
             if (word == "area" || word == "cuboid" || word == "polygon" || word == "ellipsoid"
                 || word.StartsWith("area_flagged:") || word.StartsWith("biome:"))
             {
-                return true;
+                return 10;
             }
             if (precise)
             {
                 if (AdvancedMatcher.IsAdvancedMatchable(word))
                 {
-                    return true;
+                    return 2;
                 }
-                return false;
+                return 0;
             }
             if (AdvancedMatcher.IsAdvancedMatchable(word))
             {
-                return true;
+                return 5;
             }
             if (Items.Contains(word) || Blocks.Contains(word) || Entities.Contains(word))
             {
-                return false;
+                return 0;
             }
-            return true;
+            return 1;
         }
 
         /// <summary>Type matcher for WorldTag.</summary>
-        public bool MatchWorld(string word, bool precise)
+        public int MatchWorld(string word, bool precise)
         {
-            return true; // TODO: ?
+            return 1; // TODO: ?
         }
 
         /// <summary>Validator type data for event matching.</summary>
-        public Dictionary<string, Func<string, bool, bool>> KnownValidatorTypes;
+        public Dictionary<string, Func<string, bool, int>> KnownValidatorTypes;
 
         /// <summary>Constructs an instance of <see cref="ExtraData"/>.</summary>
         public ExtraData()
         {
-            KnownValidatorTypes = new Dictionary<string, Func<string, bool, bool>>()
+            KnownValidatorTypes = new Dictionary<string, Func<string, bool, int>>()
             {
                 { "entity", MatchEntity },
                 { "projectile", MatchEntity },

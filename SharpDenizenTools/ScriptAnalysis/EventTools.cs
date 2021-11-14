@@ -45,14 +45,14 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Parse some event format input into a set of could-matchers.</summary>
-        public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Dictionary<string, Func<string, bool, bool>> validatorTypes, Action<string> error)
+        public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Dictionary<string, Func<string, bool, int>> validatorTypes, Action<string> error)
         {
             List<ScriptEventCouldMatcher> matcherList = new List<ScriptEventCouldMatcher>();
             BuildMainContent(matcherList, format, validatorTypes, (s) => error($"while parsing event '{format}': {s}"));
             return matcherList;
         }
 
-        private static void BuildMainContent(List<ScriptEventCouldMatcher> output, string format, Dictionary<string, Func<string, bool, bool>> validatorTypes, Action<string> error)
+        private static void BuildMainContent(List<ScriptEventCouldMatcher> output, string format, Dictionary<string, Func<string, bool, int>> validatorTypes, Action<string> error)
         {
             int paren = format.IndexOf('(');
             if (paren == -1)
