@@ -47,7 +47,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static bool LoadGuideData = false;
 
         /// <summary>Download all docs.</summary>
-        public static MetaDocs DownloadAll(string dataCache = null)
+        public static MetaDocs DownloadAll()
         {
             using HttpClient webClient = new HttpClient
             {
@@ -57,7 +57,7 @@ namespace SharpDenizenTools.MetaHandlers
             MetaDocs docs = new MetaDocs();
             try
             {
-                docs.Data = ExtraData.Load(dataCache);
+                docs.Data = ExtraData.Load();
             }
             catch (Exception ex)
             {

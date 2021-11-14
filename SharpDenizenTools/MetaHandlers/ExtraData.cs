@@ -20,6 +20,12 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The current extra data object (if loaded).</summary>
         public static ExtraData Data;
 
+        /// <summary>Cache path for the extra data file.</summary>
+        public static string CachePath;
+
+        /// <summary>If true, the cache file MUST be loaded (if it exists).</summary>
+        public static bool ForceCache;
+
         /// <summary>The processed data section.</summary>
         public FDSSection DataSection;
 
@@ -30,18 +36,17 @@ namespace SharpDenizenTools.MetaHandlers
         public string[] ItemArray, BlockArray, EntityArray;
 
         /// <summary>Loads an <see cref="ExtraData"/> instance.</summary>
-        /// <param name="cachePath">Optional file path for data caching.</param>
-        public static ExtraData Load(string cachePath = null)
+        public static ExtraData Load()
         {
             ExtraData result = new ExtraData();
             try
             {
                 string content = null;
-                if (cachePath != null)
+                if (CachePath != null)
                 {
-                    if (File.Exists(cachePath) && DateTime.UtcNow.Subtract(File.GetLastWriteTimeUtc(cachePath)).TotalDays < 15)
+                    if (File.Exists(CachePath) && (ForceCache || DateTime.UtcNow.Subtract(File.GetLastWriteTimeUtc(CachePath)).TotalDays < 15))
                     {
-                        content = File.ReadAllText(cachePath);
+                        content = File.ReadAllText(CachePath);
                     }
                 }
                 if (content == null)
@@ -52,9 +57,9 @@ namespace SharpDenizenTools.MetaHandlers
                     };
                     webClient.DefaultRequestHeaders.UserAgent.ParseAdd("DenizenMetaScanner/1.0");
                     content = webClient.GetStringAsync(EXTRA_DATA_SOURCE).Result;
-                    if (content != null && cachePath != null)
+                    if (content != null && CachePath != null)
                     {
-                        File.WriteAllText(cachePath, content);
+                        File.WriteAllText(CachePath, content);
                     }
                 }
                 result.DataSection = new FDSSection(content);
@@ -101,6 +106,10 @@ namespace SharpDenizenTools.MetaHandlers
 
         private static string Select(params string[] options)
         {
+            if (options.Length == 0)
+            {
+                return "(error!)";
+            }
             return options[random.Next(options.Length)];
         }
 
