@@ -95,6 +95,49 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Core object types.</summary>
         public MetaObjectType ObjectTagType, ElementTagType;
 
+        /// <summary>Special mapping of first-word to contents for event lookup optimization.</summary>
+        public Dictionary<string, List<MetaEvent>> EventLookupOpti = new Dictionary<string, List<MetaEvent>>();
+
+        /// <summary>Events that can't fit into <see cref="EventLookupOpti"/>.</summary>
+        public List<MetaEvent> LegacyCouldMatchEvents = new List<MetaEvent>();
+
+        /// <summary>Returns the event that best matches the input text.</summary>
+        public MetaEvent FindEventFor(string text)
+        {
+            text = text.ToLowerFast();
+            if (text.StartsWith("on "))
+            {
+                text = text["on ".Length..];
+            }
+            else if (text.StartsWith("after "))
+            {
+                text = text["after ".Length..];
+            }
+            if (Events.TryGetValue(text, out MetaEvent evt))
+            {
+                return evt;
+            }
+            string[] parts = text.SplitFast(' ');
+            if (EventLookupOpti.TryGetValue(parts[0], out List<MetaEvent> possible))
+            {
+                foreach (MetaEvent evt2 in possible)
+                {
+                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts)))
+                    {
+                        return evt2;
+                    }
+                }
+            }
+            foreach (MetaEvent evt2 in LegacyCouldMatchEvents)
+            {
+                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts)))
+                {
+                    return evt2;
+                }
+            }
+            return null;
+        }
+
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {

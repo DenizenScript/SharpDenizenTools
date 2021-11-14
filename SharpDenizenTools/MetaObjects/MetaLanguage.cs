@@ -34,8 +34,8 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public string Description;
 
-        /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
-        public override bool ApplyValue(string key, string value)
+        /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
+        public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
             switch (key)
             {
@@ -46,7 +46,7 @@ namespace SharpDenizenTools.MetaObjects
                     Description = value;
                     return true;
                 default:
-                    return base.ApplyValue(key, value);
+                    return base.ApplyValue(docs, key, value);
             }
         }
 

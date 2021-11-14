@@ -105,6 +105,17 @@ namespace SharpDenizenTools.MetaHandlers
                 docs.LoadErrors.Add($"Internal exception while loading guides - {ex.GetType().FullName} ... see bot console for details.");
                 Console.Error.WriteLine($"Error: {ex}");
             }
+            PostDownloadVerify(docs);
+            foreach (string str in docs.LoadErrors)
+            {
+                Console.Error.WriteLine($"Load error: {str}");
+            }
+            return docs;
+        }
+
+        /// <summary>Verify all objects after <see cref="DownloadAll"/>. Automatically called.</summary>
+        public static void PostDownloadVerify(MetaDocs docs)
+        {
             foreach (MetaObject obj in docs.AllMetaObjects())
             {
                 try
@@ -130,16 +141,9 @@ namespace SharpDenizenTools.MetaHandlers
                     Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
                 }
             }
-            foreach (string str in docs.LoadErrors)
-            {
-                Console.Error.WriteLine($"Load error: {str}");
-            }
-            return docs;
         }
 
-        /// <summary>
-        /// Downloads guide source info.
-        /// </summary>
+        /// <summary>Downloads guide source info.</summary>
         public static void ReadGuides(MetaDocs docs, HttpClient client)
         {
             string page = client.GetStringAsync(DENIZEN_GUIDE_SOURCE).Result;
@@ -208,9 +212,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
         }
 
-        /// <summary>
-        /// Download a zip file from a URL.
-        /// </summary>
+        /// <summary>Download a zip file from a URL.</summary>
         public static ZipArchive DownloadZip(HttpClient webClient, string url)
         {
             byte[] zipDataBytes;
@@ -226,9 +228,7 @@ namespace SharpDenizenTools.MetaHandlers
             return new ZipArchive(zipDataStream);
         }
 
-        /// <summary>
-        /// Read lines of meta docs from Java files in a zip.
-        /// </summary>
+        /// <summary>Read lines of meta docs from Java files in a zip.</summary>
         public static (int, string, string)[] ReadLines(ZipArchive zip, string folderLimit = null)
         {
             List<(int, string, string)> lines = new List<(int, string, string)>();
@@ -243,24 +243,28 @@ namespace SharpDenizenTools.MetaHandlers
                     continue;
                 }
                 using Stream entryStream = entry.Open();
-                int lineNum = 0;
-                foreach (string line in entryStream.AllLinesOfText())
-                {
-                    lineNum++;
-                    string trimmed = line.Trim().Replace("\r", "");
-                    if (trimmed.StartsWith("//"))
-                    {
-                        string actualContent = trimmed.Length == "//".Length ? "" : trimmed["// ".Length..];
-                        lines.Add((lineNum, entry.FullName, actualContent));
-                    }
-                }
+                SeparateDataLines(lines, entry.FullName, entryStream.AllLinesOfText());
             }
             return lines.ToArray();
         }
 
-        /// <summary>
-        /// Load the meta doc data from lines.
-        /// </summary>
+        /// <summary>Internal call for <see cref="ReadLines(ZipArchive, string)"/>.</summary>
+        public static void SeparateDataLines(List<(int, string, string)> outLines, string fName, IEnumerable<string> inLines)
+        {
+            int lineNum = 0;
+            foreach (string line in inLines)
+            {
+                lineNum++;
+                string trimmed = line.Trim().Replace("\r", "");
+                if (trimmed.StartsWith("//"))
+                {
+                    string actualContent = trimmed.Length == "//".Length ? "" : trimmed["// ".Length..];
+                    outLines.Add((lineNum, fName, actualContent));
+                }
+            }
+        }
+
+        /// <summary>Load the meta doc data from lines.</summary>
         public static void LoadDataFromLines(MetaDocs docs, string websrc, (int, string, string)[] lines)
         {
             for (int i = 0; i < lines.Length; i++)
@@ -303,9 +307,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
         }
 
-        /// <summary>
-        /// Gets a clean proper URL for a file path, if possible.
-        /// </summary>
+        /// <summary>Gets a clean proper URL for a file path, if possible.</summary>
         public static string GetCorrectURL(string webSource, string file, int line)
         {
             if (webSource.StartsWith("https://github"))
@@ -315,9 +317,7 @@ namespace SharpDenizenTools.MetaHandlers
             return $"Web source {webSource} file {file} line {line}";
         }
 
-        /// <summary>
-        /// Load an object into the meta docs from the object's text definition.
-        /// </summary>
+        /// <summary>Load an object into the meta docs from the object's text definition.</summary>
         public static void LoadInObject(MetaDocs docs, string objectType, string file, string[] objectData)
         {
             try
@@ -338,7 +338,7 @@ namespace SharpDenizenTools.MetaHandlers
                     {
                         if (curKey != null && curValue != null)
                         {
-                            if (!obj.ApplyValue(curKey.ToLowerFast(), curValue.Trim(' ', '\t', '\n')))
+                            if (!obj.ApplyValue(docs, curKey.ToLowerFast(), curValue.Trim(' ', '\t', '\n')))
                             {
                                 docs.LoadErrors.Add($"While processing {file} in object type '{objectType}' for '{obj.Name}' could not apply key '{curKey}' with value '{curValue}'.");
                             }

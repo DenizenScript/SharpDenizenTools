@@ -75,10 +75,11 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Apply a setting value to this meta object.
         /// </summary>
+        /// <param name="docs">The relevant meta docs instance.</param>
         /// <param name="key">The setting key.</param>
         /// <param name="value">The setting value.</param>
         /// <returns>Whether the value was applied.</returns>
-        public virtual bool ApplyValue(string key, string value)
+        public virtual bool ApplyValue(MetaDocs docs, string key, string value)
         {
             switch (key)
             {
@@ -231,10 +232,10 @@ namespace SharpDenizenTools.MetaObjects
                         {
                             searchText = searchText["on ".Length..];
                         }
-                        exists = docs.Events.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
+                        exists = docs.FindEventFor(searchText) != null;
                         if (!exists)
                         {
-                            exists = docs.Events.Values.Any(e => e.RegexMatcher.IsMatch(searchText));
+                            exists = docs.Events.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
                         }
                     }
                     else if (type.Equals("action"))

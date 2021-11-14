@@ -1108,7 +1108,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             foreach (LineTrackedString eventValue in eventsMap.Keys)
                             {
-                                string eventName = eventValue.Text[(eventValue.Text.StartsWith("on") ? "on ".Length : "after ".Length)..];
+                                string eventName = eventValue.Text[(eventValue.Text.StartsWith("on ") ? "on ".Length : (eventValue.Text.StartsWith("after ") ? "after ".Length : 0))..];
                                 if (eventName.Contains("@"))
                                 {
                                     Range? atRange = ContainsObjectNotation(eventName);
@@ -1119,42 +1119,22 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
                                     }
                                 }
-                                eventName = "on " + eventName;
-                                eventName = SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
-                                if (!MetaDocs.CurrentMeta.Events.TryGetValue(eventName, out MetaEvent realEvt))
+                                eventName = EventTools.SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
+                                string[] parts = eventName.SplitFast(' ');
+                                MetaEvent matchedEvent = null;
+                                foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                 {
-                                    int matchQuality = 0;
-                                    foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
+                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts)))
                                     {
-                                        int potentialMatch = 0;
-                                        if (evt.RegexMatcher.IsMatch(eventName))
-                                        {
-                                            potentialMatch = 1;
-                                            if (evt.MultiNames.Any(name => AlphabetMatcher.TrimToMatches(name).Contains(eventName)))
-                                            {
-                                                potentialMatch++;
-                                            }
-                                            if (switches.All(s => evt.IsValidSwitch(s.Key)))
-                                            {
-                                                potentialMatch++;
-                                            }
-                                        }
-                                        if (potentialMatch > matchQuality)
-                                        {
-                                            matchQuality = potentialMatch;
-                                            realEvt = evt;
-                                            if (matchQuality == 3)
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (matchQuality == 0)
-                                    {
-                                        warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
+                                        matchedEvent = evt;
+                                        break;
                                     }
                                 }
-                                if (realEvt != null)
+                                if (matchedEvent == null)
+                                {
+                                    warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
+                                }
+                                else
                                 {
                                     foreach (KeyValuePair<string, string> switchPair in switches)
                                     {
@@ -1174,28 +1154,28 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         }
                                         else if (switchPair.Key == "in" || switchPair.Key == "location_flagged")
                                         {
-                                            if (!realEvt.HasLocation)
+                                            if (!matchedEvent.HasLocation)
                                             {
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"'in' and 'location_flagged' switches are only supported on events that have a known location.");
                                             }
                                         }
                                         else if (switchPair.Key == "flagged" || switchPair.Key == "permission")
                                         {
-                                            if (string.IsNullOrWhiteSpace(realEvt.Player))
+                                            if (string.IsNullOrWhiteSpace(matchedEvent.Player))
                                             {
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"'flagged' and 'permission' switches are only supported on events that have a linked player.");
                                             }
                                         }
                                         else if (switchPair.Key == "assigned")
                                         {
-                                            if (string.IsNullOrWhiteSpace(realEvt.NPC))
+                                            if (string.IsNullOrWhiteSpace(matchedEvent.NPC))
                                             {
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"'assigned' switch is only supported on events that have a linked NPC.");
                                             }
                                         }
                                         else
                                         {
-                                            if (!realEvt.IsValidSwitch(switchPair.Key))
+                                            if (!matchedEvent.IsValidSwitch(switchPair.Key))
                                             {
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"Switch given is unrecognized.");
                                             }
@@ -1218,43 +1198,6 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// Matcher for A-Z only.
         /// </summary>
         public static readonly AsciiMatcher AlphabetMatcher = new AsciiMatcher(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
-
-        /// <summary>
-        /// Matcher for numerical digits 0-9 only.
-        /// </summary>
-        public static readonly AsciiMatcher NumbersMatcher = new AsciiMatcher(c => c >= '0' && c <= '9');
-
-        /// <summary>
-        /// Switch-prefixes that definitely aren't real switches.
-        /// </summary>
-        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged",
-                "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "raw_exact", "item_enchanted", "material_flagged", "location_in", "block_flagged" };
-
-        /// <summary>
-        /// Separates the switches from an event line.
-        /// </summary>
-        /// <param name="eventLine">The original full event line.</param>
-        /// <param name="switches">The output switch list.</param>
-        /// <returns>The cleaned event line.</returns>
-        public static string SeparateSwitches(string eventLine, out List<KeyValuePair<string, string>> switches)
-        {
-            string[] parts = eventLine.SplitFast(' ');
-            StringBuilder output = new StringBuilder();
-            switches = new List<KeyValuePair<string, string>>();
-            foreach (string part in parts)
-            {
-                if (part.Contains(':') && !NotSwitches.Contains(part.Before(":")) && !NumbersMatcher.IsOnlyMatches(part.Before(":")))
-                {
-                    string switchName = part.BeforeAndAfter(':', out string switchVal);
-                    switches.Add(new KeyValuePair<string, string>(switchName.ToLowerFast(), switchVal));
-                }
-                else
-                {
-                    output.Append(part).Append(' ');
-                }
-            }
-            return output.ToString().Trim();
-        }
 
         /// <summary>
         /// Matcher for the letter right before the '@' symbol in existing ObjectTag types.

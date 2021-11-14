@@ -5,12 +5,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaHandlers;
+using SharpDenizenTools.ScriptAnalysis;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented event.
-    /// </summary>
+    /// <summary>A documented event.</summary>
     public class MetaEvent : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -23,74 +22,61 @@ namespace SharpDenizenTools.MetaObjects
         public override void AddTo(MetaDocs docs)
         {
             docs.Events.Add(CleanName, this);
+            bool anyLegacy = false;
+            foreach (ScriptEventCouldMatcher matcher in CouldMatchers.DistinctBy(m => m.Parts[0]))
+            {
+                docs.EventLookupOpti.GetOrCreate(matcher.Parts[0], () => new List<MetaEvent>()).Add(this);
+                if (matcher.Parts[0].StartsWithFast('<'))
+                {
+                    anyLegacy = true;
+                }
+            }
+            if (anyLegacy)
+            {
+                docs.LegacyCouldMatchEvents.Add(this);
+            }
         }
 
         /// <summary><see cref="MetaObject.MultiNames"/></summary>
         public override IEnumerable<string> MultiNames => CleanEvents;
 
-        /// <summary>
-        /// The names of the event.
-        /// </summary>
+        /// <summary>The names of the event.</summary>
         public string[] Events = Array.Empty<string>();
 
-        /// <summary>
-        /// The names of the events, autocleaned.
-        /// </summary>
+        /// <summary>The names of the events, autocleaned.</summary>
         public string[] CleanEvents = Array.Empty<string>();
 
-        /// <summary>
-        /// Switches available to the event.
-        /// </summary>
+        /// <summary>Could-Matchers for this event.</summary>
+        public ScriptEventCouldMatcher[] CouldMatchers = Array.Empty<ScriptEventCouldMatcher>();
+
+        /// <summary>Switches available to the event.</summary>
         public List<string> Switches = new List<string>();
 
-        /// <summary>
-        /// Just the names of the event's switches.
-        /// </summary>
+        /// <summary>Just the names of the event's switches.</summary>
         public HashSet<string> SwitchNames = new HashSet<string>();
 
-        /// <summary>
-        /// The regex matcher.
-        /// </summary>
-        public Regex RegexMatcher = null;
-
-        /// <summary>
-        /// The trigger reason.
-        /// </summary>
+        /// <summary>The trigger reason.</summary>
         public string Triggers;
 
-        /// <summary>
-        /// Context tags. One tag per string.
-        /// </summary>
+        /// <summary>Context tags. One tag per string.</summary>
         public string[] Context = Array.Empty<string>();
 
-        /// <summary>
-        /// Determination options. One Determination per string.
-        /// </summary>
+        /// <summary>Determination options. One Determination per string.</summary>
         public string[] Determinations = Array.Empty<string>();
 
-        /// <summary>
-        /// Whether there's a player attached to the event.
-        /// </summary>
+        /// <summary>Whether there's a player attached to the event.</summary>
         public string Player = "";
 
-        /// <summary>
-        /// Whether there's an NPC attached to the event.
-        /// </summary>
+        /// <summary>Whether there's an NPC attached to the event.</summary>
         public string NPC = "";
 
-        /// <summary>
-        /// Whether the event is cancellable.
-        /// </summary>
+        /// <summary>Whether the event is cancellable.</summary>
         public bool Cancellable = false;
 
-        /// <summary>
-        /// Whether the event has a location for location switches.
-        /// </summary>
+        /// <summary>Whether the event has a location for location switches.</summary>
         public bool HasLocation = false;
 
-        /// <summary>
-        /// Returns whether the switch name given is valid for this event.
-        /// </summary>
+        /// <summary>Returns whether the switch name given is valid for this event.</summary>
         public bool IsValidSwitch(string switchName)
         {
             if (SwitchNames.Contains(switchName))
@@ -120,14 +106,15 @@ namespace SharpDenizenTools.MetaObjects
             return false;
         }
 
-        /// <summary><see cref="MetaObject.ApplyValue(string, string)"/></summary>
-        public override bool ApplyValue(string key, string value)
+        /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
+        public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
             switch (key)
             {
                 case "events":
                     Events = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     CleanEvents = Events.Select(s => s.ToLowerFast()).ToArray();
+                    CouldMatchers = Events.Select(s => EventTools.ParseMatchers(s, (s) => docs.LoadErrors.Add(s))).Flatten().ToArray();
                     HasMultipleNames = Events.Length > 1;
                     return true;
                 case "triggers":
@@ -139,9 +126,8 @@ namespace SharpDenizenTools.MetaObjects
                 case "npc":
                     NPC = value;
                     return true;
-                case "regex":
-                    RegexMatcher = new Regex(value, RegexOptions.Compiled);
-                    return true;
+                case "regex": return true; // TODO: TEMPORARY
+#warning temporary
                 case "switch":
                     foreach (string switchLine in value.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {
@@ -162,7 +148,7 @@ namespace SharpDenizenTools.MetaObjects
                     HasLocation = value.Trim().ToLowerFast() == "true";
                     return true;
                 default:
-                    return base.ApplyValue(key, value);
+                    return base.ApplyValue(docs, key, value);
             }
         }
 
@@ -170,7 +156,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             PostCheckSynonyms(docs, docs.Events);
-            Require(docs, Events[0], Triggers, RegexMatcher);
+            Require(docs, Events[0], Triggers);
             PostCheckLinkableText(docs, Triggers);
             foreach (string context in Context)
             {
@@ -188,7 +174,6 @@ namespace SharpDenizenTools.MetaObjects
             base.BuildSearchables();
             SearchHelper.PerfectMatches.AddRange(Events);
             SearchHelper.Strongs.Add(Triggers);
-            SearchHelper.Decents.Add(RegexMatcher.ToString());
             SearchHelper.Decents.AddRange(Context);
             SearchHelper.Decents.AddRange(Determinations);
             if (NPC != null)
