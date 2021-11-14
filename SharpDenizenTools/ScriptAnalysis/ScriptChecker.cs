@@ -1124,7 +1124,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 MetaEvent matchedEvent = null;
                                 foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                 {
-                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, false)))
+                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, false, false))) // TODO: Enable 'precise: true' when contextual data is tracked.
                                     {
                                         matchedEvent = evt;
                                         break;
@@ -1134,7 +1134,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 {
                                     foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                     {
-                                        if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, true)))
+                                        if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, true, false)))
                                         {
                                             matchedEvent = evt;
                                             break;

@@ -47,7 +47,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static bool LoadGuideData = false;
 
         /// <summary>Download all docs.</summary>
-        public static MetaDocs DownloadAll()
+        public static MetaDocs DownloadAll(string dataCache = null)
         {
             using HttpClient webClient = new HttpClient
             {
@@ -55,6 +55,15 @@ namespace SharpDenizenTools.MetaHandlers
             };
             webClient.DefaultRequestHeaders.UserAgent.ParseAdd("DenizenMetaScanner/1.0");
             MetaDocs docs = new MetaDocs();
+            try
+            {
+                docs.Data = ExtraData.Load(dataCache);
+            }
+            catch (Exception ex)
+            {
+                docs.LoadErrors.Add($"Internal exception while reading extra data - {ex.GetType().FullName} ... see bot console for details.");
+                Console.Error.WriteLine($"Error: {ex}");
+            }
             ConcurrentDictionary<string, ZipArchive> zips = new ConcurrentDictionary<string, ZipArchive>();
             List<ManualResetEvent> resets = new List<ManualResetEvent>();
             foreach (string src in SourcesToUse)

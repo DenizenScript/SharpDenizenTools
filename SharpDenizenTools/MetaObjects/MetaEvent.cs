@@ -6,17 +6,24 @@ using System.Text.RegularExpressions;
 using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.ScriptAnalysis;
+using FreneticUtilities.FreneticToolkit;
 
 namespace SharpDenizenTools.MetaObjects
 {
     /// <summary>A documented event.</summary>
     public class MetaEvent : MetaObject
     {
+        /// <summary>Symbols that are structural in event names and can be hidden.</summary>
+        public static AsciiMatcher EventNameCleaner = new AsciiMatcher("<>'()");
+
         /// <summary><see cref="MetaObject.Type"/></summary>
         public override MetaType Type => MetaDocs.META_TYPE_EVENT;
 
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => Events[0];
+
+        /// <summary><see cref="MetaObject.CleanName"/></summary>
+        public override string CleanName => CleanEvents[0];
 
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
@@ -113,8 +120,8 @@ namespace SharpDenizenTools.MetaObjects
             {
                 case "events":
                     Events = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                    CleanEvents = Events.Select(s => s.ToLowerFast()).ToArray();
-                    CouldMatchers = Events.Select(s => EventTools.ParseMatchers(s, (s) => docs.LoadErrors.Add(s))).Flatten().ToArray();
+                    CleanEvents = Events.Select(s => EventNameCleaner.TrimToNonMatches(s.ToLowerFast())).ToArray();
+                    CouldMatchers = Events.Select(s => EventTools.ParseMatchers(s, docs.Data.KnownValidatorTypes, (s) => docs.LoadErrors.Add(s))).Flatten().ToArray();
                     HasMultipleNames = Events.Length > 1;
                     return true;
                 case "triggers":

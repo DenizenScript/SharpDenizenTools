@@ -101,8 +101,14 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Events that can't fit into <see cref="EventLookupOpti"/>.</summary>
         public List<MetaEvent> LegacyCouldMatchEvents = new List<MetaEvent>();
 
+        /// <summary>Associated ExtraData instance, if any.</summary>
+        public ExtraData Data;
+
         /// <summary>Returns the event that best matches the input text.</summary>
-        public List<MetaEvent> FindEventsFor(string text, bool allowPartial)
+        /// <param name="text">The text to match events against.</param>
+        /// <param name="allowPartial">If false: full event must match. If true: can just be first few words.</param>
+        /// <param name="precise">If true: object matchers must be valid. If false: object matchers must look vaguely close to correct.</param>
+        public List<MetaEvent> FindEventsFor(string text, bool allowPartial, bool precise)
         {
             text = text.ToLowerFast();
             if (text.StartsWith("on "))
@@ -123,7 +129,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 foreach (MetaEvent evt2 in possible)
                 {
-                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial)))
+                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial, precise)))
                     {
                         result.Add(evt2);
                         if (!allowPartial)
@@ -135,7 +141,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             foreach (MetaEvent evt2 in LegacyCouldMatchEvents)
             {
-                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial)))
+                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial, precise)))
                 {
                     result.Add(evt2);
                     if (!allowPartial)

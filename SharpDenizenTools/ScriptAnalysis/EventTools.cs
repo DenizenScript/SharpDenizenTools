@@ -45,19 +45,19 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Parse some event format input into a set of could-matchers.</summary>
-        public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Action<string> error)
+        public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Dictionary<string, Func<string, bool, bool>> validatorTypes, Action<string> error)
         {
             List<ScriptEventCouldMatcher> matcherList = new List<ScriptEventCouldMatcher>();
-            BuildMainContent(matcherList, format, (s) => error($"while parsing event '{format}': {s}"));
+            BuildMainContent(matcherList, format, validatorTypes, (s) => error($"while parsing event '{format}': {s}"));
             return matcherList;
         }
 
-        private static void BuildMainContent(List<ScriptEventCouldMatcher> output, string format, Action<string> error)
+        private static void BuildMainContent(List<ScriptEventCouldMatcher> output, string format, Dictionary<string, Func<string, bool, bool>> validatorTypes, Action<string> error)
         {
             int paren = format.IndexOf('(');
             if (paren == -1)
             {
-                output.Add(new ScriptEventCouldMatcher(format, error));
+                output.Add(new ScriptEventCouldMatcher(format, error, validatorTypes));
                 return;
             }
             int endParen = format.IndexOf(')', paren);
@@ -69,8 +69,8 @@ namespace SharpDenizenTools.ScriptAnalysis
             string baseText = paren == 0 ? "" : format[..(paren - 1)];
             string afterText = endParen + 2 >= format.Length ? "" : format[(endParen + 2)..];
             string optional = format[(paren + 1)..endParen];
-            BuildMainContent(output, baseText + (string.IsNullOrEmpty(afterText) || string.IsNullOrWhiteSpace(baseText) ? afterText : (" " + afterText)), error);
-            BuildMainContent(output, (string.IsNullOrEmpty(baseText) ? "" : (baseText + " ")) + optional + (string.IsNullOrEmpty(afterText) ? "" : (" " + afterText)), error);
+            BuildMainContent(output, baseText + (string.IsNullOrEmpty(afterText) || string.IsNullOrWhiteSpace(baseText) ? afterText : (" " + afterText)), validatorTypes, error);
+            BuildMainContent(output, (string.IsNullOrEmpty(baseText) ? "" : (baseText + " ")) + optional + (string.IsNullOrEmpty(afterText) ? "" : (" " + afterText)), validatorTypes, error);
         }
     }
 }

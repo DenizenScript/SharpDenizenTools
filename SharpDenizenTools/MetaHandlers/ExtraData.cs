@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using SharpDenizenTools.ScriptAnalysis;
 
 namespace SharpDenizenTools.MetaHandlers
 {
@@ -24,6 +25,9 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>The raw relevant data sets.</summary>
         public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics;
+
+        /// <summary>Relevant data sets as arrays.</summary>
+        public string[] ItemArray, BlockArray, EntityArray;
 
         /// <summary>Loads an <see cref="ExtraData"/> instance.</summary>
         /// <param name="cachePath">Optional file path for data caching.</param>
@@ -83,11 +87,253 @@ namespace SharpDenizenTools.MetaHandlers
             PotionEffects = GetDataSet("PotionEffects");
             Potions = GetDataSet("Potions");
             Statistics = GetDataSet("Statistics");
+            ItemArray = Items.ToArray();
+            EntityArray = Entities.ToArray();
+            BlockArray = Blocks.ToArray();
         }
 
         private HashSet<string> GetDataSet(string type)
         {
             return new HashSet<string>((DataSection.GetStringList(type.ToLowerFast()) ?? new List<string>()).Select(s => s.ToLowerFast()));
+        }
+
+        private static readonly Random random = new Random();
+
+        private static string Select(params string[] options)
+        {
+            return options[random.Next(options.Length)];
+        }
+
+        /// <summary>Suggests a random example value for the given type.</summary>
+        public string SuggestExampleFor(string type)
+        {
+            if (type.StartsWithFast('\'') && type.EndsWithFast('\''))
+            {
+                return type[1..^1];
+            }
+            if (random.NextDouble() > 0.7)
+            {
+                return type;
+            }
+            switch (type)
+            {
+                case "entity": return random.NextDouble() > 0.5 ? Select(SpecialEntityMatchables.ToArray()) : Select(EntityArray);
+                case "projectile": return Select("projectile", "arrow", "snowball");
+                case "vehicle": return Select("vehicle", "minecart", "horse");
+                case "item": return Select(ItemArray);
+                case "block": return Select(BlockArray);
+                case "material": return random.NextDouble() > 0.5 ? Select(BlockArray) : Select(ItemArray);
+                case "area": return Select("area", "cuboid", "polygon");
+                case "inventory": return Select(InventoryMatchers.ToArray());
+                case "world": return Select("world", "world_nether", "world_the_end", "space", "survivalland");
+            }
+            return type;
+        }
+
+        /// <summary>Known always-valid entity labels.</summary>
+        public static HashSet<string> SpecialEntityMatchables = new HashSet<string>()
+        {
+            "entity", "npc", "player", "living", "vehicle", "fish", "projectile", "hanging", "monster", "mob", "animal"
+        };
+
+        /// <summary>Type matcher for EntityTag.</summary>
+        public bool MatchEntity(string word, bool precise)
+        {
+            if (word.StartsWith("entity_flagged:") || word.StartsWith("player_flagged:") || word.StartsWith("npc_flagged:")
+                || SpecialEntityMatchables.Contains(word)
+                || Entities.Contains(word))
+            {
+                return true;
+            }
+            if (precise)
+            {
+                if (AdvancedMatcher.IsAdvancedMatchable(word))
+                {
+                    AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
+                    return Entities.Any(e => matcher.DoesMatch(e));
+                }
+                return false;
+            }
+            if (AdvancedMatcher.IsAdvancedMatchable(word))
+            {
+                return true;
+            }
+            if (Blocks.Contains(word) || Items.Contains(word))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Known always-valid item labels.</summary>
+        public static HashSet<string> ItemCouldMatchPrefixes = new HashSet<string>()
+        {
+            "item_flagged", "vanilla_tagged", "item_enchanted", "material_flagged", "raw_exact"
+        };
+
+        /// <summary>Type matcher for ItemTag.</summary>
+        public bool MatchItem(string word, bool precise)
+        {
+            if (word == "block")
+            {
+                return false;
+            }
+            if (ItemCouldMatchPrefixes.Contains(word.Before(':'))
+                || word == "item" || word == "potion"
+                || Items.Contains(word))
+            {
+                return true;
+            }
+            if (precise)
+            {
+                if (AdvancedMatcher.IsAdvancedMatchable(word))
+                {
+                    AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
+                    return Items.Any(e => matcher.DoesMatch(e));
+                }
+                return false;
+            }
+            if (AdvancedMatcher.IsAdvancedMatchable(word))
+            {
+                return true;
+            }
+            if (Blocks.Contains(word) || Entities.Contains(word))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Known always-valid inventory labels.</summary>
+        public static HashSet<string> InventoryMatchers = new HashSet<string>()
+        {
+            "inventory", "notable", "note",
+            "npc", "player", "crafting", "enderchest", "workbench", "entity", "location", "generic",
+            // This should maybe be in the data file.
+            "chest", "dispenser", "dropper", "furnace", "workbench", "crafting", "enchanting", "brewing", "player",
+            "creative", "merchant", "ender_chest", "anvil", "smithing", "beacon", "hopper", "shulker_box", "barrel", "blast_furnace",
+            "lectern", "smoker", "loom", "cartography", "grindstone", "stonecutter", "composter"
+        };
+
+        /// <summary>Type matcher for InventoryTag.</summary>
+        public bool MatchInventory(string word, bool precise)
+        {
+            if (InventoryMatchers.Contains(word)
+                || word.StartsWith("inventory_flagged:"))
+            {
+                return true;
+            }
+            if (precise)
+            {
+                if (AdvancedMatcher.IsAdvancedMatchable(word))
+                {
+                    AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
+                    return InventoryMatchers.Any(e => matcher.DoesMatch(e));
+                }
+                return false;
+            }
+            if (AdvancedMatcher.IsAdvancedMatchable(word))
+            {
+                return true;
+            }
+            if (Blocks.Contains(word) || Items.Contains(word) || Entities.Contains(word))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Type matcher for blocks.</summary>
+        public bool MatchBlock(string word, bool precise)
+        {
+            if (word == "item")
+            {
+                return false;
+            }
+            if (word == "material" || word == "block"
+                || word.StartsWith("vanilla_tagged:") || word.StartsWith("material_flagged:")
+                || Blocks.Contains(word))
+            {
+                return true;
+            }
+            if (precise)
+            {
+                if (AdvancedMatcher.IsAdvancedMatchable(word))
+                {
+                    AdvancedMatcher.MatchHelper matcher = AdvancedMatcher.CreateMatcher(word);
+                    return Blocks.Any(e => matcher.DoesMatch(e));
+                }
+                return false;
+            }
+            if (AdvancedMatcher.IsAdvancedMatchable(word))
+            {
+                return true;
+            }
+            if (Items.Contains(word) || Entities.Contains(word))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Type matcher for MaterialTag.</summary>
+        public bool MatchMaterial(string word, bool precise)
+        {
+            return MatchBlock(word, precise) || MatchItem(word, precise);
+        }
+
+        /// <summary>Type matcher for areas.</summary>
+        public bool MatchArea(string word, bool precise)
+        {
+            if (word == "area" || word == "cuboid" || word == "polygon" || word == "ellipsoid"
+                || word.StartsWith("area_flagged:") || word.StartsWith("biome:"))
+            {
+                return true;
+            }
+            if (precise)
+            {
+                if (AdvancedMatcher.IsAdvancedMatchable(word))
+                {
+                    return true;
+                }
+                return false;
+            }
+            if (AdvancedMatcher.IsAdvancedMatchable(word))
+            {
+                return true;
+            }
+            if (Items.Contains(word) || Blocks.Contains(word) || Entities.Contains(word))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>Type matcher for WorldTag.</summary>
+        public bool MatchWorld(string word, bool precise)
+        {
+            return true; // TODO: ?
+        }
+
+        /// <summary>Validator type data for event matching.</summary>
+        public Dictionary<string, Func<string, bool, bool>> KnownValidatorTypes;
+
+        /// <summary>Constructs an instance of <see cref="ExtraData"/>.</summary>
+        public ExtraData()
+        {
+            KnownValidatorTypes = new Dictionary<string, Func<string, bool, bool>>()
+            {
+                { "entity", MatchEntity },
+                { "projectile", MatchEntity },
+                { "hanging", MatchEntity },
+                { "vehicle", MatchEntity },
+                { "item", MatchItem },
+                { "inventory", MatchInventory },
+                { "block", MatchBlock },
+                { "material", MatchMaterial },
+                { "area", MatchArea },
+                { "world", MatchWorld }
+            };
         }
     }
 }
