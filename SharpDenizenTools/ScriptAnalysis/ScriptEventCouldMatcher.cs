@@ -92,17 +92,17 @@ namespace SharpDenizenTools.ScriptAnalysis
             ArgOrder = argOrderList.ToArray();
         }
 
-        /// <summary>Returns true if the path could-match this event.</summary>
+        /// <summary>Returns 0 for no match, 1 for bare minimum match, up to 10 for best match.</summary>
         /// <param name="pathBaseParts">The array of words to match events against.</param>
         /// <param name="allowPartial">If false: full event must match. If true: can just be first few words.</param>
         /// <param name="precise">If true: object matchers must be valid. If false: object matchers must look vaguely close to correct.</param>
-        public bool DoesMatch(string[] pathBaseParts, bool allowPartial, bool precise)
+        public int TryMatch(string[] pathBaseParts, bool allowPartial, bool precise)
         {
             if (pathBaseParts.Length != Validators.Length)
             {
                 if (!allowPartial || pathBaseParts.Length > Validators.Length)
                 {
-                    return false;
+                    return 0;
                 }
             }
             int max = 0;
@@ -113,12 +113,36 @@ namespace SharpDenizenTools.ScriptAnalysis
                     int match = Validators[i](pathBaseParts[i], precise);
                     if (match == 0)
                     {
-                        return false;
+                        return 0;
                     }
                     max = Math.Max(max, match);
                 }
             }
-            return max > 1;
+            if (pathBaseParts.Length != Validators.Length)
+            {
+                return 1;
+            }
+            return max;
+        }
+
+        /// <summary>Returns true if this matcher matches better than the second matcher.</summary>
+        public bool IsBetterMatchThan(string[] pathBaseParts, bool allowPartial, bool precise, ScriptEventCouldMatcher matcher2)
+        {
+            if (Validators.Length != matcher2.Validators.Length)
+            {
+                return Validators.Length > matcher2.Validators.Length;
+            }
+            int betterMatches = 0;
+            foreach (int i in ArgOrder)
+            {
+                if (i < pathBaseParts.Length)
+                {
+                    int match = Validators[i](pathBaseParts[i], precise);
+                    int match2 = matcher2.Validators[i](pathBaseParts[i], precise);
+                    betterMatches += (match > match2) ? 1 : -1;
+                }
+            }
+            return betterMatches >= 0;
         }
     }
 }

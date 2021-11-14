@@ -1122,19 +1122,42 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 eventName = EventTools.SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
                                 string[] parts = eventName.SplitFast(' ');
                                 MetaEvent matchedEvent = null;
+                                ScriptEventCouldMatcher matched = null;
+                                bool matchedSwitches = false;
                                 foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                 {
-                                    if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, false, false))) // TODO: Enable 'precise: true' when contextual data is tracked.
+                                    foreach (ScriptEventCouldMatcher matcher in evt.CouldMatchers)
                                     {
-                                        matchedEvent = evt;
-                                        break;
+                                        if (matcher.TryMatch(parts, false, false) > 0)
+                                        {
+                                            if (matched == null || matcher.IsBetterMatchThan(parts, false, false, matched))
+                                            {
+                                                if (AllSwitchesValid(evt, switches))
+                                                {
+                                                    matched = matcher;
+                                                    matchedEvent = evt;
+                                                    matchedSwitches = true;
+                                                }
+                                                else if (!matchedSwitches)
+                                                {
+                                                    matched = matcher;
+                                                    matchedEvent = evt;
+                                                }
+                                            }
+                                            else if (!matchedSwitches && AllSwitchesValid(evt, switches))
+                                            {
+                                                matched = matcher;
+                                                matchedEvent = evt;
+                                                matchedSwitches = true;
+                                            }
+                                        }
                                     }
                                 }
                                 if (matchedEvent == null)
                                 {
                                     foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                     {
-                                        if (evt.CouldMatchers.Any(c => c.DoesMatch(parts, true, false)))
+                                        if (evt.CouldMatchers.Any(c => c.TryMatch(parts, true, false) > 0))
                                         {
                                             matchedEvent = evt;
                                             break;
@@ -1207,6 +1230,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                     LogInternalMessage($"Script check exception: {ex}");
                 }
             }
+        }
+
+        private static bool AllSwitchesValid(MetaEvent evt, List<KeyValuePair<string, string>> switches)
+        {
+            return switches.All(pair => evt.IsValidSwitch(pair.Key));
         }
 
         /// <summary>

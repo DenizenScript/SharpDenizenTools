@@ -129,7 +129,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 foreach (MetaEvent evt2 in possible)
                 {
-                    if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial, precise)))
+                    if (evt2.CouldMatchers.Any(c => c.TryMatch(parts, allowPartial, precise) > 0))
                     {
                         result.Add(evt2);
                         if (!allowPartial)
@@ -141,7 +141,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             foreach (MetaEvent evt2 in LegacyCouldMatchEvents)
             {
-                if (evt2.CouldMatchers.Any(c => c.DoesMatch(parts, allowPartial, precise)))
+                if (evt2.CouldMatchers.Any(c => c.TryMatch(parts, allowPartial, precise) > 0))
                 {
                     result.Add(evt2);
                     if (!allowPartial)
