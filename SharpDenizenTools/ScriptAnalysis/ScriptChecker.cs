@@ -1186,6 +1186,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                                                 warnScript(Warnings, eventValue.Line, "unknown_switch", $"'flagged' and 'permission' switches are only supported on events that have a linked player.");
                                             }
                                         }
+                                        else if (switchPair.Key == "assigned")
+                                        {
+                                            if (string.IsNullOrWhiteSpace(realEvt.NPC))
+                                            {
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'assigned' switch is only supported on events that have a linked NPC.");
+                                            }
+                                        }
                                         else
                                         {
                                             if (!realEvt.IsValidSwitch(switchPair.Key))

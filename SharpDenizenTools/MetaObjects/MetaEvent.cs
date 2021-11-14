@@ -101,6 +101,10 @@ namespace SharpDenizenTools.MetaObjects
             {
                 return !string.IsNullOrWhiteSpace(Player);
             }
+            else if (switchName == "assigned")
+            {
+                return !string.IsNullOrWhiteSpace(NPC);
+            }
             else if (switchName == "in" || switchName == "location_flagged")
             {
                 return HasLocation;
