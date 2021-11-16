@@ -74,7 +74,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// All tags available directly to this base (not counting base/implements).
         /// </summary>
-        public Dictionary<string, MetaTag> SubTags = new Dictionary<string, MetaTag>();
+        public Dictionary<string, MetaTag> SubTags = new();
 
         /// <summary>
         /// Other types or pseudo-types implemented by this type.
@@ -84,7 +84,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Other types or pseudo-types that extend this type.
         /// </summary>
-        public List<MetaObjectType> ExtendedBy = new List<MetaObjectType>();
+        public List<MetaObjectType> ExtendedBy = new();
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

@@ -11,7 +11,7 @@ namespace SharpDenizenTools.ScriptAnalysis
     public class ScriptEventCouldMatcher
     {
         /// <summary>Switches that are globally available.</summary>
-        public static HashSet<string> GlobalSwitches = new HashSet<string>() { "cancelled", "ignorecancelled", "priority", "server_flagged", "in" };
+        public static HashSet<string> GlobalSwitches = new() { "cancelled", "ignorecancelled", "priority", "server_flagged", "in" };
 
         /// <summary>The raw format string used to construct this couldMatcher.</summary>
         public string Format;
@@ -37,10 +37,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             KnownValidatorTypes = validatorTypes;
             Error = _error;
             Format = _format;
-            List<Func<string, bool, int>> validatorList = new List<Func<string, bool, int>>();
+            List<Func<string, bool, int>> validatorList = new();
             Parts = Format.Split(' ');
-            List<int> argOrderList = new List<int>();
-            List<int> secondaryArgList = new List<int>();
+            List<int> argOrderList = new();
+            List<int> secondaryArgList = new();
             int index = 0;
             foreach (string arg in Parts)
             {
@@ -76,7 +76,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 else if (arg.Contains('|'))
                 {
-                    HashSet<string> rawValues = new HashSet<string>(arg.SplitFast('|'));
+                    HashSet<string> rawValues = new(arg.SplitFast('|'));
                     validatorList.Add((word, price) => rawValues.Contains(word) ? 10 : 0);
                     argOrderList.Add(index++);
                 }

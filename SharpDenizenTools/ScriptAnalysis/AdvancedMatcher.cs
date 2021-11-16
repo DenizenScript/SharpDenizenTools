@@ -90,7 +90,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 int index = 0;
                 input = input.ToLowerFast();
-                if (!input.StartsWith(Texts[0]) || !input.EndsWith(Texts[Texts.Length - 1]))
+                if (!input.StartsWith(Texts[0]) || !input.EndsWith(Texts[^1]))
                 {
                     return false;
                 }

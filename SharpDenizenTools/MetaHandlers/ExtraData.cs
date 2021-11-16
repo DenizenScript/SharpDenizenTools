@@ -38,7 +38,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Loads an <see cref="ExtraData"/> instance.</summary>
         public static ExtraData Load()
         {
-            ExtraData result = new ExtraData();
+            ExtraData result = new();
             try
             {
                 string content = null;
@@ -51,7 +51,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 if (content == null)
                 {
-                    using HttpClient webClient = new HttpClient
+                    using HttpClient webClient = new()
                     {
                         Timeout = new TimeSpan(0, 2, 0)
                     };
@@ -102,7 +102,7 @@ namespace SharpDenizenTools.MetaHandlers
             return new HashSet<string>((DataSection.GetStringList(type.ToLowerFast()) ?? new List<string>()).Select(s => s.ToLowerFast()));
         }
 
-        private static readonly Random random = new Random();
+        private static readonly Random random = new();
 
         private static string Select(params string[] options)
         {
@@ -124,23 +124,23 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 return type;
             }
-            switch (type)
+            return type switch
             {
-                case "entity": return random.NextDouble() > 0.5 ? Select(SpecialEntityMatchables.ToArray()) : Select(EntityArray);
-                case "projectile": return Select("projectile", "arrow", "snowball");
-                case "vehicle": return Select("vehicle", "minecart", "horse");
-                case "item": return Select(ItemArray);
-                case "block": return Select(BlockArray);
-                case "material": return random.NextDouble() > 0.5 ? Select(BlockArray) : Select(ItemArray);
-                case "area": return Select("area", "cuboid", "polygon");
-                case "inventory": return Select(InventoryMatchers.ToArray());
-                case "world": return Select("world", "world_nether", "world_the_end", "space", "survivalland");
-            }
-            return type;
+                "entity" => random.NextDouble() > 0.5 ? Select(SpecialEntityMatchables.ToArray()) : Select(EntityArray),
+                "projectile" => Select("projectile", "arrow", "snowball"),
+                "vehicle" => Select("vehicle", "minecart", "horse"),
+                "item" => Select(ItemArray),
+                "block" => Select(BlockArray),
+                "material" => random.NextDouble() > 0.5 ? Select(BlockArray) : Select(ItemArray),
+                "area" => Select("area", "cuboid", "polygon"),
+                "inventory" => Select(InventoryMatchers.ToArray()),
+                "world" => Select("world", "world_nether", "world_the_end", "space", "survivalland"),
+                _ => type,
+            };
         }
 
         /// <summary>Known always-valid entity labels.</summary>
-        public static HashSet<string> SpecialEntityMatchables = new HashSet<string>()
+        public static HashSet<string> SpecialEntityMatchables = new()
         {
             "entity", "npc", "player", "living", "vehicle", "fish", "projectile", "hanging", "monster", "mob", "animal"
         };
@@ -175,7 +175,7 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>Known always-valid item labels.</summary>
-        public static HashSet<string> ItemCouldMatchPrefixes = new HashSet<string>()
+        public static HashSet<string> ItemCouldMatchPrefixes = new()
         {
             "item_flagged", "vanilla_tagged", "item_enchanted", "material_flagged", "raw_exact"
         };
@@ -214,7 +214,7 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>Known always-valid inventory labels.</summary>
-        public static HashSet<string> InventoryMatchers = new HashSet<string>()
+        public static HashSet<string> InventoryMatchers = new()
         {
             "inventory", "notable", "note",
             "npc", "player", "crafting", "enderchest", "workbench", "entity", "location", "generic",
@@ -318,7 +318,9 @@ namespace SharpDenizenTools.MetaHandlers
             return 1;
         }
 
+
         /// <summary>Type matcher for WorldTag.</summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static")]
         public int MatchWorld(string word, bool precise)
         {
             return 1; // TODO: ?

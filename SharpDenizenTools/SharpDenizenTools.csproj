@@ -12,7 +12,7 @@
     <Configurations>Debug;Release</Configurations>
     <Version>1.0.0</Version>
     <ProjectGuid>{3DB47D69-4228-4F22-1763-152292496865}</ProjectGuid>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

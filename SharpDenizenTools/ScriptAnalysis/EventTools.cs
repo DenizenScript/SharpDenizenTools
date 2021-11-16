@@ -12,10 +12,10 @@ namespace SharpDenizenTools.ScriptAnalysis
     public static class EventTools
     {
         /// <summary>Matcher for numerical digits 0-9 only.</summary>
-        public static readonly AsciiMatcher NumbersMatcher = new AsciiMatcher(c => c >= '0' && c <= '9');
+        public static readonly AsciiMatcher NumbersMatcher = new(c => c >= '0' && c <= '9');
 
         /// <summary>Switch-prefixes that definitely aren't real switches.</summary>
-        public static HashSet<string> NotSwitches = new HashSet<string>() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged",
+        public static HashSet<string> NotSwitches = new() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged",
                 "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "raw_exact", "item_enchanted", "material_flagged", "location_in", "block_flagged" };
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public static string SeparateSwitches(string eventLine, out List<KeyValuePair<string, string>> switches)
         {
             string[] parts = eventLine.SplitFast(' ');
-            StringBuilder output = new StringBuilder();
+            StringBuilder output = new();
             switches = new List<KeyValuePair<string, string>>();
             foreach (string part in parts)
             {
@@ -47,7 +47,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Parse some event format input into a set of could-matchers.</summary>
         public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Dictionary<string, Func<string, bool, int>> validatorTypes, Action<string> error)
         {
-            List<ScriptEventCouldMatcher> matcherList = new List<ScriptEventCouldMatcher>();
+            List<ScriptEventCouldMatcher> matcherList = new();
             BuildMainContent(matcherList, format, validatorTypes, (s) => error($"while parsing event '{format}': {s}"));
             return matcherList;
         }

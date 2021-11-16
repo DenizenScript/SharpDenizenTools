@@ -40,7 +40,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Other words that mean the same thing.
         /// </summary>
-        public List<string> Synonyms = new List<string>();
+        public List<string> Synonyms = new();
 
         /// <summary>
         /// What categorization group the object is in.
@@ -50,7 +50,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>
         /// Any warnings applied to this object type.
         /// </summary>
-        public List<string> Warnings = new List<string>();
+        public List<string> Warnings = new();
 
         /// <summary>
         /// Required plugin(s) if applicable.
@@ -211,7 +211,7 @@ namespace SharpDenizenTools.MetaObjects
                         docs.LoadErrors.Add($"{Type.Name} '{Name}' contains text link '{metaCommand}', which is formatted incorrectly.");
                         return;
                     }
-                    string type = metaCommand.Substring(0, firstSpace).ToLowerFast();
+                    string type = metaCommand[..firstSpace].ToLowerFast();
                     string searchText = metaCommand[(firstSpace + 1)..].ToLowerFast();
                     bool exists;
                     if (type.Equals("command"))
@@ -310,19 +310,19 @@ namespace SharpDenizenTools.MetaObjects
                 };
 
             /// <summary>Perfect match text, like a name.</summary>
-            public List<string> PerfectMatches = new List<string>();
+            public List<string> PerfectMatches = new();
 
             /// <summary>Hand-chosen additional semiperfect search terms.</summary>
-            public List<string> Synonyms = new List<string>();
+            public List<string> Synonyms = new();
 
             /// <summary>Very important matchables.</summary>
-            public List<string> Strongs = new List<string>();
+            public List<string> Strongs = new();
 
             /// <summary>Other normal matchables.</summary>
-            public List<string> Decents = new List<string>();
+            public List<string> Decents = new();
 
             /// <summary>Any/all remaining text.</summary>
-            public List<string> Backups = new List<string>();
+            public List<string> Backups = new();
 
             private static bool Try(List<string> list, string search, int val, out int toUse)
             {
@@ -372,7 +372,7 @@ namespace SharpDenizenTools.MetaObjects
         }
 
         /// <summary>Data to help object searches.</summary>
-        public SearchableHelpers SearchHelper = new SearchableHelpers();
+        public SearchableHelpers SearchHelper = new();
 
         /// <summary>Build the contents of <see cref="SearchHelper"/>.</summary>
         public virtual void BuildSearchables()

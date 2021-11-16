@@ -49,12 +49,12 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Download all docs.</summary>
         public static MetaDocs DownloadAll()
         {
-            using HttpClient webClient = new HttpClient
+            using HttpClient webClient = new()
             {
                 Timeout = new TimeSpan(0, 2, 0)
             };
             webClient.DefaultRequestHeaders.UserAgent.ParseAdd("DenizenMetaScanner/1.0");
-            MetaDocs docs = new MetaDocs();
+            MetaDocs docs = new();
             try
             {
                 docs.Data = ExtraData.Load();
@@ -64,11 +64,11 @@ namespace SharpDenizenTools.MetaHandlers
                 docs.LoadErrors.Add($"Internal exception while reading extra data - {ex.GetType().FullName} ... see bot console for details.");
                 Console.Error.WriteLine($"Error: {ex}");
             }
-            ConcurrentDictionary<string, ZipArchive> zips = new ConcurrentDictionary<string, ZipArchive>();
-            List<ManualResetEvent> resets = new List<ManualResetEvent>();
+            ConcurrentDictionary<string, ZipArchive> zips = new();
+            List<ManualResetEvent> resets = new();
             foreach (string src in SourcesToUse)
             {
-                ManualResetEvent evt = new ManualResetEvent(false);
+                ManualResetEvent evt = new(false);
                 resets.Add(evt);
                 Task.Factory.StartNew(() =>
                 {
@@ -169,7 +169,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 int linkEndIndex = page.IndexOf("</a>", linkIndex);
                 string linkBody = DENIZEN_GUIDE_SOURCE + page[(linkIndex + link_reference_text.Length)..linkEndIndex];
-                MetaGuidePage guidePage = new MetaGuidePage();
+                MetaGuidePage guidePage = new();
                 guidePage.URL = linkBody.BeforeAndAfter("\">", out guidePage.PageName);
                 guidePage.AddTo(docs);
                 guidePage.BuildSearchables();
@@ -208,7 +208,7 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     string link = DENIZEN_GUIDE_SOURCE + subPage + line[hrefIndex..hrefEndIndex];
                     string title = line[titleStartIndex..titleEndIndex].Replace("&quot;", "\"");
-                    MetaGuidePage guidePage = new MetaGuidePage
+                    MetaGuidePage guidePage = new()
                     {
                         URL = link,
                         PageName = pageTitle + " - " + title,
@@ -233,14 +233,14 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 zipDataBytes = webClient.GetByteArrayAsync(url).Result;
             }
-            MemoryStream zipDataStream = new MemoryStream(zipDataBytes);
+            MemoryStream zipDataStream = new(zipDataBytes);
             return new ZipArchive(zipDataStream);
         }
 
         /// <summary>Read lines of meta docs from Java files in a zip.</summary>
         public static (int, string, string)[] ReadLines(ZipArchive zip, string folderLimit = null)
         {
-            List<(int, string, string)> lines = new List<(int, string, string)>();
+            List<(int, string, string)> lines = new();
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 if (folderLimit != null && !entry.FullName.StartsWith(folderLimit))
@@ -282,7 +282,7 @@ namespace SharpDenizenTools.MetaHandlers
                 if (line.StartsWith("<--[") && line.EndsWith("]"))
                 {
                     string objectType = line.Substring("<--[".Length, line.Length - "<--[]".Length);
-                    List<string> objectData = new List<string>();
+                    List<string> objectData = new();
                     for (i++; i < lines.Length; i++)
                     {
                         if (lines[i].Item3 == "-->")

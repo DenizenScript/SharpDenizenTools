@@ -14,7 +14,7 @@ namespace SharpDenizenTools.MetaObjects
     public class MetaEvent : MetaObject
     {
         /// <summary>Symbols that are structural in event names and can be hidden.</summary>
-        public static AsciiMatcher EventNameCleaner = new AsciiMatcher("<>'()");
+        public static AsciiMatcher EventNameCleaner = new("<>'()");
 
         /// <summary><see cref="MetaObject.Type"/></summary>
         public override MetaType Type => MetaDocs.META_TYPE_EVENT;
@@ -57,10 +57,10 @@ namespace SharpDenizenTools.MetaObjects
         public ScriptEventCouldMatcher[] CouldMatchers = Array.Empty<ScriptEventCouldMatcher>();
 
         /// <summary>Switches available to the event.</summary>
-        public List<string> Switches = new List<string>();
+        public List<string> Switches = new();
 
         /// <summary>Just the names of the event's switches.</summary>
-        public HashSet<string> SwitchNames = new HashSet<string>();
+        public HashSet<string> SwitchNames = new();
 
         /// <summary>The trigger reason.</summary>
         public string Triggers;

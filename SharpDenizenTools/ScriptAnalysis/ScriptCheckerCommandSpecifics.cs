@@ -55,7 +55,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             public void TrackDefinition(string def)
             {
                 Context.Definitions.Add(def.Before('.'));
-                if (def.Contains("<"))
+                if (def.Contains('<'))
                 {
                     Context.HasUnknowableDefinitions = true;
                 }
@@ -63,7 +63,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A mapping from command names to checker methods.</summary>
-        public static Dictionary<string, Action<CommandCheckDetails>> CommandCheckers = new Dictionary<string, Action<CommandCheckDetails>>(256);
+        public static Dictionary<string, Action<CommandCheckDetails>> CommandCheckers = new(256);
 
         /// <summary>Registers a new command checker.</summary>
         public static void Register(string[] cmdNames, Action<CommandCheckDetails> method)
@@ -80,7 +80,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A set of Bukkit commands that if they appear in an 'execute' script command should receive a warning automatically.</summary>
-        public static HashSet<string> BadExecuteCommands = new HashSet<string>()
+        public static HashSet<string> BadExecuteCommands = new()
         {
             // From the vanilla command list
             "advancement", "ban", "banlist", "bossbar", "clear", "clone", "data", "datapack", "deop", "detect", "difficulty", "effect", "enchant", "execute",
@@ -114,7 +114,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => s.Text.Contains(":") && !s.Text.StartsWith("def:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains("<") && s.Text != "server");
+                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => s.Text.Contains(':') && !s.Text.StartsWith("def:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
                 if (mechanism == null)
                 {
                     if (details.Arguments.Length < 2 || !details.Arguments[1].Text.StartsWith('<') || !details.Arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag

@@ -71,11 +71,11 @@ namespace SharpDenizenTools.MetaObjects
                     foreach (string action in Actions)
                     {
                         string regexable = action;
-                        if (regexable.Contains("<"))
+                        if (regexable.Contains('<'))
                         {
                             int start = regexable.IndexOf('<');
                             int end = regexable.IndexOf('>');
-                            regexable = regexable.Substring(0, start) + "[^\\s]+" + regexable[(end + 1)..];
+                            regexable = regexable[..start] + "[^\\s]+" + regexable[(end + 1)..];
                         }
                         outRegex += $"({regexable})|";
                     }

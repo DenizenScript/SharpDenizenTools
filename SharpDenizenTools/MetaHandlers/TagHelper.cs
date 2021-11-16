@@ -19,7 +19,7 @@ namespace SharpDenizenTools.MetaHandlers
             int firstBracket = 0;
             int start = 0;
             bool foundABracket = false;
-            SingleTag output = new SingleTag();
+            SingleTag output = new();
             bool declaredMisformat = false;
             for (int i = 0; i < tag.Length; i++)
             {
@@ -104,11 +104,11 @@ namespace SharpDenizenTools.MetaHandlers
             public int EndChar;
 
             /// <summary>The traced possible tag object for this part (if known).</summary>
-            public List<MetaTag> PossibleTags = new List<MetaTag>();
+            public List<MetaTag> PossibleTags = new();
         }
 
         /// <summary>The parts of the tag.</summary>
-        public List<Part> Parts = new List<Part>();
+        public List<Part> Parts = new();
 
         /// <summary>The tag fallback text (if any).</summary>
         public string Fallback;

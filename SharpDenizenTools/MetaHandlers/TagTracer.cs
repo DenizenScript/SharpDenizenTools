@@ -25,7 +25,7 @@ namespace SharpDenizenTools.MetaHandlers
         public Action<string, SingleTag.Part> DeprecationError;
 
         /// <summary>Root tags that are valid always as a way to compensate for weird pseudo tags some containers use. See also <see cref="MetaDocs.TagBases"/>.</summary>
-        public static HashSet<string> PerpetuallyValidElementTagRoots = new HashSet<string>() { "permission", "text", "name", "amount" };
+        public static HashSet<string> PerpetuallyValidElementTagRoots = new() { "permission", "text", "name", "amount" };
 
         /// <summary>Traces through a written tag, trying to find the documented tag parts inside it.</summary>
         public void Trace()
@@ -196,7 +196,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Gets all possible object types from a set of known types, based on their bases and implements.</summary>
         public HashSet<MetaObjectType> GetFullComplexSetFrom(HashSet<MetaObjectType> original)
         {
-            HashSet<MetaObjectType> result = new HashSet<MetaObjectType>(original.Count * 2);
+            HashSet<MetaObjectType> result = new(original.Count * 2);
             foreach (MetaObjectType type in original)
             {
                 result.Add(type);
@@ -229,7 +229,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 return null;
             }
-            List<(MetaTag, int)> result = new List<(MetaTag, int)>();
+            List<(MetaTag, int)> result = new();
             string part = Tag.Parts[index].Text.ToLowerFast();
             foreach (MetaObjectType type in GetFullComplexSetFrom(possibleRoots))
             {

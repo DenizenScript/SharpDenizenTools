@@ -25,7 +25,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// A set of all known script type names.
         /// </summary>
-        public static readonly Dictionary<string, KnownScriptType> KnownScriptTypes = new Dictionary<string, KnownScriptType>()
+        public static readonly Dictionary<string, KnownScriptType> KnownScriptTypes = new()
         {
             // Denizen Core
             { "custom", new KnownScriptType() { LikelyBadKeys = new[] { "script", "actions", "events", "steps" }, ValueKeys = new[] { "inherit", "*" }, ScriptKeys = new[] { "tags.*", "mechanisms.*" }, Strict = false, CanHaveRandomScripts = false } },
@@ -50,7 +50,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.
         /// </summary>
-        public static HashSet<string> CommandsWithColonsAndArguments = new HashSet<string>()
+        public static HashSet<string> CommandsWithColonsAndArguments = new()
         {
             "if", "else", "foreach", "while", "repeat", "choose", "case"
         };
@@ -58,7 +58,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// A non-complete set of Denizen commands that can end with a colon and do not have to contain any arguments, for checking certain syntax errors.
         /// </summary>
-        public static HashSet<string> CommandsWithColonsButNoArguments = new HashSet<string>()
+        public static HashSet<string> CommandsWithColonsButNoArguments = new()
         {
             "else", "default", "random"
         };
@@ -137,37 +137,37 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// A list of all errors about this script.
         /// </summary>
-        public List<ScriptWarning> Errors = new List<ScriptWarning>();
+        public List<ScriptWarning> Errors = new();
 
         /// <summary>
         /// A list of all warnings about this script.
         /// </summary>
-        public List<ScriptWarning> Warnings = new List<ScriptWarning>();
+        public List<ScriptWarning> Warnings = new();
 
         /// <summary>
         /// A list of all minor warnings about this script.
         /// </summary>
-        public List<ScriptWarning> MinorWarnings = new List<ScriptWarning>();
+        public List<ScriptWarning> MinorWarnings = new();
 
         /// <summary>
         /// A list of informational notices about this script.
         /// </summary>
-        public List<ScriptWarning> Infos = new List<ScriptWarning>();
+        public List<ScriptWarning> Infos = new();
 
         /// <summary>
         /// A list of debug notices about this script, generally don't actually show to users.
         /// </summary>
-        public List<string> Debugs = new List<string>();
+        public List<string> Debugs = new();
 
         /// <summary>
         /// A track of all script names that appear to be injected, for false-warning reduction.
         /// </summary>
-        public List<string> Injects = new List<string>();
+        public List<string> Injects = new();
 
         /// <summary>
         /// A user-specified list of warning types to ignore.
         /// </summary>
-        public HashSet<string> IgnoredWarningTypes = new HashSet<string>();
+        public HashSet<string> IgnoredWarningTypes = new();
 
         /// <summary>
         /// Construct the ScriptChecker instance from a script string.
@@ -253,7 +253,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <returns>The cleaned YAML-friendly script.</returns>
         public string CleanScriptForYAMLProcessing()
         {
-            StringBuilder result = new StringBuilder(FullOriginalScript.Length);
+            StringBuilder result = new(FullOriginalScript.Length);
             for (int i = 0; i < Lines.Length; i++)
             {
                 string line = CleanedLines[i];
@@ -322,7 +322,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         string target = line.Before(" ");
                         string scriptTarget = target.Before(".");
                         Injects.Add(scriptTarget);
-                        if (target.Contains("<"))
+                        if (target.Contains('<'))
                         {
                             Injects.Add("*");
                         }
@@ -352,7 +352,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     endChar = Math.Max(0, endChar);
                     Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).", endChar, Math.Max(endChar, line.Length - 1));
                 }
-                else if (CleanedLines[i].Length > 0 && !CleanedLines[i].StartsWith("-") && !CleanedLines[i].Contains(":"))
+                else if (CleanedLines[i].Length > 0 && !CleanedLines[i].StartsWith("-") && !CleanedLines[i].Contains(':'))
                 {
                     Warn(Warnings, i, "useless_invalid_line", "Useless/invalid line (possibly missing a `-` or a `:`, or just accidentally hit enter or paste).", Lines[i].IndexOf(CleanedLines[i][0]), Lines[i].Length - 1);
                 }
@@ -369,13 +369,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void CheckForTabs()
         {
-            if (!FullOriginalScript.Contains("\t"))
+            if (!FullOriginalScript.Contains('\t'))
             {
                 return;
             }
             for (int i = 0; i < Lines.Length; i++)
             {
-                if (Lines[i].Contains("\t"))
+                if (Lines[i].Contains('\t'))
                 {
                     Warn(Warnings, i, "raw_tab_symbol", "This script uses the raw tab symbol. Please switch these out for 2 or 4 spaces.", Lines[i].IndexOf('\t'), Lines[i].LastIndexOf('\t'));
                     break;
@@ -390,7 +390,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void CheckForBraces()
         {
-            if (!FullOriginalScript.Contains("{"))
+            if (!FullOriginalScript.Contains('{'))
             {
                 return;
             }
@@ -411,13 +411,13 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// </summary>
         public void CheckForAncientDefs()
         {
-            if (!FullOriginalScript.Contains("%"))
+            if (!FullOriginalScript.Contains('%'))
             {
                 return;
             }
             for (int i = 0; i < Lines.Length; i++)
             {
-                if (Lines[i].Contains("%"))
+                if (Lines[i].Contains('%'))
                 {
                     int start = Lines[i].IndexOf('%');
                     int end = Lines[i].LastIndexOf('%');
@@ -541,7 +541,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="isCommand">Whether this is an argument to a command.</param>
         public void CheckSingleArgument(int line, int startChar, string argument, ScriptCheckContext context, bool isCommand = false)
         {
-            if (argument.Contains("@") && !isCommand)
+            if (argument.Contains('@') && !isCommand)
             {
                 Range? range = ContainsObjectNotation(argument);
                 if (range != null)
@@ -609,7 +609,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public CommandArgument[] BuildArgs(int line, int startChar, string stringArgs)
         {
             stringArgs = stringArgs.Trim().Replace('\r', ' ').Replace('\n', ' ');
-            List<CommandArgument> matchList = new List<CommandArgument>(stringArgs.CountCharacter(' '));
+            List<CommandArgument> matchList = new(stringArgs.CountCharacter(' '));
             int start = 0;
             int len = stringArgs.Length;
             char currentQuote = '\0';
@@ -648,7 +648,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string matched = stringArgs[start..i];
                                 matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = matched });
-                                if (!matched.Contains(" ") && !matched.EndsWith(":"))
+                                if (!matched.Contains(' ') && !matched.EndsWith(":"))
                                 {
                                     Warn(MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
                                 }
@@ -674,10 +674,10 @@ namespace SharpDenizenTools.ScriptAnalysis
         public class ScriptCheckContext
         {
             /// <summary>Known definition names.</summary>
-            public HashSet<string> Definitions = new HashSet<string>();
+            public HashSet<string> Definitions = new();
 
             /// <summary>Known save-entry names.</summary>
-            public HashSet<string> SaveEntries = new HashSet<string>();
+            public HashSet<string> SaveEntries = new();
 
             /// <summary>If true, there are injects or other issues that make def names unknownable.</summary>
             public bool HasUnknowableDefinitions = false;
@@ -695,7 +695,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="context">The script checking context.</param>
         public void CheckSingleCommand(int line, int startChar, string commandText, ScriptCheckContext context)
         {
-            if (commandText.Contains("@"))
+            if (commandText.Contains('@'))
             {
                 Range? range = ContainsObjectNotation(commandText);
                 if (range != null)
@@ -722,7 +722,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 return;
             }
             int argCount = arguments.Count(s => !s.Text.StartsWith("save:") && !s.Text.StartsWith("if:") && !s.Text.StartsWith("player:") && !s.Text.StartsWith("npc:"));
-            ScriptCheckerCommandSpecifics.CommandCheckDetails details = new ScriptCheckerCommandSpecifics.CommandCheckDetails()
+            ScriptCheckerCommandSpecifics.CommandCheckDetails details = new()
             {
                 StartChar = startChar,
                 Line = line,
@@ -771,7 +771,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             if (saveArgument != null)
             {
                 context.SaveEntries.Add(saveArgument["save:".Length..].ToLowerFast());
-                if (saveArgument.Contains("<"))
+                if (saveArgument.Contains('<'))
                 {
                     context.HasUnknowableSaveEntries = true;
                 }
@@ -824,7 +824,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A matcher for the set of characters that a script title is allowed to have.</summary>
-        public static AsciiMatcher ScriptTitleCharactersAllowed = new AsciiMatcher("abcdefghijklmnopqrstuvwxyz0123456789_");
+        public static AsciiMatcher ScriptTitleCharactersAllowed = new("abcdefghijklmnopqrstuvwxyz0123456789_");
 
         /// <summary>Checks a dictionary full of script containers, performing all checks on the scripts from there on.</summary>
         public void CheckAllContainers(Dictionary<LineTrackedString, object> scriptContainers)
@@ -1076,7 +1076,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             foreach (LineTrackedString actionValue in actionsMap.Keys)
                             {
                                 string actionName = actionValue.Text["on ".Length..];
-                                if (actionName.Contains("@"))
+                                if (actionName.Contains('@'))
                                 {
                                     int start = actionValue.StartChar + actionValue.Text.IndexOf('@');
                                     int end = actionValue.StartChar + actionValue.Text.LastIndexOf('@');
@@ -1109,7 +1109,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             foreach (LineTrackedString eventValue in eventsMap.Keys)
                             {
                                 string eventName = eventValue.Text[(eventValue.Text.StartsWith("on ") ? "on ".Length : (eventValue.Text.StartsWith("after ") ? "after ".Length : 0))..];
-                                if (eventName.Contains("@"))
+                                if (eventName.Contains('@'))
                                 {
                                     Range? atRange = ContainsObjectNotation(eventName);
                                     if (atRange != null)
@@ -1240,12 +1240,12 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>
         /// Matcher for A-Z only.
         /// </summary>
-        public static readonly AsciiMatcher AlphabetMatcher = new AsciiMatcher(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
+        public static readonly AsciiMatcher AlphabetMatcher = new(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
         /// <summary>
         /// Matcher for the letter right before the '@' symbol in existing ObjectTag types.
         /// </summary>
-        public static readonly AsciiMatcher OBJECT_NOTATION_LAST_LETTER_MATCHER = new AsciiMatcher("mdlipqsebhounwr");
+        public static readonly AsciiMatcher OBJECT_NOTATION_LAST_LETTER_MATCHER = new("mdlipqsebhounwr");
 
         /// <summary>
         /// Checks whether a line contains object notation, and returns a range of matches if so.
@@ -1344,9 +1344,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Gathers a dictionary of all actual containers, checking for errors as it goes, and returning the dictionary.</summary>
         public Dictionary<LineTrackedString, object> GatherActualContainers()
         {
-            Dictionary<LineTrackedString, object> rootScriptSection = new Dictionary<LineTrackedString, object>();
-            Dictionary<int, Dictionary<LineTrackedString, object>> spacedsections = new Dictionary<int, Dictionary<LineTrackedString, object>>() { { 0, rootScriptSection } };
-            Dictionary<int, List<object>> spacedlists = new Dictionary<int, List<object>>();
+            Dictionary<LineTrackedString, object> rootScriptSection = new();
+            Dictionary<int, Dictionary<LineTrackedString, object>> spacedsections = new() { { 0, rootScriptSection } };
+            Dictionary<int, List<object>> spacedlists = new();
             Dictionary<LineTrackedString, object> currentSection = rootScriptSection;
             Dictionary<LineTrackedString, object> currentRootSection = null;
             int pspaces = 0;
@@ -1415,7 +1415,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 Warn(Errors, secwaiting.Line, "empty_command_section", "Script section within command is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
                             }
-                            List<object> newclist = new List<object>();
+                            List<object> newclist = new();
                             clist.Add(new Dictionary<LineTrackedString, object>() { { secwaiting, newclist } });
                             secwaiting = null;
                             buildingSubList = false;
@@ -1490,7 +1490,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, i, "key_line_no_content", "key line missing contents (misplaced a `:`)?", 0, line.Length);
                     continue;
                 }
-                if (startofline.Contains("<"))
+                if (startofline.Contains('<'))
                 {
                     Warn(Warnings, i, "tag_in_key", "Keys cannot contain tags.", 0, line.Length);
                 }
@@ -1507,7 +1507,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         pspaces = spaces;
                         continue;
                     }
-                    Dictionary<LineTrackedString, object> sect = new Dictionary<LineTrackedString, object>();
+                    Dictionary<LineTrackedString, object> sect = new();
                     if (currentSection == rootScriptSection)
                     {
                         currentRootSection = sect;

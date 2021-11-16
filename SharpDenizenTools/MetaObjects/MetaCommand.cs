@@ -62,8 +62,8 @@ namespace SharpDenizenTools.MetaObjects
                 FlatArguments = Array.Empty<Tuple<string, string>>();
                 return;
             }
-            List<Tuple<string, string>> prefixes = new List<Tuple<string, string>>();
-            List<Tuple<string, string>> flatArgs = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> prefixes = new();
+            List<Tuple<string, string>> flatArgs = new();
             string cleaned = Syntax[firstSpace..].Replace('/', ' ');
             foreach (string arg in cleaned.Split(' '))
             {
@@ -91,7 +91,7 @@ namespace SharpDenizenTools.MetaObjects
         }
 
         /// <summary>Sample usages.</summary>
-        public List<string> Usages = new List<string>();
+        public List<string> Usages = new();
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

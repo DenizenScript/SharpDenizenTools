@@ -44,7 +44,7 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public static string CleanTag(string text)
         {
-            StringBuilder cleaned = new StringBuilder(text.Length);
+            StringBuilder cleaned = new(text.Length);
             bool skipping = false;
             for (int i = 0; i < text.Length; i++)
             {
