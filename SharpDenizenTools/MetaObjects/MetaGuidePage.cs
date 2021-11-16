@@ -7,9 +7,7 @@ using FreneticUtilities.FreneticExtensions;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A page of the beginner's guide.
-    /// </summary>
+    /// <summary>A page of the beginner's guide.</summary>
     public class MetaGuidePage : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>

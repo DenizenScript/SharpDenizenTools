@@ -18,9 +18,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public static HashSet<string> NotSwitches = new() { "regex", "item_flagged", "world_flagged", "area_flagged", "inventory_flagged",
                 "player_flagged", "npc_flagged", "entity_flagged", "vanilla_tagged", "raw_exact", "item_enchanted", "material_flagged", "location_in", "block_flagged" };
 
-        /// <summary>
-        /// Separates the switches from an event line.
-        /// </summary>
+        /// <summary>Separates the switches from an event line.</summary>
         /// <param name="eventLine">The original full event line.</param>
         /// <param name="switches">The output switch list.</param>
         /// <returns>The cleaned event line.</returns>

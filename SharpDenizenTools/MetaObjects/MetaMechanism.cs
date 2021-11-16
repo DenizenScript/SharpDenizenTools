@@ -7,9 +7,7 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented mechanism.
-    /// </summary>
+    /// <summary>A documented mechanism.</summary>
     public class MetaMechanism : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -30,39 +28,25 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.MultiNames"/></summary>
         public override IEnumerable<string> MultiNames => NameForms;
 
-        /// <summary>
-        /// Both forms of the mech name (the full name, and the partial name).
-        /// </summary>
+        /// <summary>Both forms of the mech name (the full name, and the partial name).</summary>
         public string[] NameForms = Array.Empty<string>();
 
-        /// <summary>
-        /// The full mechanism name (Object.Name).
-        /// </summary>
+        /// <summary>The full mechanism name (Object.Name).</summary>
         public string FullName;
 
-        /// <summary>
-        /// The object the mechanism applies to.
-        /// </summary>
+        /// <summary>The object the mechanism applies to.</summary>
         public string MechObject;
 
-        /// <summary>
-        /// The name of the mechanism.
-        /// </summary>
+        /// <summary>The name of the mechanism.</summary>
         public string MechName;
 
-        /// <summary>
-        /// The input type.
-        /// </summary>
+        /// <summary>The input type.</summary>
         public string Input;
 
-        /// <summary>
-        /// The long-form description.
-        /// </summary>
+        /// <summary>The long-form description.</summary>
         public string Description;
 
-        /// <summary>
-        /// Tags documented for this mechanism. One tag per string.
-        /// </summary>
+        /// <summary>Tags documented for this mechanism. One tag per string.</summary>
         public string[] Tags = Array.Empty<string>();
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

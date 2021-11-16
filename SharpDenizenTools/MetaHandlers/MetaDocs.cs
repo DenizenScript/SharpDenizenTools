@@ -227,9 +227,7 @@ namespace SharpDenizenTools.MetaHandlers
             return null;
         }
 
-        /// <summary>
-        /// A list of load-time errors, if any.
-        /// </summary>
+        /// <summary>A list of load-time errors, if any.</summary>
         public List<string> LoadErrors = new();
     }
 }

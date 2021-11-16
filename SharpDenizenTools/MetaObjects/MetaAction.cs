@@ -8,9 +8,7 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented action.
-    /// </summary>
+    /// <summary>A documented action.</summary>
     public class MetaAction : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -28,34 +26,22 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.MultiNames"/></summary>
         public override IEnumerable<string> MultiNames => CleanActions;
 
-        /// <summary>
-        /// The names of the action.
-        /// </summary>
+        /// <summary>The names of the action.</summary>
         public string[] Actions = Array.Empty<string>();
 
-        /// <summary>
-        /// The names of the actions, autocleaned.
-        /// </summary>
+        /// <summary>The names of the actions, autocleaned.</summary>
         public string[] CleanActions = Array.Empty<string>();
 
-        /// <summary>
-        /// The trigger reason.
-        /// </summary>
+        /// <summary>The trigger reason.</summary>
         public string Triggers;
 
-        /// <summary>
-        /// A hacked-in regex matcher.
-        /// </summary>
+        /// <summary>A hacked-in regex matcher.</summary>
         public Regex RegexMatcher = null;
 
-        /// <summary>
-        /// Context tags. One tag per string.
-        /// </summary>
+        /// <summary>Context tags. One tag per string.</summary>
         public string[] Context = Array.Empty<string>();
 
-        /// <summary>
-        /// Determination options. One Determination per string.
-        /// </summary>
+        /// <summary>Determination options. One Determination per string.</summary>
         public string[] Determinations = Array.Empty<string>();
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

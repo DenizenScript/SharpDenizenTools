@@ -12,19 +12,13 @@ using YamlDotNet.Core;
 
 namespace SharpDenizenTools.ScriptAnalysis
 {
-    /// <summary>
-    /// Utility class to check a script's validity.
-    /// </summary>
+    /// <summary>Utility class to check a script's validity.</summary>
     public class ScriptChecker
     {
-        /// <summary>
-        /// Action to log an internal message (defaults to <see cref="Console.WriteLine(string)"/>.
-        /// </summary>
+        /// <summary>Action to log an internal message (defaults to <see cref="Console.WriteLine(string)"/>.</summary>
         public static Action<string> LogInternalMessage = Console.WriteLine;
 
-        /// <summary>
-        /// A set of all known script type names.
-        /// </summary>
+        /// <summary>A set of all known script type names.</summary>
         public static readonly Dictionary<string, KnownScriptType> KnownScriptTypes = new()
         {
             // Denizen Core
@@ -47,131 +41,83 @@ namespace SharpDenizenTools.ScriptAnalysis
             { "enchantment", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ScriptKeys = new[] { "after attack", "after hurt" }, ValueKeys = new[] { "id", "rarity", "category", "full_name", "min_level", "max_level", "min_cost", "max_cost", "treasure_only", "is_curse", "is_tradable", "is_discoverable", "is_compatible", "can_enchant", "damage_bonus", "damage_protection" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } }
         };
 
-        /// <summary>
-        /// A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.
-        /// </summary>
+        /// <summary>A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.</summary>
         public static HashSet<string> CommandsWithColonsAndArguments = new()
         {
             "if", "else", "foreach", "while", "repeat", "choose", "case"
         };
 
-        /// <summary>
-        /// A non-complete set of Denizen commands that can end with a colon and do not have to contain any arguments, for checking certain syntax errors.
-        /// </summary>
+        /// <summary>A non-complete set of Denizen commands that can end with a colon and do not have to contain any arguments, for checking certain syntax errors.</summary>
         public static HashSet<string> CommandsWithColonsButNoArguments = new()
         {
             "else", "default", "random"
         };
 
-        /// <summary>
-        /// The full original script text.
-        /// </summary>
+        /// <summary>The full original script text.</summary>
         public string FullOriginalScript;
 
-        /// <summary>
-        /// All lines of the script.
-        /// </summary>
+        /// <summary>All lines of the script.</summary>
         public string[] Lines;
 
-        /// <summary>
-        /// All lines, pre-trimmed and lowercased.
-        /// </summary>
+        /// <summary>All lines, pre-trimmed and lowercased.</summary>
         public string[] CleanedLines;
 
-        /// <summary>
-        /// The number of lines that were comments.
-        /// </summary>
+        /// <summary>The number of lines that were comments.</summary>
         public int CommentLines = 0;
 
-        /// <summary>
-        /// The number of lines that were blank.
-        /// </summary>
+        /// <summary>The number of lines that were blank.</summary>
         public int BlankLines = 0;
 
-        /// <summary>
-        /// The number of lines that were structural (ending with a colon).
-        /// </summary>
+        /// <summary>The number of lines that were structural (ending with a colon).</summary>
         public int StructureLines = 0;
 
-        /// <summary>
-        /// The number of lines that were code (starting with a dash).
-        /// </summary>
+        /// <summary>The number of lines that were code (starting with a dash).</summary>
         public int CodeLines = 0;
 
-        /// <summary>
-        /// The number of warnings that were ignored.
-        /// </summary>
+        /// <summary>The number of warnings that were ignored.</summary>
         public int IgnoredWarnings = 0;
 
-        /// <summary>
-        /// Represents a warning about a script.
-        /// </summary>
+        /// <summary>Represents a warning about a script.</summary>
         public class ScriptWarning
         {
-            /// <summary>
-            /// A unique key for this *type* of warning.
-            /// </summary>
+            /// <summary>A unique key for this *type* of warning.</summary>
             public string WarningUniqueKey;
 
-            /// <summary>
-            /// The locally customized message form.
-            /// </summary>
+            /// <summary>The locally customized message form.</summary>
             public string CustomMessageForm;
 
-            /// <summary>
-            /// The line this applies to.
-            /// </summary>
+            /// <summary>The line this applies to.</summary>
             public int Line;
 
-            /// <summary>
-            /// The starting character position.
-            /// </summary>
+            /// <summary>The starting character position.</summary>
             public int StartChar = 0;
 
-            /// <summary>
-            /// The ending character position.
-            /// </summary>
+            /// <summary>The ending character position.</summary>
             public int EndChar = 0;
         }
 
-        /// <summary>
-        /// A list of all errors about this script.
-        /// </summary>
+        /// <summary>A list of all errors about this script.</summary>
         public List<ScriptWarning> Errors = new();
 
-        /// <summary>
-        /// A list of all warnings about this script.
-        /// </summary>
+        /// <summary>A list of all warnings about this script.</summary>
         public List<ScriptWarning> Warnings = new();
 
-        /// <summary>
-        /// A list of all minor warnings about this script.
-        /// </summary>
+        /// <summary>A list of all minor warnings about this script.</summary>
         public List<ScriptWarning> MinorWarnings = new();
 
-        /// <summary>
-        /// A list of informational notices about this script.
-        /// </summary>
+        /// <summary>A list of informational notices about this script.</summary>
         public List<ScriptWarning> Infos = new();
 
-        /// <summary>
-        /// A list of debug notices about this script, generally don't actually show to users.
-        /// </summary>
+        /// <summary>A list of debug notices about this script, generally don't actually show to users.</summary>
         public List<string> Debugs = new();
 
-        /// <summary>
-        /// A track of all script names that appear to be injected, for false-warning reduction.
-        /// </summary>
+        /// <summary>A track of all script names that appear to be injected, for false-warning reduction.</summary>
         public List<string> Injects = new();
 
-        /// <summary>
-        /// A user-specified list of warning types to ignore.
-        /// </summary>
+        /// <summary>A user-specified list of warning types to ignore.</summary>
         public HashSet<string> IgnoredWarningTypes = new();
 
-        /// <summary>
-        /// Construct the ScriptChecker instance from a script string.
-        /// </summary>
+        /// <summary>Construct the ScriptChecker instance from a script string.</summary>
         /// <param name="script">The script contents string.</param>
         public ScriptChecker(string script)
         {
@@ -184,9 +130,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             CleanedLines = Lines.Select(s => s.Trim().ToLowerFast()).ToArray();
         }
 
-        /// <summary>
-        /// Adds a warning to track.
-        /// </summary>
+        /// <summary>Adds a warning to track.</summary>
         /// <param name="warnType">The warning type (the list object).</param>
         /// <param name="line">The zero-indexed line the warning is regarding.</param>
         /// <param name="key">The unique warning key, for compressing repeat warns.</param>
@@ -210,9 +154,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             warnType.Add(new ScriptWarning() { Line = line, WarningUniqueKey = key, CustomMessageForm = message, StartChar = start, EndChar = end });
         }
 
-        /// <summary>
-        /// Clears all comment lines.
-        /// </summary>
+        /// <summary>Clears all comment lines.</summary>
         public void ClearCommentsFromLines()
         {
             for (int i = 0; i < CleanedLines.Length; i++)
@@ -247,9 +189,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Performs some minimal script cleaning, based on logic in DenizenCore, that matches a script load in as valid YAML, for use with <see cref="CheckYAML"/>.
-        /// </summary>
+        /// <summary>Performs some minimal script cleaning, based on logic in DenizenCore, that matches a script load in as valid YAML, for use with <see cref="CheckYAML"/>.</summary>
         /// <returns>The cleaned YAML-friendly script.</returns>
         public string CleanScriptForYAMLProcessing()
         {
@@ -276,9 +216,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             return result.ToString();
         }
 
-        /// <summary>
-        /// Checks if the script is even valid YAML (if not, critical error).
-        /// </summary>
+        /// <summary>Checks if the script is even valid YAML (if not, critical error).</summary>
         public void CheckYAML()
         {
             try
@@ -295,9 +233,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Looks for injects, to prevent issues with later checks.
-        /// </summary>
+        /// <summary>Looks for injects, to prevent issues with later checks.</summary>
         public void LoadInjects()
         {
             for (int i = 0; i < CleanedLines.Length; i++)
@@ -331,9 +267,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Checks the basic format of every line of the script, to locate stray text or useless lines.
-        /// </summary>
+        /// <summary>Checks the basic format of every line of the script, to locate stray text or useless lines.</summary>
         public void BasicLineFormatCheck()
         {
             for (int i = 0; i < Lines.Length; i++)
@@ -364,9 +298,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Checks if "\t" tabs are used (instead of spaces). If so, warning.
-        /// </summary>
+        /// <summary>Checks if "\t" tabs are used (instead of spaces). If so, warning.</summary>
         public void CheckForTabs()
         {
             if (!FullOriginalScript.Contains('\t'))
@@ -385,9 +317,7 @@ namespace SharpDenizenTools.ScriptAnalysis
 
         private static readonly char[] BracesChars = new char[] { '{', '}' };
 
-        /// <summary>
-        /// Checks if { braces } are used (instead of modern "colon:" syntax). If so, error.
-        /// </summary>
+        /// <summary>Checks if { braces } are used (instead of modern "colon:" syntax). If so, error.</summary>
         public void CheckForBraces()
         {
             if (!FullOriginalScript.Contains('{'))
@@ -406,9 +336,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Checks if %ancientdef%s are used (instead of modern "&lt;[defname]&gt;" syntax). If so, error.
-        /// </summary>
+        /// <summary>Checks if %ancientdef%s are used (instead of modern "&lt;[defname]&gt;" syntax). If so, error.</summary>
         public void CheckForAncientDefs()
         {
             if (!FullOriginalScript.Contains('%'))
@@ -427,9 +355,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Checks if &lt;def[oldDefs]&gt; are used (instead of modern "&lt;[defname]&gt;" syntax). If so, warning.
-        /// </summary>
+        /// <summary>Checks if &lt;def[oldDefs]&gt; are used (instead of modern "&lt;[defname]&gt;" syntax). If so, warning.</summary>
         public void CheckForOldDefs()
         {
             if (!FullOriginalScript.Contains("<def["))
@@ -448,9 +374,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Performs the necessary checks on a single tag.
-        /// </summary>
+        /// <summary>Performs the necessary checks on a single tag.</summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this tag starts.</param>
         /// <param name="tag">The text of the tag.</param>
@@ -531,9 +455,7 @@ namespace SharpDenizenTools.ScriptAnalysis
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };
 
-        /// <summary>
-        /// Performs the necessary checks on a single argument.
-        /// </summary>
+        /// <summary>Performs the necessary checks on a single argument.</summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="argument">The text of the argument.</param>
@@ -599,9 +521,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             public string Text;
         }
 
-        /// <summary>
-        /// Build args, as copied from Denizen Core -> ArgumentHelper.
-        /// </summary>
+        /// <summary>Build args, as copied from Denizen Core -> ArgumentHelper.</summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="stringArgs">The raw arguments input.</param>
@@ -686,9 +606,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             public bool HasUnknowableSaveEntries = false;
         }
 
-        /// <summary>
-        /// Performs the necessary checks on a single command line.
-        /// </summary>
+        /// <summary>Performs the necessary checks on a single command line.</summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="commandText">The text of the command line.</param>
@@ -782,44 +700,28 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Basic metadata about a known script type.
-        /// </summary>
+        /// <summary>Basic metadata about a known script type.</summary>
         public class KnownScriptType
         {
-            /// <summary>
-            /// Keys that must always be present.
-            /// </summary>
+            /// <summary>Keys that must always be present.</summary>
             public string[] RequiredKeys = Array.Empty<string>();
 
-            /// <summary>
-            /// Keys that generally shouldn't be present unless something's gone wrong.
-            /// </summary>
+            /// <summary>Keys that generally shouldn't be present unless something's gone wrong.</summary>
             public string[] LikelyBadKeys = Array.Empty<string>();
 
-            /// <summary>
-            /// Value-based keys.
-            /// </summary>
+            /// <summary>Value-based keys.</summary>
             public string[] ValueKeys = Array.Empty<string>();
 
-            /// <summary>
-            /// Data list keys.
-            /// </summary>
+            /// <summary>Data list keys.</summary>
             public string[] ListKeys = Array.Empty<string>();
 
-            /// <summary>
-            /// Script keys.
-            /// </summary>
+            /// <summary>Script keys.</summary>
             public string[] ScriptKeys = Array.Empty<string>();
 
-            /// <summary>
-            /// Whether to be strict in checks (if true, unrecognize keys will receive a warning).
-            /// </summary>
+            /// <summary>Whether to be strict in checks (if true, unrecognize keys will receive a warning).</summary>
             public bool Strict = false;
 
-            /// <summary>
-            /// Whether this type can have random extra scripts attached.
-            /// </summary>
+            /// <summary>Whether this type can have random extra scripts attached.</summary>
             public bool CanHaveRandomScripts = true;
         }
 
@@ -1237,19 +1139,13 @@ namespace SharpDenizenTools.ScriptAnalysis
             return switches.All(pair => evt.IsValidSwitch(pair.Key));
         }
 
-        /// <summary>
-        /// Matcher for A-Z only.
-        /// </summary>
+        /// <summary>Matcher for A-Z only.</summary>
         public static readonly AsciiMatcher AlphabetMatcher = new(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 
-        /// <summary>
-        /// Matcher for the letter right before the '@' symbol in existing ObjectTag types.
-        /// </summary>
+        /// <summary>Matcher for the letter right before the '@' symbol in existing ObjectTag types.</summary>
         public static readonly AsciiMatcher OBJECT_NOTATION_LAST_LETTER_MATCHER = new("mdlipqsebhounwr");
 
-        /// <summary>
-        /// Checks whether a line contains object notation, and returns a range of matches if so.
-        /// </summary>
+        /// <summary>Checks whether a line contains object notation, and returns a range of matches if so.</summary>
         /// <param name="line">The line to check.</param>
         /// <returns>The match range, or null.</returns>
         public static Range? ContainsObjectNotation(string line)
@@ -1272,29 +1168,19 @@ namespace SharpDenizenTools.ScriptAnalysis
             return null;
         }
 
-        /// <summary>
-        /// Helper class for strings that remember where they came from.
-        /// </summary>
+        /// <summary>Helper class for strings that remember where they came from.</summary>
         public class LineTrackedString
         {
-            /// <summary>
-            /// The text of the line.
-            /// </summary>
+            /// <summary>The text of the line.</summary>
             public string Text;
 
-            /// <summary>
-            /// The line number.
-            /// </summary>
+            /// <summary>The line number.</summary>
             public int Line;
 
-            /// <summary>
-            /// The character index of where this line starts.
-            /// </summary>
+            /// <summary>The character index of where this line starts.</summary>
             public int StartChar;
 
-            /// <summary>
-            /// Constructs the LineTrackedString.
-            /// </summary>
+            /// <summary>Constructs the LineTrackedString.</summary>
             public LineTrackedString(int line, string text, int start)
             {
                 Line = line;
@@ -1302,25 +1188,19 @@ namespace SharpDenizenTools.ScriptAnalysis
                 StartChar = start;
             }
 
-            /// <summary>
-            /// HashCode impl, for Dictionary functionality.
-            /// </summary>
+            /// <summary>HashCode impl, for Dictionary functionality.</summary>
             public override int GetHashCode()
             {
                 return HashCode.Combine(Text);
             }
 
-            /// <summary>
-            /// Equals impl, for Dictionary functionality.
-            /// </summary>
+            /// <summary>Equals impl, for Dictionary functionality.</summary>
             public override bool Equals(object obj)
             {
                 return (obj is LineTrackedString lts2) && Text == lts2.Text;
             }
 
-            /// <summary>
-            /// ToString override, returns <see cref="Text"/>.
-            /// </summary>
+            /// <summary>ToString override, returns <see cref="Text"/>.</summary>
             public override string ToString()
             {
                 return Text;
@@ -1534,9 +1414,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             return rootScriptSection;
         }
 
-        /// <summary>
-        /// Helper method to determine whether a section key that looks like it might have been meant as a command should actually show a warning or not.
-        /// </summary>
+        /// <summary>Helper method to determine whether a section key that looks like it might have been meant as a command should actually show a warning or not.</summary>
         public static bool CanWarnAboutCommandMissingDash(string[] args, Dictionary<LineTrackedString, object> currentRootSection)
         {
             string cmdName = args[0].ToLowerFast();
@@ -1567,9 +1445,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             return true;
         }
 
-        /// <summary>
-        /// Adds <see cref="Infos"/> entries for basic statistics.
-        /// </summary>
+        /// <summary>Adds <see cref="Infos"/> entries for basic statistics.</summary>
         public void CollectStatisticInfos()
         {
             Warn(Infos, -1, "stat_structural", $"(Statistics) Total structural lines: {StructureLines}", 0, 0);
@@ -1582,9 +1458,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>
-        /// Runs the full script check.
-        /// </summary>
+        /// <summary>Runs the full script check.</summary>
         public void Run()
         {
             ClearCommentsFromLines();

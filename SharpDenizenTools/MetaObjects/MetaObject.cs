@@ -7,74 +7,46 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// Abstract base for a type of meta object.
-    /// </summary>
+    /// <summary>Abstract base for a type of meta object.</summary>
     public abstract class MetaObject
     {
-        /// <summary>
-        /// Get the meta type of the object.
-        /// </summary>
+        /// <summary>Get the meta type of the object.</summary>
         public abstract MetaType Type { get; }
 
-        /// <summary>
-        /// Get the name of the object. May have capitals.
-        /// </summary>
+        /// <summary>Get the name of the object. May have capitals.</summary>
         public abstract string Name { get; }
 
-        /// <summary>
-        /// Whether this object has multiple names.
-        /// </summary>
+        /// <summary>Whether this object has multiple names.</summary>
         public bool HasMultipleNames = false;
 
-        /// <summary>
-        /// If the object has multiple names, returns the full set of names.
-        /// </summary>
+        /// <summary>If the object has multiple names, returns the full set of names.</summary>
         public virtual IEnumerable<string> MultiNames => new string[] { CleanName };
 
-        /// <summary>
-        /// Get the clean lowercase name of the object.
-        /// </summary>
+        /// <summary>Get the clean lowercase name of the object.</summary>
         public virtual string CleanName => Name.ToLowerFast();
 
-        /// <summary>
-        /// Other words that mean the same thing.
-        /// </summary>
+        /// <summary>Other words that mean the same thing.</summary>
         public List<string> Synonyms = new();
 
-        /// <summary>
-        /// What categorization group the object is in.
-        /// </summary>
+        /// <summary>What categorization group the object is in.</summary>
         public string Group;
 
-        /// <summary>
-        /// Any warnings applied to this object type.
-        /// </summary>
+        /// <summary>Any warnings applied to this object type.</summary>
         public List<string> Warnings = new();
 
-        /// <summary>
-        /// Required plugin(s) if applicable.
-        /// </summary>
+        /// <summary>Required plugin(s) if applicable.</summary>
         public string Plugin;
 
-        /// <summary>
-        /// The file in source code that defined this meta object.
-        /// </summary>
+        /// <summary>The file in source code that defined this meta object.</summary>
         public string SourceFile;
 
-        /// <summary>
-        /// A deprecation notice, if any.
-        /// </summary>
+        /// <summary>A deprecation notice, if any.</summary>
         public string Deprecated;
 
-        /// <summary>
-        /// The backing <see cref="MetaDocs"/> instance.
-        /// </summary>
+        /// <summary>The backing <see cref="MetaDocs"/> instance.</summary>
         public MetaDocs Meta;
 
-        /// <summary>
-        /// Apply a setting value to this meta object.
-        /// </summary>
+        /// <summary>Apply a setting value to this meta object.</summary>
         /// <param name="docs">The relevant meta docs instance.</param>
         /// <param name="key">The setting key.</param>
         /// <param name="value">The setting value.</param>
@@ -103,9 +75,7 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Finds the closing tag mark, compensating for layered tags.
-        /// </summary>
+        /// <summary>Finds the closing tag mark, compensating for layered tags.</summary>
         /// <param name="text">The raw text.</param>
         /// <param name="startIndex">The index to start searching at.</param>
         /// <returns>The closing symbol index, or -1 if not found.</returns>
@@ -131,23 +101,17 @@ namespace SharpDenizenTools.MetaObjects
             return -1;
         }
 
-        /// <summary>
-        /// Adds the object to the meta docs set.
-        /// </summary>
+        /// <summary>Adds the object to the meta docs set.</summary>
         /// <param name="docs">The docs set.</param>
         public abstract void AddTo(MetaDocs docs);
 
-        /// <summary>
-        /// Checks the object for validity, after all loading is done.
-        /// </summary>
+        /// <summary>Checks the object for validity, after all loading is done.</summary>
         /// <param name="docs">The relevant docs object.</param>
         public virtual void PostCheck(MetaDocs docs)
         {
         }
 
-        /// <summary>
-        /// Post-check handler to require specific values be set (not-null).
-        /// </summary>
+        /// <summary>Post-check handler to require specific values be set (not-null).</summary>
         /// <param name="docs">The relevant docs object.</param>
         /// <param name="requiredValues">The values that are required.</param>
         public void Require(MetaDocs docs, params object[] requiredValues)
@@ -161,9 +125,7 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Post-check handler to validate synonyms don't duplicate existing values.
-        /// </summary>
+        /// <summary>Post-check handler to validate synonyms don't duplicate existing values.</summary>
         public void PostCheckSynonyms<T>(MetaDocs docs, Dictionary<string, T> objects) where T : MetaObject
         {
             IEnumerable<string> badSynonyms = Synonyms.Where(s => objects.ContainsKey(s));
@@ -178,9 +140,7 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Post-check handler for linkable text, to find bad links.
-        /// </summary>
+        /// <summary>Post-check handler for linkable text, to find bad links.</summary>
         /// <param name="docs">The relevant docs object.</param>
         /// <param name="linkedtext">The relevant linkable list.</param>
         public void PostCheckLinkableText(MetaDocs docs, string linkedtext)
@@ -269,9 +229,7 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Post-check handler for tags, used in <see cref="MetaCommand"/> and <see cref="MetaMechanism"/>.
-        /// </summary>
+        /// <summary>Post-check handler for tags, used in <see cref="MetaCommand"/> and <see cref="MetaMechanism"/>.</summary>
         /// <param name="docs">The relevant docs object.</param>
         /// <param name="tags">The relevant tags list.</param>
         public void PostCheckTags(MetaDocs docs, string[] tags)

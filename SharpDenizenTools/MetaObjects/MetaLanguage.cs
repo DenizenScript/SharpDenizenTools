@@ -7,9 +7,7 @@ using FreneticUtilities.FreneticExtensions;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A language documentation.
-    /// </summary>
+    /// <summary>A language documentation.</summary>
     public class MetaLanguage : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -24,14 +22,10 @@ namespace SharpDenizenTools.MetaObjects
             docs.Languages.Add(CleanName, this);
         }
 
-        /// <summary>
-        /// The name of the language.
-        /// </summary>
+        /// <summary>The name of the language.</summary>
         public string LangName;
 
-        /// <summary>
-        /// The long-form description.
-        /// </summary>
+        /// <summary>The long-form description.</summary>
         public string Description;
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

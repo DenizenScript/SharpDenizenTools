@@ -7,9 +7,7 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented tag.
-    /// </summary>
+    /// <summary>A documented tag.</summary>
     public class MetaTag : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -39,9 +37,7 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// Cleans tag text for searchability.
-        /// </summary>
+        /// <summary>Cleans tag text for searchability.</summary>
         public static string CleanTag(string text)
         {
             StringBuilder cleaned = new(text.Length);
@@ -72,9 +68,7 @@ namespace SharpDenizenTools.MetaObjects
             return cleaned.ToString();
         }
 
-        /// <summary>
-        /// The cleaned (searchable) name.
-        /// </summary>
+        /// <summary>The cleaned (searchable) name.</summary>
         public string CleanedName;
 
         /// <summary>
@@ -83,54 +77,34 @@ namespace SharpDenizenTools.MetaObjects
         /// </summary>
         public string BeforeDot;
 
-        /// <summary>
-        /// The text after the first dot (with tag cleaning applied).
-        /// </summary>
+        /// <summary>The text after the first dot (with tag cleaning applied).</summary>
         public string AfterDotCleaned;
 
-        /// <summary>
-        /// The full tag syntax text.
-        /// </summary>
+        /// <summary>The full tag syntax text.</summary>
         public string TagFull;
 
-        /// <summary>
-        /// The return type.
-        /// </summary>
+        /// <summary>The return type.</summary>
         public string Returns;
 
-        /// <summary>
-        /// The return object type.
-        /// </summary>
+        /// <summary>The return object type.</summary>
         public MetaObjectType ReturnType;
 
-        /// <summary>
-        /// The base tag type (if any).
-        /// </summary>
+        /// <summary>The base tag type (if any).</summary>
         public MetaObjectType BaseType;
 
-        /// <summary>
-        /// The long-form description.
-        /// </summary>
+        /// <summary>The long-form description.</summary>
         public string Description;
 
-        /// <summary>
-        /// Whether a parameter is allowed on the first part of this tag.
-        /// </summary>
+        /// <summary>Whether a parameter is allowed on the first part of this tag.</summary>
         public bool AllowsParam;
 
-        /// <summary>
-        /// Whether a parameter is required on the first part of this tag.
-        /// </summary>
+        /// <summary>Whether a parameter is required on the first part of this tag.</summary>
         public bool RequiresParam;
 
-        /// <summary>
-        /// The associated mechanism, if any.
-        /// </summary>
+        /// <summary>The associated mechanism, if any.</summary>
         public string Mechanism = "";
 
-        /// <summary>
-        /// The parsed <see cref="SingleTag"/> of this tag.
-        /// </summary>
+        /// <summary>The parsed <see cref="SingleTag"/> of this tag.</summary>
         public SingleTag ParsedFormat;
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

@@ -8,9 +8,7 @@ using SharpDenizenTools.MetaHandlers;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>
-    /// A documented type of object.
-    /// </summary>
+    /// <summary>A documented type of object.</summary>
     public class MetaObjectType : MetaObject
     {
         /// <summary><see cref="MetaObject.Type"/></summary>
@@ -36,54 +34,34 @@ namespace SharpDenizenTools.MetaObjects
             }
         }
 
-        /// <summary>
-        /// The name of the object type.
-        /// </summary>
+        /// <summary>The name of the object type.</summary>
         public string TypeName;
 
-        /// <summary>
-        /// The object identity prefix for this type.
-        /// </summary>
+        /// <summary>The object identity prefix for this type.</summary>
         public string Prefix;
 
-        /// <summary>
-        /// The name of the base type.
-        /// </summary>
+        /// <summary>The name of the base type.</summary>
         public string BaseTypeName;
 
-        /// <summary>
-        /// The base type.
-        /// </summary>
+        /// <summary>The base type.</summary>
         public MetaObjectType BaseType;
 
-        /// <summary>
-        /// A human-readable explanation of the identity format of the tag.
-        /// </summary>
+        /// <summary>A human-readable explanation of the identity format of the tag.</summary>
         public string Format;
 
-        /// <summary>
-        /// A human-readable description of the object type.
-        /// </summary>
+        /// <summary>A human-readable description of the object type.</summary>
         public string Description;
 
-        /// <summary>
-        /// The names of other types or pseudo-types implemented by this type.
-        /// </summary>
+        /// <summary>The names of other types or pseudo-types implemented by this type.</summary>
         public string[] ImplementsNames = Array.Empty<string>();
 
-        /// <summary>
-        /// All tags available directly to this base (not counting base/implements).
-        /// </summary>
+        /// <summary>All tags available directly to this base (not counting base/implements).</summary>
         public Dictionary<string, MetaTag> SubTags = new();
 
-        /// <summary>
-        /// Other types or pseudo-types implemented by this type.
-        /// </summary>
+        /// <summary>Other types or pseudo-types implemented by this type.</summary>
         public MetaObjectType[] Implements = Array.Empty<MetaObjectType>();
 
-        /// <summary>
-        /// Other types or pseudo-types that extend this type.
-        /// </summary>
+        /// <summary>Other types or pseudo-types that extend this type.</summary>
         public List<MetaObjectType> ExtendedBy = new();
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
