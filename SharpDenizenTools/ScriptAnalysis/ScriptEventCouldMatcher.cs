@@ -120,7 +120,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (pathBaseParts.Length != Validators.Length)
             {
-                return 1;
+                return Math.Min(max, 3);
             }
             return max;
         }

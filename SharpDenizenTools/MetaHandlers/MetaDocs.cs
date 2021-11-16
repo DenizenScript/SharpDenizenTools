@@ -110,6 +110,20 @@ namespace SharpDenizenTools.MetaHandlers
         /// <param name="precise">If true: object matchers must be valid. If false: object matchers must look vaguely close to correct.</param>
         public List<MetaEvent> FindEventsFor(string text, bool allowPartial, bool precise)
         {
+            List<(MetaEvent, int)> matches = GetEventMatchesFor(text, allowPartial, precise);
+            if (matches is null)
+            {
+                return null;
+            }
+            return matches.Select(p => p.Item1).ToList();
+        }
+
+        /// <summary>Returns event match details for the given input text, as pair of event and match quality.</summary>
+        /// <param name="text">The text to match events against.</param>
+        /// <param name="allowPartial">If false: full event must match. If true: can just be first few words.</param>
+        /// <param name="precise">If true: object matchers must be valid. If false: object matchers must look vaguely close to correct.</param>
+        public List<(MetaEvent, int)> GetEventMatchesFor(string text, bool allowPartial, bool precise)
+        {
             text = text.ToLowerFast();
             if (text.StartsWith("on "))
             {
@@ -121,17 +135,18 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (Events.TryGetValue(text, out MetaEvent evt))
             {
-                return new List<MetaEvent>() { evt };
+                return new List<(MetaEvent, int)>() { (evt, 10) };
             }
-            List<MetaEvent> result = new();
+            List<(MetaEvent, int)> result = new();
             string[] parts = text.SplitFast(' ');
             if (EventLookupOpti.TryGetValue(parts[0], out List<MetaEvent> possible))
             {
                 foreach (MetaEvent evt2 in possible)
                 {
-                    if (evt2.CouldMatchers.Any(c => c.TryMatch(parts, allowPartial, precise) > 0))
+                    int max = evt2.CouldMatchers.Select(c => c.TryMatch(parts, allowPartial, precise)).Max();
+                    if (max > 0)
                     {
-                        result.Add(evt2);
+                        result.Add((evt2, max));
                         if (!allowPartial)
                         {
                             return result;
@@ -141,9 +156,10 @@ namespace SharpDenizenTools.MetaHandlers
             }
             foreach (MetaEvent evt2 in LegacyCouldMatchEvents)
             {
-                if (evt2.CouldMatchers.Any(c => c.TryMatch(parts, allowPartial, precise) > 0))
+                int max = evt2.CouldMatchers.Select(c => c.TryMatch(parts, allowPartial, precise)).Max();
+                if (max > 0)
                 {
-                    result.Add(evt2);
+                    result.Add((evt2, max));
                     if (!allowPartial)
                     {
                         return result;
