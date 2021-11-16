@@ -126,7 +126,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Returns true if this matcher matches better than the second matcher.</summary>
-        public bool IsBetterMatchThan(string[] pathBaseParts, bool allowPartial, bool precise, ScriptEventCouldMatcher matcher2)
+        public bool IsBetterMatchThan(string[] pathBaseParts, bool precise, ScriptEventCouldMatcher matcher2)
         {
             if (Validators.Length != matcher2.Validators.Length)
             {

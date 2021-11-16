@@ -1130,7 +1130,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     {
                                         if (matcher.TryMatch(parts, false, false) > 0)
                                         {
-                                            if (matched == null || matcher.IsBetterMatchThan(parts, false, false, matched))
+                                            if (matched == null || matcher.IsBetterMatchThan(parts, false, matched))
                                             {
                                                 if (AllSwitchesValid(evt, switches))
                                                 {
