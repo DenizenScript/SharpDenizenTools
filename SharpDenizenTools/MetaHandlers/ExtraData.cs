@@ -32,6 +32,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The raw relevant data sets.</summary>
         public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics;
 
+        /// <summary>A combination set of all enum keywords.</summary>
+        public HashSet<string> All = new HashSet<string>();
+
         /// <summary>Relevant data sets as arrays.</summary>
         public string[] ItemArray, BlockArray, EntityArray;
 
@@ -99,7 +102,9 @@ namespace SharpDenizenTools.MetaHandlers
 
         private HashSet<string> GetDataSet(string type)
         {
-            return new HashSet<string>((DataSection.GetStringList(type.ToLowerFast()) ?? new List<string>()).Select(s => s.ToLowerFast()));
+            HashSet<string> result = new((DataSection.GetStringList(type.ToLowerFast()) ?? new List<string>()).Select(s => s.ToLowerFast()));
+            All.UnionWith(result);
+            return result;
         }
 
         private static readonly Random random = new();

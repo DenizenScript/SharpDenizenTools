@@ -751,6 +751,15 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
+                    string titleLow = scriptTitle.Text.Trim().ToLowerFast();
+                    if (MetaDocs.CurrentMeta.Data != null && MetaDocs.CurrentMeta.Data.All.Contains(titleLow))
+                    {
+                        warnScript(MinorWarnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
+                    }
+                    if (MetaDocs.CurrentMeta.Commands.ContainsKey(titleLow) || KnownScriptTypes.ContainsKey(titleLow))
+                    {
+                        warnScript(MinorWarnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
+                    }
                     if (scriptData is not Dictionary<LineTrackedString, object> scriptSection)
                     {
                         continue;
