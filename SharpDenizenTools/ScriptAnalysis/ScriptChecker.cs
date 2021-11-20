@@ -890,9 +890,23 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         else if (valueAtKey is LineTrackedString lineAtKey)
                         {
+                            ScriptCheckContext context = new();
+                            if (typeString.Text == "economy" && (keyName == "format" || keyName == "has"))
+                            {
+                                context.Definitions.Add("amount");
+                            }
+                            else if (typeString.Text == "format" && keyName == "format")
+                            {
+                                context.Definitions.Add("text");
+                                context.Definitions.Add("name");
+                            }
+                            else if (typeString.Text == "command" && keyName == "permission message")
+                            {
+                                context.Definitions.Add("permission");
+                            }
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, null);
+                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, context);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
@@ -908,7 +922,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text, null);
+                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text, context);
                             }
                         }
                         else if (valueAtKey is Dictionary<LineTrackedString, object> keyPairMap)

@@ -83,8 +83,8 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>All known guide pages.</summary>
         public Dictionary<string, MetaGuidePage> GuidePages = new(512);
 
-        /// <summary>A set of all known tag bases. See also <see cref="TagTracer.PerpetuallyValidElementTagRoots"/>.</summary>
-        public HashSet<string> TagBases = new(512) { "permission", "text", "name", "amount", "context", "entry" };
+        /// <summary>A set of all known tag bases.</summary>
+        public HashSet<string> TagBases = new(512) { "context", "entry" };
 
         /// <summary>A set of all known tag bits.</summary>
         public HashSet<string> TagParts = new(2048);

@@ -24,8 +24,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>An action to display deprecation error messages.</summary>
         public Action<string, SingleTag.Part> DeprecationError;
 
-        /// <summary>Root tags that are valid always as a way to compensate for weird pseudo tags some containers use. See also <see cref="MetaDocs.TagBases"/>.</summary>
-        public static HashSet<string> PerpetuallyValidElementTagRoots = new() { "permission", "text", "name", "amount" };
+        /// <summary>Special tags that used to exist and get special handling.</summary>
+        [Obsolete("Deprecated tag support")]
+        public static HashSet<string> LegacySpecialTags = new() { "permission", "text", "name", "amount" };
 
         /// <summary>Traces through a written tag, trying to find the documented tag parts inside it.</summary>
         public void Trace()
@@ -43,9 +44,10 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
             }
-            else if (PerpetuallyValidElementTagRoots.Contains(root))
+            else if (LegacySpecialTags.Contains(root))
             {
-                TraceTagParts(new HashSet<MetaObjectType>() { Docs.ElementTagType }, 1);
+                Error($"Tag base '{root}' is deprecated: write it as a definition, like '<[{root}]>'.");
+                return;
             }
             else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
             {
