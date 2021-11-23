@@ -225,11 +225,20 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             catch (Exception ex)
             {
-                Warn(Errors, 0, "yaml_load", "Invalid YAML! Error message: " + ex.Message, 0, 0);
-                if (ex is not SemanticErrorException)
+                string text = ex.Message;
+                int line = 0;
+                if (text != null && text.StartsWith("(Line: "))
                 {
-                    LogInternalMessage($"Unusual YAML error: {ex}");
+                    int comma = text.IndexOf(',');
+                    if (comma != -1)
+                    {
+                        if (int.TryParse(text["(Line: ".Length..comma], out line))
+                        {
+                            line--;
+                        }
+                    }
                 }
+                Warn(Errors, line, "yaml_load", $"Invalid YAML! Error message: {text}", 0, Lines[line].Length);
             }
         }
 
