@@ -53,6 +53,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The names of the events, autocleaned.</summary>
         public string[] CleanEvents = Array.Empty<string>();
 
+        /// <summary>The names of the events, with optionals stripped and other symbols removed.</summary>
+        public string[] OverlyCleanedEvents = Array.Empty<string>();
+
         /// <summary>Could-Matchers for this event.</summary>
         public ScriptEventCouldMatcher[] CouldMatchers = Array.Empty<ScriptEventCouldMatcher>();
 
@@ -113,6 +116,22 @@ namespace SharpDenizenTools.MetaObjects
             return false;
         }
 
+        /// <summary>Removes optional parts of an event, and strips all other symbols.</summary>
+        public static string OverCleanEvent(string evt)
+        {
+            string[] parts = evt.ToLowerFast().SplitFast(' ');
+            StringBuilder output = new(evt.Length);
+            foreach (string part in parts)
+            {
+                if (part.StartsWithFast('(') && part.EndsWithFast(')'))
+                {
+                    continue;
+                }
+                output.Append(EventNameCleaner.TrimToNonMatches(part)).Append(' ');
+            }
+            return output.ToString().Trim();
+        }
+
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
@@ -121,6 +140,7 @@ namespace SharpDenizenTools.MetaObjects
                 case "events":
                     Events = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     CleanEvents = Events.Select(s => EventNameCleaner.TrimToNonMatches(s.ToLowerFast())).ToArray();
+                    OverlyCleanedEvents = Events.Select(OverCleanEvent).ToArray();
                     CouldMatchers = Events.Select(s => EventTools.ParseMatchers(s, docs.Data.KnownValidatorTypes, (s) => docs.LoadErrors.Add(s))).Flatten().ToArray();
                     HasMultipleNames = Events.Length > 1;
                     return true;
