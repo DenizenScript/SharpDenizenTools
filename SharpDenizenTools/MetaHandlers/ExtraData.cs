@@ -33,7 +33,7 @@ namespace SharpDenizenTools.MetaHandlers
         public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics;
 
         /// <summary>A combination set of all enum keywords.</summary>
-        public HashSet<string> All = new HashSet<string>();
+        public HashSet<string> All = new();
 
         /// <summary>Relevant data sets as arrays.</summary>
         public string[] ItemArray, BlockArray, EntityArray;

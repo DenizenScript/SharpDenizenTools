@@ -122,12 +122,9 @@ namespace SharpDenizenTools.MetaObjects
                 }
             }
             PostCheckSynonyms(docs, docs.ObjectTypes);
-            if (!TypeName.EndsWith("Tag") && !TypeName.EndsWith("Object"))
+            if (!TypeName.EndsWith("Tag") && !TypeName.EndsWith("Object") && (Prefix.ToLowerFast() != "none" || BaseTypeName.ToLowerFast() != "none"))
             {
-                if (TypeName != "server" && TypeName != "system")
-                {
-                    docs.LoadErrors.Add($"Object type name '{TypeName}' has unrecognized format.");
-                }
+                docs.LoadErrors.Add($"Object type name '{TypeName}' has unrecognized format.");
             }
             if (Prefix != "none" && docs.ObjectTypes.Values.Any(t => t != this && t.Prefix == Prefix))
             {
