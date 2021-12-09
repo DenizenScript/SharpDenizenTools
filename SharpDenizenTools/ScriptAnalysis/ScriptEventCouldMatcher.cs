@@ -10,9 +10,6 @@ namespace SharpDenizenTools.ScriptAnalysis
     /// <summary>Helper to generate automatic logic for ScriptEvent#couldMatch.</summary>
     public class ScriptEventCouldMatcher
     {
-        /// <summary>Switches that are globally available.</summary>
-        public static HashSet<string> GlobalSwitches = new() { "cancelled", "ignorecancelled", "priority", "server_flagged", "in" };
-
         /// <summary>The raw format string used to construct this couldMatcher.</summary>
         public string Format;
 

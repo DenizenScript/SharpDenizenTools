@@ -109,7 +109,7 @@ namespace SharpDenizenTools.MetaObjects
             {
                 return Cancellable;
             }
-            else if (switchName == "priority" || switchName == "bukkit_priority" || switchName == "server_flagged")
+            else if (switchName == "priority" || switchName == "bukkit_priority" || switchName == "server_flagged" || switchName == "chance")
             {
                 return true;
             }

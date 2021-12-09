@@ -1103,7 +1103,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     }
                                     else
                                     {
-                                        warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. Got partial match for '" + matchedEvent.Name + "' - might be incomplete? Check documentation.");
+                                        warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. Got partial match for '{matchedEvent.Name}' - might be incomplete? Check documentation.");
                                     }
                                 }
                                 else
@@ -1114,35 +1114,35 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         {
                                             if (switchPair.Value.ToLowerFast() != "true" && switchPair.Value.ToLowerFast() != "false")
                                             {
-                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Cancellation event switch invalid: must be 'true' or 'false'.");
+                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"'{switchPair.Key}' switch invalid: must be 'true' or 'false'.");
                                             }
                                         }
-                                        else if (switchPair.Key == "priority")
+                                        else if (switchPair.Key == "priority" || switchPair.Key == "chance")
                                         {
                                             if (!double.TryParse(switchPair.Value, out _))
                                             {
-                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"Priority switch invalid: must be a decimal number.");
+                                                warnScript(Warnings, eventValue.Line, "bad_switch_value", $"'{switchPair.Key}' switch invalid: must be a decimal number.");
                                             }
                                         }
                                         else if (switchPair.Key == "in" || switchPair.Key == "location_flagged")
                                         {
                                             if (!matchedEvent.HasLocation)
                                             {
-                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'in' and 'location_flagged' switches are only supported on events that have a known location.");
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'{switchPair.Key}' switch is only supported on events that have a known location.");
                                             }
                                         }
                                         else if (switchPair.Key == "flagged" || switchPair.Key == "permission")
                                         {
                                             if (string.IsNullOrWhiteSpace(matchedEvent.Player))
                                             {
-                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'flagged' and 'permission' switches are only supported on events that have a linked player.");
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'{switchPair.Key}' switch is only supported on events that have a linked player.");
                                             }
                                         }
                                         else if (switchPair.Key == "assigned")
                                         {
                                             if (string.IsNullOrWhiteSpace(matchedEvent.NPC))
                                             {
-                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'assigned' switch is only supported on events that have a linked NPC.");
+                                                warnScript(Warnings, eventValue.Line, "unknown_switch", $"'{switchPair.Key}' switch is only supported on events that have a linked NPC.");
                                             }
                                         }
                                         else
