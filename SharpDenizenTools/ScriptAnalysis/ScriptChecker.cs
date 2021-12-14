@@ -224,7 +224,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 string text = ex.Message;
                 int line = 0;
-                if (text != null && text.StartsWith("(Line: "))
+                if (text is not null && text.StartsWith("(Line: "))
                 {
                     int comma = text.IndexOf(',');
                     if (comma != -1)
@@ -403,10 +403,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             if (tagName == "" || tagName == "definition")
             {
                 string param = parsed.Parts[0].Context;
-                if (param != null)
+                if (param is not null)
                 {
                     param = param.ToLowerFast().Before('.');
-                    if (context != null && !context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
+                    if (context is not null && !context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
                     {
                         Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].StartChar + param.Length + 2);
                     }
@@ -415,10 +415,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             else if (tagName == "entry")
             {
                 string param = parsed.Parts[0].Context;
-                if (param != null)
+                if (param is not null)
                 {
                     param = param.ToLowerFast();
-                    if (context != null && !context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
+                    if (context is not null && !context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
                     {
                         Warn(Warnings, line, "entry_of_nothing", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
                     }
@@ -441,12 +441,12 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             foreach (SingleTag.Part part in parsed.Parts)
             {
-                if (part.Context != null)
+                if (part.Context is not null)
                 {
                     CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context, context);
                 }
             }
-            if (parsed.Fallback != null)
+            if (parsed.Fallback is not null)
             {
                 CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context);
             }
@@ -472,7 +472,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             if (argument.Contains('@') && !isCommand)
             {
                 Range? range = ContainsObjectNotation(argument);
-                if (range != null)
+                if (range is not null)
                 {
                     int start = startChar + range.Value.Start.Value;
                     int end = startChar + range.Value.End.Value;
@@ -622,7 +622,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             if (commandText.Contains('@'))
             {
                 Range? range = ContainsObjectNotation(commandText);
-                if (range != null)
+                if (range is not null)
                 {
                     int start = startChar + range.Value.Start.Value;
                     int end = startChar + range.Value.End.Value;
@@ -692,7 +692,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 checker(details);
             }
             string saveArgument = arguments.FirstOrDefault(s => s.Text.StartsWith("save:"))?.Text;
-            if (saveArgument != null)
+            if (saveArgument is not null)
             {
                 context.SaveEntries.Add(saveArgument["save:".Length..].ToLowerFast());
                 if (saveArgument.Contains('<'))
@@ -758,7 +758,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
                     string titleLow = scriptTitle.Text.Trim().ToLowerFast();
-                    if (MetaDocs.CurrentMeta.Data != null && MetaDocs.CurrentMeta.Data.All.Contains(titleLow))
+                    if (MetaDocs.CurrentMeta.Data is not null && MetaDocs.CurrentMeta.Data.All.Contains(titleLow))
                     {
                         warnScript(MinorWarnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
                     }
@@ -807,7 +807,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         void checkAsScript(List<object> list, ScriptCheckContext context = null)
                         {
-                            if (context == null)
+                            if (context is null)
                             {
                                 context = new ScriptCheckContext();
                             }
@@ -909,6 +909,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                             else if (typeString.Text == "command" && keyName == "permission message")
                             {
                                 context.Definitions.Add("permission");
+                            }
+                            else if (typeString.Text == "data")
+                            {
+                                context.HasUnknowableSaveEntries = true;
+                                context.HasUnknowableDefinitions = true;
                             }
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
@@ -1043,7 +1048,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 if (eventName.Contains('@'))
                                 {
                                     Range? atRange = ContainsObjectNotation(eventName);
-                                    if (atRange != null)
+                                    if (atRange is not null)
                                     {
                                         int start = eventValue.StartChar + atRange.Value.Start.Value;
                                         int end = eventValue.StartChar + atRange.Value.End.Value;
@@ -1084,7 +1089,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         }
                                     }
                                 }
-                                if (matchedEvent == null)
+                                if (matchedEvent is null)
                                 {
                                     foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
                                     {
@@ -1094,7 +1099,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                             break;
                                         }
                                     }
-                                    if (matchedEvent == null)
+                                    if (matchedEvent is null)
                                     {
                                         warnScript(Warnings, eventValue.Line, "event_missing", $"Script Event listed doesn't exist. (Check `!event ...` to find proper event lines)!");
                                     }
@@ -1305,13 +1310,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (cleaned.StartsWith("- "))
                 {
-                    if (spaces > pspaces && clist != null && !buildingSubList)
+                    if (spaces > pspaces && clist is not null && !buildingSubList)
                     {
                         Warn(Warnings, i, "growing_spaces_in_script", "Spacing grew for no reason (missing a ':' on a command, or accidental over-spacing?).", 0, spaces);
                     }
-                    if (secwaiting != null)
+                    if (secwaiting is not null)
                     {
-                        if (clist == null)
+                        if (clist is null)
                         {
                             clist = new List<object>();
                             spacedlists[spaces] = clist;
@@ -1338,7 +1343,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             continue;
                         }
                     }
-                    else if (clist == null)
+                    else if (clist is null)
                     {
                         Warn(Warnings, i, "weird_line_growth", "Line purpose unknown, attempted list entry when not building a list (likely line format error, perhaps missing or misplaced a `:` on lines above, or incorrect tabulation?).", 0, line.IndexOf('-'));
                         pspaces = spaces;
@@ -1410,7 +1415,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (spaces > pspaces)
                 {
-                    if (secwaiting == null)
+                    if (secwaiting is null)
                     {
                         Warn(Warnings, i, "spacing_grew_weird", "Spacing grew for no reason (missing a ':', or accidental over-spacing?).", 0, spaces);
                         pspaces = spaces;
@@ -1428,7 +1433,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (endofline.Length == 0)
                 {
-                    if (secwaiting != null && spaces <= pspaces)
+                    if (secwaiting is not null && spaces <= pspaces)
                     {
                         Warn(Errors, secwaiting.Line, "empty_section", "Script section is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
                     }
@@ -1451,7 +1456,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 return false;
             }
-            if (currentRootSection == null)
+            if (currentRootSection is null)
             {
                 return true;
             }
