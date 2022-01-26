@@ -198,11 +198,16 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 string line = CleanedLines[i];
                 string deborkLine = Lines[i].Replace('*', 's').Replace('&', 'a').Replace('.', 'd');
-                if (!line.EndsWith(":") && line.StartsWith("-"))
+                if (!line.EndsWithFast(':') && line.StartsWithFast('-'))
                 {
                     int dashIndex = deborkLine.IndexOf('-');
                     result.Append(deborkLine[..(dashIndex + 1)]).Append(" ^1^");
                     result.Append(deborkLine[(dashIndex + 1)..].Replace(": ", "<&co>").Replace("#", "<&ns>")).Append('\n');
+                }
+                else if (!line.EndsWithFast(':'))
+                {
+                    int colonIndex = deborkLine.IndexOf(':');
+                    result.Append(deborkLine[..(colonIndex + 1)]).Append(deborkLine[(colonIndex + 1)..].Replace(":", "<&co>")).Append('\n');
                 }
                 else
                 {
