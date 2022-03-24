@@ -114,8 +114,8 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => s.Text.Contains(':') && !s.Text.StartsWith("def:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
-                if (mechanism == null)
+                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => s.Text.Contains(':') && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
+                if (mechanism is null)
                 {
                     if (details.Arguments.Length < 2 || !details.Arguments[1].Text.StartsWith('<') || !details.Arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
                     {
@@ -212,7 +212,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (details.Arguments.Any(a => !a.Text.Contains(':') && a.Text != "money" && a.Text != "xp" && a.Text != "iteminhand" && a.Text != "cursoritem"))
                 {
-                    details.Warn(details.Checker.MinorWarnings, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take scriptname:myitem' or 'take material:stone'.");
+                    details.Warn(details.Checker.MinorWarnings, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take item:my_item_here' or 'take slot:5'.");
                 }
             });
             Register(new[] { "case" }, (details) =>
