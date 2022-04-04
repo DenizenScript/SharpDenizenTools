@@ -9,7 +9,7 @@ Created by mcmonkey and the DenizenScript team.
 
 The MIT License (MIT)
 
-Copyright (c) 2020-2021 The DenizenScript Team
+Copyright (c) 2020-2022 The DenizenScript Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
