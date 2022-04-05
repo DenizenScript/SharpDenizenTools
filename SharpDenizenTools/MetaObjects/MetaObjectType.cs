@@ -70,6 +70,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The object string for generated adjust examples, if mismatched from the tagbase, like '&lt;player&gt;' for PlayerTag.</summary>
         public string GeneratedExampleAdjust;
 
+        /// <summary>A set of example text blocks for usage with tag return example generation.</summary>
+        public List<string> GeneratedReturnUsageExample = new();
+
         /// <summary>Set of randomly selectable example values of this object type.</summary>
         public string[] ExampleValues = Array.Empty<string>();
 
@@ -108,6 +111,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "examplevalues":
                     ExampleValues = value.Replace(" ", "").SplitFast(',');
+                    return true;
+                case "exampleforreturns":
+                    GeneratedReturnUsageExample.Add(value);
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);
