@@ -407,7 +407,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (tagName == "" || tagName == "definition")
             {
-                string param = parsed.Parts[0].Context;
+                string param = parsed.Parts[0].Parameter;
                 if (param is not null)
                 {
                     param = param.ToLowerFast().Before('.');
@@ -419,7 +419,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             else if (tagName == "entry")
             {
-                string param = parsed.Parts[0].Context;
+                string param = parsed.Parts[0].Parameter;
                 if (param is not null)
                 {
                     param = param.ToLowerFast();
@@ -446,9 +446,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             foreach (SingleTag.Part part in parsed.Parts)
             {
-                if (part.Context is not null)
+                if (part.Parameter is not null)
                 {
-                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Context, context);
+                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Parameter, context);
                 }
             }
             if (parsed.Fallback is not null)

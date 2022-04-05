@@ -104,6 +104,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The associated mechanism, if any.</summary>
         public string Mechanism = "";
 
+        /// <summary>Manual examples of this tag. One full script per entry.</summary>
+        public List<string> Examples = new();
+
         /// <summary>The parsed <see cref="SingleTag"/> of this tag.</summary>
         public SingleTag ParsedFormat;
 
@@ -135,6 +138,9 @@ namespace SharpDenizenTools.MetaObjects
                 case "mechanism":
                     Mechanism = value;
                     return true;
+                case "example":
+                    Examples.Add(value);
+                    return true;
                 default:
                     return base.ApplyValue(docs, key, value);
             }
@@ -147,8 +153,8 @@ namespace SharpDenizenTools.MetaObjects
             Require(docs, TagFull, Returns, Description);
             ParsedFormat = TagHelper.Parse(TagFull[1..^1], (s) => { docs.LoadErrors.Add($"Failed to parse meta tag '{TagFull}': {s}"); });
             int firstPartIndex = ParsedFormat.Parts.Count == 1 ? 0 : 1;
-            AllowsParam = ParsedFormat.Parts[firstPartIndex].Context != null;
-            RequiresParam = AllowsParam && !ParsedFormat.Parts[firstPartIndex].Context.EndsWith(')');
+            AllowsParam = ParsedFormat.Parts[firstPartIndex].Parameter != null;
+            RequiresParam = AllowsParam && !ParsedFormat.Parts[firstPartIndex].Parameter.EndsWith(')');
             if (TagFull.Contains(' '))
             {
                 docs.LoadErrors.Add($"Tag '{TagFull}' contains spaces.");

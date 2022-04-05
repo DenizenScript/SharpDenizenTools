@@ -64,6 +64,15 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Other types or pseudo-types that extend this type.</summary>
         public List<MetaObjectType> ExtendedBy = new();
 
+        /// <summary>The tag base component for generated examples, like 'player' for PlayerTag.</summary>
+        public string GeneratedExampleTagBase;
+
+        /// <summary>The object string for generated adjust examples, if mismatched from the tagbase, like '&lt;player&gt;' for PlayerTag.</summary>
+        public string GeneratedExampleAdjust;
+
+        /// <summary>Set of randomly selectable example values of this object type.</summary>
+        public string[] ExampleValues = Array.Empty<string>();
+
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
@@ -86,6 +95,19 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "implements":
                     ImplementsNames = value.Replace(" ", "").SplitFast(',');
+                    return true;
+                case "exampletagbase":
+                    GeneratedExampleTagBase = value;
+                    if (GeneratedExampleAdjust is null)
+                    {
+                        GeneratedExampleAdjust = $"<{GeneratedExampleTagBase}>";
+                    }
+                    return true;
+                case "exampleadjustobject":
+                    GeneratedExampleAdjust = value;
+                    return true;
+                case "examplevalues":
+                    ExampleValues = value.Replace(" ", "").SplitFast(',');
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);

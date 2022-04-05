@@ -86,6 +86,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Whether the event has a location for location switches.</summary>
         public bool HasLocation = false;
 
+        /// <summary>Manual examples of this tag. One full script per entry.</summary>
+        public List<string> Examples = new();
+
         /// <summary>Returns whether the switch name given is valid for this event.</summary>
         public bool IsValidSwitch(string switchName)
         {
@@ -173,6 +176,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "location":
                     HasLocation = value.Trim().ToLowerFast() == "true";
+                    return true;
+                case "example":
+                    Examples.Add(value);
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);

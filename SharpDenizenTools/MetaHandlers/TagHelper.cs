@@ -43,7 +43,7 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     if (brackets == 0)
                     {
-                        output.Parts[^1].Context = tag.Substring(firstBracket + 1, i - firstBracket - 1);
+                        output.Parts[^1].Parameter = tag.Substring(firstBracket + 1, i - firstBracket - 1);
                         output.Parts[^1].EndChar = i;
                     }
                 }
@@ -94,8 +94,8 @@ namespace SharpDenizenTools.MetaHandlers
             /// <summary>The tag text (tag name).</summary>
             public string Text;
 
-            /// <summary>The tag context (if any).</summary>
-            public string Context;
+            /// <summary>The tag context parameter (if any).</summary>
+            public string Parameter;
 
             /// <summary>The index in the original string where this tag-part started.</summary>
             public int StartChar;

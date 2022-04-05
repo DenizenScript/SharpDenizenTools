@@ -49,6 +49,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Tags documented for this mechanism. One tag per string.</summary>
         public string[] Tags = Array.Empty<string>();
 
+        /// <summary>Manual examples of this tag. One full script per entry.</summary>
+        public List<string> Examples = new();
+
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
@@ -68,6 +71,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "tags":
                     Tags = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    return true;
+                case "example":
+                    Examples.Add(value);
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);

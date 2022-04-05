@@ -76,7 +76,7 @@ namespace SharpDenizenTools.MetaHandlers
             else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
                 Tag.Parts[0].PossibleTags.Add(realBaseTag);
-                if (Tag.Parts[0].Context == null)
+                if (Tag.Parts[0].Parameter == null)
                 {
                     if (realBaseTag.RequiresParam)
                     {
@@ -170,7 +170,7 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     return;
                 }
-                if (Tag.Parts[index].Context == null)
+                if (Tag.Parts[index].Parameter == null)
                 {
                     result = result.Where(t => !t.Item1.RequiresParam).ToList();
                     if (result.IsEmpty())
