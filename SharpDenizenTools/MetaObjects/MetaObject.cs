@@ -25,6 +25,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Get the clean lowercase name of the object.</summary>
         public virtual string CleanName => Name.ToLowerFast();
 
+        /// <summary>The name to display for searchability purposes.</summary>
+        public virtual string SearchName => Name;
+
         /// <summary>Other words that mean the same thing.</summary>
         public List<string> Synonyms = new();
 

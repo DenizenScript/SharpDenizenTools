@@ -25,6 +25,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.CleanName"/></summary>
         public override string CleanName => CleanEvents[0];
 
+        /// <summary><see cref="MetaObject.SearchName"/></summary>
+        public override string SearchName => OverlyCleanedEvents[0];
+
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
