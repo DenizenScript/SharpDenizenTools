@@ -76,6 +76,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Set of randomly selectable example values of this object type.</summary>
         public string[] ExampleValues = Array.Empty<string>();
 
+        /// <summary>Information about matchable options for this type.</summary>
+        public string Matchable;
+
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
@@ -114,6 +117,9 @@ namespace SharpDenizenTools.MetaObjects
                     return true;
                 case "exampleforreturns":
                     GeneratedReturnUsageExample.Add(value);
+                    return true;
+                case "matchable":
+                    Matchable = value;
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);
