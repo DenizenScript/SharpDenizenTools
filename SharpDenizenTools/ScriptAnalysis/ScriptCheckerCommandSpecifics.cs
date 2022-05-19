@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FreneticUtilities.FreneticExtensions;
+using FreneticUtilities.FreneticToolkit;
 using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.MetaObjects;
 
@@ -94,6 +95,16 @@ namespace SharpDenizenTools.ScriptAnalysis
             "ex", "exs", "denizen", "npc", "trait"
         };
 
+        /// <summary>Matcher for symbols that may not appear in an argument prefix, including the ':' that separates the prefix from suffix.</summary>
+        public static AsciiMatcher PREFIX_FORBIDDEN_SYMBOLS = new("<> :.!");
+
+        /// <summary>Returns true if the argument has a valid non-tagged prefix.</summary>
+        public static bool ArgHasPrefix(string arg)
+        {
+            int first = PREFIX_FORBIDDEN_SYMBOLS.FirstMatchingIndex(arg);
+            return first != -1 && arg[first] == ':';
+        }
+
         /// <summary>Relevant command-specific error check impls.</summary>
         static ScriptCheckerCommandSpecifics()
         {
@@ -114,7 +125,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => s.Text.Contains(':') && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
+                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
                 if (mechanism is null)
                 {
                     if (details.Arguments.Length < 2 || !details.Arguments[1].Text.StartsWith('<') || !details.Arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
