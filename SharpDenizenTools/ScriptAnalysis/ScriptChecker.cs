@@ -168,7 +168,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     string comment = CleanedLines[i][1..].Trim();
                     if (comment.ToLowerFast().StartsWith("todo"))
                     {
-                        Warn(MinorWarnings, i, "todo_comment", $"TODO Line: {Lines[i].Trim()}", Lines[i].IndexOf('#'), Lines[i].Length);
+                        Warn(Warnings, i, "todo_comment", $"TODO Line: {Lines[i].Trim()}", Lines[i].IndexOf('#'), Lines[i].Length);
                     }
                     CleanedLines[i] = "";
                     Lines[i] = "";
@@ -592,7 +592,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             if (currentQuote != '\0')
             {
-                Warn(MinorWarnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).", startChar + firstQuote, startChar + len);
+                Warn(Warnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).", startChar + firstQuote, startChar + len);
             }
             if (start < len)
             {
@@ -760,16 +760,16 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     if (scriptTitle.Text.Length < 4)
                     {
-                        warnScript(MinorWarnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
+                        warnScript(Warnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
                     string titleLow = scriptTitle.Text.Trim().ToLowerFast();
                     if (MetaDocs.CurrentMeta.Data is not null && MetaDocs.CurrentMeta.Data.All.Contains(titleLow))
                     {
-                        warnScript(MinorWarnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
+                        warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
                     }
                     if (MetaDocs.CurrentMeta.Commands.ContainsKey(titleLow) || KnownScriptTypes.ContainsKey(titleLow))
                     {
-                        warnScript(MinorWarnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
+                        warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
                     }
                     if (scriptData is not Dictionary<LineTrackedString, object> scriptSection)
                     {
