@@ -27,8 +27,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static readonly string[] DENIZEN_ADDON_SOURCES = new string[]
         {
             "https://github.com/DenizenScript/Depenizen/archive/master.zip",
-            "https://github.com/DenizenScript/dDiscordBot/archive/master.zip",
-            "https://github.com/DenizenScript/Webizen/archive/master.zip"
+            "https://github.com/DenizenScript/dDiscordBot/archive/master.zip"
         };
 
         /// <summary>The actual source array to use, by default built from <see cref="DENIZEN_SOURCES"/> and <see cref="DENIZEN_ADDON_SOURCES"/>.</summary>
