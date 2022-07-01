@@ -448,12 +448,12 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 if (part.Parameter is not null)
                 {
-                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Parameter, context);
+                    CheckSingleArgument(line, startChar + part.StartChar + part.Text.Length + 1, part.Parameter, context, false);
                 }
             }
             if (parsed.Fallback is not null)
             {
-                CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context);
+                CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context, false);
             }
             new TagTracer()
             {
@@ -472,7 +472,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="argument">The text of the argument.</param>
         /// <param name="context">The script checking context (if any).</param>
         /// <param name="isCommand">Whether this is an argument to a command.</param>
-        public void CheckSingleArgument(int line, int startChar, string argument, ScriptCheckContext context, bool isCommand = false)
+        public void CheckSingleArgument(int line, int startChar, string argument, ScriptCheckContext context, bool isCommand)
         {
             if (argument.Contains('@') && !isCommand)
             {
@@ -520,6 +520,19 @@ namespace SharpDenizenTools.ScriptAnalysis
                 CheckSingleTag(line, startChar + tagIndex + 1, tag, context);
                 tagIndex = argNoArrows.IndexOf('<', endIndex);
             }
+        }
+        /// <summary>Performs the necessary checks on a single data key line.</summary>
+        /// <param name="line">The line number.</param>
+        /// <param name="startChar">The index of the character where this argument starts.</param>
+        /// <param name="argument">The text of the argument.</param>
+        /// <param name="context">The script checking context (if any).</param>
+        public void CheckSingleDataLine(int line, int startChar, string argument, ScriptCheckContext context)
+        {
+            if (argument.Contains('\"') || argument.StartsWith('\''))
+            {
+                Warn(MinorWarnings, line, "invalid_data_line_quotes", "Data lines should not be quoted. You can use '<empty>' to make an empty line, or '<&dq>' to make a raw double-quote symbol, or '<&sq>' to make a raw single-quote.", startChar, startChar + argument.Length);
+            }
+            CheckSingleArgument(line, startChar, argument, context, false);
         }
 
         /// <summary>A single argument to a command.</summary>
@@ -853,15 +866,15 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 }
                             }
                         }
-                        void checkBasicList(List<object> list)
+                        void checkBasicList(List<object> list, bool canBeScript)
                         {
                             foreach (object entry in list)
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleArgument(str.Line, str.StartChar, str.Text, null);
+                                    CheckSingleDataLine(str.Line, str.StartChar, str.Text, null);
                                 }
-                                else
+                                else if (canBeScript)
                                 {
                                     warnScript(Warnings, keyLine.Line, "script_should_be_list", $"Key `{keyName.Replace('`', '\'')}` appears to contain a script, when a data list was expected (check `!lang {typeString.Text} script containers` for format rules).");
                                 }
@@ -875,7 +888,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys))
                             {
-                                checkBasicList(listAtKey);
+                                checkBasicList(listAtKey, true);
                             }
                             else if (matchesSet(keyName, scriptType.ValueKeys))
                             {
@@ -884,6 +897,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             else if (typeString.Text == "data" || keyName == "data")
                             {
                                 // Always allow 'data'
+                                checkBasicList(listAtKey, false);
                             }
                             else if (scriptType.Strict)
                             {
@@ -895,7 +909,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                checkBasicList(listAtKey);
+                                checkBasicList(listAtKey, true);
                             }
 
                         }
@@ -922,60 +936,53 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             if (matchesSet(keyName, scriptType.ValueKeys))
                             {
-                                CheckSingleArgument(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, context);
+                                CheckSingleDataLine(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, context);
                             }
                             else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
                             {
                                 warnScript(Warnings, keyLine.Line, "bad_key_" + typeString.Text, $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a list or script, but was instead a direct Value - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
-                            else if (typeString.Text == "data" || keyName == "data")
-                            {
-                                // Always allow 'data'
-                            }
-                            else if (scriptType.Strict)
+                            else if (scriptType.Strict && keyName != "data")
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected value key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
                             else
                             {
-                                CheckSingleArgument(keyLine.Line, keyLine.StartChar, lineAtKey.Text, context);
+                                CheckSingleDataLine(keyLine.Line, keyLine.StartChar, lineAtKey.Text, context);
                             }
                         }
                         else if (valueAtKey is Dictionary<LineTrackedString, object> keyPairMap)
                         {
                             string keyText = keyName + ".*";
-                            void checkSubMaps(Dictionary<LineTrackedString, object> subMap)
+                            void checkSubMaps(Dictionary<LineTrackedString, object> subMap, bool canBeScript)
                             {
                                 foreach (object subValue in subMap.Values)
                                 {
                                     if (subValue is LineTrackedString textLine)
                                     {
-                                        CheckSingleArgument(textLine.Line, textLine.StartChar, textLine.Text, null);
+                                        CheckSingleDataLine(textLine.Line, textLine.StartChar, textLine.Text, null);
                                     }
                                     else if (subValue is List<object> listKey)
                                     {
-                                        if (scriptType.ScriptKeys.Contains(keyText) || (!scriptType.ListKeys.Contains(keyText) && scriptType.CanHaveRandomScripts))
+                                        if (canBeScript && (scriptType.ScriptKeys.Contains(keyText) || (!scriptType.ListKeys.Contains(keyText) && scriptType.CanHaveRandomScripts)))
                                         {
                                             checkAsScript(listKey);
                                         }
                                         else
                                         {
-                                            checkBasicList(listKey);
+                                            checkBasicList(listKey, canBeScript);
                                         }
                                     }
                                     else if (subValue is Dictionary<LineTrackedString, object> mapWithin)
                                     {
-                                        checkSubMaps(mapWithin);
+                                        checkSubMaps(mapWithin, canBeScript);
                                     }
                                 }
                             }
                             if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText)
                                 || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
                             {
-                                if (typeString.Text != "data" && keyName != "data")
-                                {
-                                    checkSubMaps(keyPairMap);
-                                }
+                                checkSubMaps(keyPairMap, typeString.Text != "data" && keyName != "data");
                             }
                             else if (scriptType.Strict && keyName != "data")
                             {
@@ -983,10 +990,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                if (typeString.Text != "data" && !keyName.StartsWith("definemap") && keyName != "data")
-                                {
-                                    checkSubMaps(keyPairMap);
-                                }
+                                checkSubMaps(keyPairMap, typeString.Text != "data" && !keyName.StartsWith("definemap") && keyName != "data");
                             }
                         }
                     }
