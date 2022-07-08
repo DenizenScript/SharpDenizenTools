@@ -56,7 +56,8 @@ namespace SharpDenizenTools.MetaHandlers
             { "objecttype", () => new MetaObjectType() },
             { "event", () => new MetaEvent() },
             { "action", () => new MetaAction() },
-            { "language", () => new MetaLanguage() }
+            { "language", () => new MetaLanguage() },
+            { "data", () => new MetaDataValue() }
         };
 
         /// <summary>All known commands.</summary>
@@ -100,6 +101,15 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>Events that can't fit into <see cref="EventLookupOpti"/>.</summary>
         public List<MetaEvent> LegacyCouldMatchEvents = new();
+
+        /// <summary>Internal data value sets.</summary>
+        public Dictionary<string, HashSet<string>> DataValueSets = new(32);
+
+        /// <summary>Returns whether the given text value is in the named data set.</summary>
+        public bool IsInDataValueSet(string set, string text)
+        {
+            return DataValueSets.TryGetValue(set, out HashSet<string> values) && values.Contains(text);
+        }
 
         /// <summary>Associated ExtraData instance, if any.</summary>
         public ExtraData Data;

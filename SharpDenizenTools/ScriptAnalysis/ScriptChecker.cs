@@ -53,6 +53,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             "else", "default", "random"
         };
 
+        /// <summary>The applicable MetaDocs set.</summary>
+        public MetaDocs Meta;
+
         /// <summary>The full original script text.</summary>
         public string FullOriginalScript;
 
@@ -397,7 +400,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 Warn(Warnings, line, "tag_format_break", $"Tag parse error: {s}", startChar, startChar + tag.Length);
             });
             string tagName = parsed.Parts[0].Text.ToLowerFast();
-            if (!MetaDocs.CurrentMeta.TagBases.Contains(tagName) && tagName.Length > 0)
+            if (!Meta.TagBases.Contains(tagName) && tagName.Length > 0)
             {
                 Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar, startChar + tagName.Length);
             }
@@ -432,7 +435,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             for (int i = 1; i < parsed.Parts.Count; i++)
             {
                 SingleTag.Part part = parsed.Parts[i];
-                if (!MetaDocs.CurrentMeta.TagParts.Contains(part.Text))
+                if (!Meta.TagParts.Contains(part.Text))
                 {
                     if (i != 1 || (tagName != "entry" && tagName != "context"))
                     {
@@ -457,7 +460,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             new TagTracer()
             {
-                Docs = MetaDocs.CurrentMeta,
+                Docs = Meta,
                 Tag = parsed,
                 Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); },
                 DeprecationError = (s, part) => { Warn(MinorWarnings, line, "deprecated_tag_part", s, startChar + part.StartChar, startChar + part.StartChar + part.Text.Length); }
@@ -655,7 +658,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 commandName = commandName[1..];
             }
             CommandArgument[] arguments = parts.Length == 1 ? Array.Empty<CommandArgument>() : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
-            if (!MetaDocs.CurrentMeta.Commands.TryGetValue(commandName, out MetaCommand command))
+            if (!Meta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
                 {
@@ -776,11 +779,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                         warnScript(Warnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
                     string titleLow = scriptTitle.Text.Trim().ToLowerFast();
-                    if (MetaDocs.CurrentMeta.Data is not null && MetaDocs.CurrentMeta.Data.All.Contains(titleLow))
+                    if (Meta.Data is not null && Meta.Data.All.Contains(titleLow))
                     {
                         warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
                     }
-                    if (MetaDocs.CurrentMeta.Commands.ContainsKey(titleLow) || KnownScriptTypes.ContainsKey(titleLow))
+                    if (Meta.Commands.ContainsKey(titleLow) || KnownScriptTypes.ContainsKey(titleLow))
                     {
                         warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
                     }
@@ -1028,10 +1031,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.", start, end);
                                 }
                                 actionName = "on " + actionName;
-                                if (!MetaDocs.CurrentMeta.Actions.ContainsKey(actionName))
+                                if (!Meta.Actions.ContainsKey(actionName))
                                 {
                                     bool exists = false;
-                                    foreach (MetaAction action in MetaDocs.CurrentMeta.Actions.Values)
+                                    foreach (MetaAction action in Meta.Actions.Values)
                                     {
                                         if (action.RegexMatcher.IsMatch(actionName))
                                         {
@@ -1064,12 +1067,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                                         Warn(Warnings, eventValue.Line, "event_object_notation", "This event line appears to contain raw object notation. Object notation is not allowed in event lines.", start, end);
                                     }
                                 }
-                                eventName = EventTools.SeparateSwitches(eventName, out List<KeyValuePair<string, string>> switches);
+                                eventName = EventTools.SeparateSwitches(Meta, eventName, out List<KeyValuePair<string, string>> switches);
                                 string[] parts = eventName.SplitFast(' ');
                                 MetaEvent matchedEvent = null;
                                 ScriptEventCouldMatcher matched = null;
                                 bool matchedSwitches = false;
-                                foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
+                                foreach (MetaEvent evt in Meta.Events.Values)
                                 {
                                     foreach (ScriptEventCouldMatcher matcher in evt.CouldMatchers)
                                     {
@@ -1100,7 +1103,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 }
                                 if (matchedEvent is null)
                                 {
-                                    foreach (MetaEvent evt in MetaDocs.CurrentMeta.Events.Values)
+                                    foreach (MetaEvent evt in Meta.Events.Values)
                                     {
                                         if (evt.CouldMatchers.Any(c => c.TryMatch(parts, true, false) > 0))
                                         {
@@ -1504,6 +1507,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Runs the full script check.</summary>
         public void Run()
         {
+            Meta = MetaDocs.CurrentMeta;
             ClearCommentsFromLines();
             CheckYAML();
             LoadInjects();
