@@ -20,7 +20,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void AddTo(MetaDocs docs)
         {
             FullName = $"{MechObject}.{MechName}";
-            NameForms = new string[] { FullName, MechName };
+            NameForms = new string[] { FullName.ToLowerFast(), MechName.ToLowerFast() };
             HasMultipleNames = true;
             docs.Mechanisms.Add(CleanName, this);
         }
