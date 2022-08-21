@@ -19,10 +19,10 @@ namespace SharpDenizenTools.MetaHandlers
         public SingleTag Tag;
 
         /// <summary>An action to display error messages.</summary>
-        public Action<string> Error;
+        public Action<string> Error = (_) => { /* Default Ignore */ };
 
         /// <summary>An action to display deprecation error messages.</summary>
-        public Action<string, SingleTag.Part> DeprecationError;
+        public Action<string, SingleTag.Part> DeprecationError = (_, _) => { /* Default Ignore */ };
 
         /// <summary>Special tags that used to exist and get special handling.</summary>
         [Obsolete("Deprecated tag support")]
@@ -106,6 +106,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 Error($"Tag base '{Tag.Parts[0].Text}' does not exist.");
             }
+            Tag.Parts[0].PossibleSubTypes = GetFullComplexSetFrom(Tag.Parts[0].PossibleTags.Select(t => t.ReturnType).Where(t => t is not null).ToHashSet());
             foreach (SingleTag.Part part in Tag.Parts)
             {
                 List<MetaTag> deprecated = part.PossibleTags.Where(p => p.Deprecated != null).ToList();
@@ -209,6 +210,7 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     return ParsePossibleTypes(p.Item1.Returns, p.Item1.ReturnType);
                 }));
+                Tag.Parts[index].PossibleSubTypes = GetFullComplexSetFrom(possibleRoots);
                 index += longestPart;
             }
         }
@@ -219,6 +221,10 @@ namespace SharpDenizenTools.MetaHandlers
             HashSet<MetaObjectType> result = new(original.Count * 2);
             foreach (MetaObjectType type in original)
             {
+                if (type == Docs.ObjectTagType)
+                {
+                    return new HashSet<MetaObjectType>(Docs.ObjectTypes.Values);
+                }
                 result.Add(type);
                 MetaObjectType baseType = type.BaseType;
                 while (baseType != null)

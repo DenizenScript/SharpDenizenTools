@@ -105,6 +105,9 @@ namespace SharpDenizenTools.MetaHandlers
 
             /// <summary>The traced possible tag object for this part (if known).</summary>
             public List<MetaTag> PossibleTags = new();
+
+            /// <summary>The possibly valid object types after this part (if known).</summary>
+            public HashSet<MetaObjectType> PossibleSubTypes = new();
         }
 
         /// <summary>The parts of the tag.</summary>
