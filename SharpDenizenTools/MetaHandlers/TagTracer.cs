@@ -190,7 +190,25 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 int longestPart = result.Max(p => p.Item2);
                 result = result.Where(p => p.Item2 == longestPart).ToList();
-                possibleRoots = new HashSet<MetaObjectType>(result.SelectMany(p => ParsePossibleTypes(p.Item1.Returns, p.Item1.ReturnType)));
+                possibleRoots = new HashSet<MetaObjectType>(result.SelectMany(p =>
+                {
+                    if (p.Item1.BaseType == Docs.ObjectTagType && p.Item1.AfterDotCleaned == "as")
+                    {
+                        string type = Tag.Parts[index].Parameter.ToLowerFast();
+                        if (!type.EndsWith("tag"))
+                        {
+                            type = $"{type}tag";
+                        }
+                        MetaObjectType wantedType = Docs.ObjectTypes.GetValueOrDefault(type);
+                        if (wantedType == null)
+                        {
+                            Error($"Tag part 'as[{type}]' is invalid: type name given doesn't appear to be a real object type.");
+                            return new HashSet<MetaObjectType>();
+                        }
+                        return ParsePossibleTypes(type, wantedType);
+                    }
+                    return ParsePossibleTypes(p.Item1.Returns, p.Item1.ReturnType);
+                }));
                 index += longestPart;
             }
         }
