@@ -350,25 +350,6 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        /// <summary>Checks if %ancientdef%s are used (instead of modern "&lt;[defname]&gt;" syntax). If so, error.</summary>
-        public void CheckForAncientDefs()
-        {
-            if (!FullOriginalScript.Contains('%'))
-            {
-                return;
-            }
-            for (int i = 0; i < Lines.Length; i++)
-            {
-                if (Lines[i].Contains('%'))
-                {
-                    int start = Lines[i].IndexOf('%');
-                    int end = Lines[i].LastIndexOf('%');
-                    Warn(Errors, i, "ancient_defs", "This script uses ancient %defs%. Please update to modern '<[defname]>' syntax. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#definition-syntax> for more info.", start, end);
-                    break;
-                }
-            }
-        }
-
         /// <summary>Checks if &lt;def[oldDefs]&gt; are used (instead of modern "&lt;[defname]&gt;" syntax). If so, warning.</summary>
         public void CheckForOldDefs()
         {
@@ -1514,7 +1495,6 @@ namespace SharpDenizenTools.ScriptAnalysis
             BasicLineFormatCheck();
             CheckForTabs();
             CheckForBraces();
-            CheckForAncientDefs();
             CheckForOldDefs();
             Dictionary<LineTrackedString, object> containers = GatherActualContainers();
             CheckAllContainers(containers);
