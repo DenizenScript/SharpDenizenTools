@@ -157,6 +157,16 @@ namespace SharpDenizenTools.ScriptAnalysis
             warnType.Add(new ScriptWarning() { Line = line, WarningUniqueKey = key, CustomMessageForm = message, StartChar = start, EndChar = end });
         }
 
+        /// <summary>Adds a warning to track.</summary>
+        /// <param name="warnType">The warning type (the list object).</param>
+        /// <param name="key">The unique warning key, for compressing repeat warns.</param>
+        /// <param name="message">The warning message.</param>
+        /// <param name="line">The line to warn about.</param>
+        public void Warn(List<ScriptWarning> warnType, string key, string message, LineTrackedString line)
+        {
+            Warn(warnType, line.Line, key, message, line.StartChar, line.StartChar + line.Text.Length);
+        }
+
         /// <summary>Clears all comment lines.</summary>
         public void ClearCommentsFromLines()
         {
@@ -1313,6 +1323,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             clist = new List<object>();
                             spacedlists[spaces] = clist;
+                            if (currentSection.Keys.Any(k => k.Text == secwaiting.Text))
+                            {
+                                Warn(Errors, "duplicate_key", "Duplicate key - a key of the same name already exists in this script section.", secwaiting);
+                            }
                             currentSection[secwaiting] = clist;
                             secwaiting = null;
                         }
@@ -1320,7 +1334,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         {
                             if (spaces <= pspaces)
                             {
-                                Warn(Errors, secwaiting.Line, "empty_command_section", "Script section within command is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
+                                Warn(Errors, "empty_command_section", "Script section within command is empty (add contents, or remove the section).", secwaiting);
                             }
                             List<object> newclist = new();
                             clist.Add(new Dictionary<LineTrackedString, object>() { { secwaiting, newclist } });
@@ -1419,6 +1433,17 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         currentRootSection = sect;
                     }
+                    if (currentSection.Keys.Any(k => k.Text == secwaiting.Text))
+                    {
+                        if (currentSection == rootScriptSection)
+                        {
+                            Warn(Errors, "duplicate_script", "Duplicate script - a script container of the same name already exists in this script file.", secwaiting);
+                        }
+                        else
+                        {
+                            Warn(Errors, "duplicate_key", "Duplicate key - a key of the same name already exists in this script section.", secwaiting);
+                        }
+                    }
                     currentSection[secwaiting] = sect;
                     currentSection = sect;
                     spacedsections[spaces] = sect;
@@ -1428,7 +1453,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     if (secwaiting is not null && spaces <= pspaces)
                     {
-                        Warn(Errors, secwaiting.Line, "empty_section", "Script section is empty (add contents, or remove the section).", secwaiting.StartChar, secwaiting.StartChar + secwaiting.Text.Length);
+                        Warn(Errors, "empty_section", "Script section is empty (add contents, or remove the section).", secwaiting);
                     }
                     secwaiting = new LineTrackedString(i, startofline.ToLowerFast(), cleanStartCut);
                 }
