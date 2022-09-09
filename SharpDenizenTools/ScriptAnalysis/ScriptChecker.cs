@@ -41,6 +41,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             { "enchantment", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ScriptKeys = new[] { "after attack", "after hurt" }, ValueKeys = new[] { "id", "rarity", "category", "full_name", "min_level", "max_level", "min_cost", "max_cost", "treasure_only", "is_curse", "is_tradable", "is_discoverable", "is_compatible", "can_enchant", "damage_bonus", "damage_protection" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } }
         };
 
+        /// <summary>Keys that always mean a section is a script.</summary>
+        public static string[] AlwaysScriptKeys = new[] { "script", "scripts", "subscripts", "subtasks", "inject", "injects", "injectables", "subprocedures" };
+
         /// <summary>A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.</summary>
         public static HashSet<string> CommandsWithColonsAndArguments = new()
         {
@@ -876,7 +879,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         if (valueAtKey is List<object> listAtKey)
                         {
-                            if (matchesSet(keyName, scriptType.ScriptKeys))
+                            if (matchesSet(keyName, scriptType.ScriptKeys) || matchesSet(keyName, AlwaysScriptKeys))
                             {
                                 checkAsScript(listAtKey);
                             }
@@ -973,7 +976,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     }
                                 }
                             }
-                            if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText)
+                            if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText) || AlwaysScriptKeys.Contains(keyName)
                                 || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
                             {
                                 checkSubMaps(keyPairMap, typeString.Text != "data" && keyName != "data");
