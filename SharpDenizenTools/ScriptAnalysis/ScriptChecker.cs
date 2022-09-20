@@ -542,6 +542,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             public string Text;
         }
 
+        /// <summary>Symbols that are allowed as the first character of a tag.</summary>
+        public static AsciiMatcher VALID_TAG_FIRST_CHAR = new(AsciiMatcher.BothCaseLetters + AsciiMatcher.Digits + "&_");
+
         /// <summary>Build args, as copied from Denizen Core -> ArgumentHelper.</summary>
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
@@ -555,10 +558,11 @@ namespace SharpDenizenTools.ScriptAnalysis
             int len = stringArgs.Length;
             char currentQuote = '\0';
             int firstQuote = 0;
+            int inTags = 0, inTagParams = 0;
             for (int i = 0; i < len; i++)
             {
                 char c = stringArgs[i];
-                if (c == ' ' && currentQuote == '\0')
+                if (c == ' ' && currentQuote == '\0' && inTagParams == 0)
                 {
                     if (i > start)
                     {
@@ -566,15 +570,34 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     start = i + 1;
                 }
+                else if (c == '<')
+                {
+                    if (i + 1 < len && VALID_TAG_FIRST_CHAR.IsMatch(stringArgs[i + 1]))
+                    {
+                        inTags++;
+                    }
+                }
+                else if (c == '>' && inTags > 0)
+                {
+                    inTags--;
+                }
+                else if (c == '[' && inTags > 0)
+                {
+                    inTagParams++;
+                }
+                else if (c == ']' && inTagParams > 0)
+                {
+                    inTagParams--;
+                }
                 else if (c == '"' || c == '\'')
                 {
-                    if (firstQuote == 0)
+                    if (currentQuote == '\0' && inTagParams == 0)
                     {
-                        firstQuote = i;
-                    }
-                    if (currentQuote == '\0')
-                    {
-                        if (i - 1 < 0 || stringArgs[i - 1] == ' ')
+                        if (firstQuote == 0)
+                        {
+                            firstQuote = i;
+                        }
+                        if (i == 0 || stringArgs[i - 1] == ' ')
                         {
                             currentQuote = c;
                             start = i + 1;
