@@ -543,7 +543,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Symbols that are allowed as the first character of a tag.</summary>
-        public static AsciiMatcher VALID_TAG_FIRST_CHAR = new(AsciiMatcher.BothCaseLetters + AsciiMatcher.Digits + "&_");
+        public static AsciiMatcher VALID_TAG_FIRST_CHAR = new(AsciiMatcher.BothCaseLetters + AsciiMatcher.Digits + "&_[");
 
         /// <summary>Build args, as copied from Denizen Core -> ArgumentHelper.</summary>
         /// <param name="line">The line number.</param>
