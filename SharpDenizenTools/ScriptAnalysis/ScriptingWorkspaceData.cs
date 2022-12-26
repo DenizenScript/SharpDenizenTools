@@ -23,7 +23,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             AllKnownServerFlagNames.MergeIn(other.AllKnownServerFlagNames);
             AllKnownObjectFlagNames.MergeIn(other.AllKnownObjectFlagNames);
-            foreach ((string name, ScriptContainerData data) in Scripts)
+            foreach ((string name, ScriptContainerData data) in other.Scripts)
             {
                 Scripts[name] = data;
             }
