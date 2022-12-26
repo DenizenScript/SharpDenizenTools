@@ -9,6 +9,9 @@ using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.MetaObjects;
 using FreneticUtilities.FreneticToolkit;
 using YamlDotNet.Core;
+using YamlDotNet.Core.Tokens;
+using System.ComponentModel;
+using static SharpDenizenTools.MetaHandlers.SingleTag;
 
 namespace SharpDenizenTools.ScriptAnalysis
 {
@@ -122,6 +125,12 @@ namespace SharpDenizenTools.ScriptAnalysis
 
         /// <summary>A user-specified list of warning types to ignore.</summary>
         public HashSet<string> IgnoredWarningTypes = new();
+
+        /// <summary>Optional workspace this script exists within.</summary>
+        public ScriptingWorkspaceData SurroundingWorkspace = null;
+
+        /// <summary>Generated workspace data about this script file alone.</summary>
+        public ScriptingWorkspaceData GeneratedWorkspace = new();
 
         /// <summary>Construct the ScriptChecker instance from a script string.</summary>
         /// <param name="script">The script contents string.</param>
@@ -393,14 +402,18 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 Warn(Warnings, line, "tag_format_break", $"Tag parse error: {s}", startChar, startChar + tag.Length);
             });
+            void warnPart(SingleTag.Part part, string key, string message)
+            {
+                Warn(Warnings, line, key, message, startChar + part.StartChar, startChar + part.EndChar);
+            }
             string tagName = parsed.Parts[0].Text.ToLowerFast();
             if (!Meta.TagBases.Contains(tagName) && tagName.Length > 0)
             {
-                Warn(Warnings, line, "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar, startChar + tagName.Length);
+                warnPart(parsed.Parts[0], "bad_tag_base", $"Invalid tag base `{tagName.Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
             }
             else if (tagName.EndsWith("tag"))
             {
-                Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar, startChar + tagName.Length);
+                warnPart(parsed.Parts[0], "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).");
             }
             if (tagName == "" || tagName == "definition")
             {
@@ -410,7 +423,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     param = param.ToLowerFast().Before('.');
                     if (context is not null && !context.Definitions.Contains(param) && !context.HasUnknowableDefinitions)
                     {
-                        Warn(Warnings, line, "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].StartChar + param.Length + 2);
+                        warnPart(parsed.Parts[0], "def_of_nothing", "Definition tag points to non-existent definition (typo, or bad copypaste?).");
                     }
                 }
             }
@@ -422,7 +435,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     param = param.ToLowerFast();
                     if (context is not null && !context.SaveEntries.Contains(param) && !context.HasUnknowableSaveEntries)
                     {
-                        Warn(Warnings, line, "entry_of_nothing", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).", startChar + parsed.Parts[0].StartChar, startChar + parsed.Parts[0].EndChar);
+                        warnPart(parsed.Parts[0], "entry_of_nothing", "entry[...] tag points to non-existent save entry (typo, or bad copypaste?).");
                     }
                 }
             }
@@ -433,10 +446,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     if (i != 1 || (tagName != "entry" && tagName != "context"))
                     {
-                        Warn(Warnings, line, "bad_tag_part", $"Invalid tag part `{part.Text.Replace('`', '\'')}` (check `!tag ...` to find valid tags).", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
+                        warnPart(part, "bad_tag_part", $"Invalid tag part `{part.Text.Replace('`', '\'')}` (check `!tag ...` to find valid tags).");
                         if (part.Text.EndsWith("tag"))
                         {
-                            Warn(Warnings, line, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).", startChar + part.StartChar, startChar + part.StartChar + part.Text.Length);
+                            warnPart(part, "xtag_notation", $"'XTag' notation is for documentation purposes, and is not to be used literally in a script. (replace the 'XTag' text with a valid real tagbase that returns a tag of that type).");
                         }
                     }
                 }
@@ -452,13 +465,14 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 CheckSingleArgument(line, startChar + parsed.EndChar + 2, parsed.Fallback, context, false);
             }
-            new TagTracer()
+            TagTracer tracer = new()
             {
                 Docs = Meta,
                 Tag = parsed,
                 Error = (s) => { Warn(Warnings, line, "tag_trace_failure", $"Tag tracer: {s}", startChar, startChar + tag.Length); },
                 DeprecationError = (s, part) => { Warn(MinorWarnings, line, "deprecated_tag_part", s, startChar + part.StartChar, startChar + part.StartChar + part.Text.Length); }
-            }.Trace();
+            };
+            tracer.Trace();
         }
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };
@@ -655,7 +669,8 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="commandText">The text of the command line.</param>
         /// <param name="context">The script checking context.</param>
-        public void CheckSingleCommand(int line, int startChar, string commandText, ScriptCheckContext context)
+        /// <param name="script">The relevant script container.</param>
+        public void CheckSingleCommand(int line, int startChar, string commandText, ScriptCheckContext context, ScriptContainerData script)
         {
             if (commandText.Contains('@'))
             {
@@ -693,6 +708,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 Arguments = arguments,
                 CommandName = commandName,
                 Context = context,
+                Script = script,
                 Checker = this
             };
             if (!string.IsNullOrWhiteSpace(command.Deprecated))
@@ -772,69 +788,62 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>A matcher for the set of characters that a script title is allowed to have.</summary>
         public static AsciiMatcher ScriptTitleCharactersAllowed = new("abcdefghijklmnopqrstuvwxyz0123456789_");
 
-        /// <summary>Checks a dictionary full of script containers, performing all checks on the scripts from there on.</summary>
-        public void CheckAllContainers(Dictionary<LineTrackedString, object> scriptContainers)
+        /// <summary>Helper to check if a key matches a key-set (with asterisk support).</summary>
+        public static bool MatchesSet(string key, string[] keySet)
         {
-            foreach ((LineTrackedString scriptTitle, object scriptData) in scriptContainers)
+            return keySet.Contains(key) || keySet.Contains($"{key}.*") || keySet.Contains("*");
+        }
+
+        /// <summary>Checks a dictionary full of script containers, performing all checks on the scripts from there on.</summary>
+        public void CheckAllContainers()
+        {
+            foreach (ScriptContainerData script in GeneratedWorkspace.Scripts.Values)
             {
                 void warnScript(List<ScriptWarning> warns, int line, string key, string warning)
                 {
-                    Warn(warns, line, key, $"In script `{scriptTitle.Text.Replace('`', '\'')}`: {warning}", 0, Lines[line].Length);
+                    Warn(warns, line, key, $"In script `{script.Name.Replace('`', '\'')}`: {warning}", 0, Lines[line].Length);
                 }
                 try
                 {
-                    if (scriptTitle.Text.Trim().Contains(' '))
+                    if (script.Name.Contains(' '))
                     {
-                        warnScript(MinorWarnings, scriptTitle.Line, "spaced_script_name", "Script titles should not contain spaces - consider the '_' underscore symbol instead.");
+                        warnScript(MinorWarnings, script.LineNumber, "spaced_script_name", "Script titles should not contain spaces - consider the '_' underscore symbol instead.");
                     }
-                    else if (!ScriptTitleCharactersAllowed.IsOnlyMatches(scriptTitle.Text.Trim().ToLowerFast()))
+                    else if (!ScriptTitleCharactersAllowed.IsOnlyMatches(script.Name))
                     {
-                        warnScript(MinorWarnings, scriptTitle.Line, "non_alphanumeric_script_name", "Script titles should be primarily alphanumeric, and shouldn't contain symbols other than '_' underscores.");
+                        warnScript(MinorWarnings, script.LineNumber, "non_alphanumeric_script_name", "Script titles should be primarily alphanumeric, and shouldn't contain symbols other than '_' underscores.");
                     }
-                    if (scriptTitle.Text.Length < 4)
+                    if (script.Name.Length < 4)
                     {
-                        warnScript(Warnings, scriptTitle.Line, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
+                        warnScript(Warnings, script.LineNumber, "short_script_name", "Overly short script title - script titles should be relatively long, unique text that definitely won't appear anywhere else.");
                     }
-                    string titleLow = scriptTitle.Text.Trim().ToLowerFast();
-                    if (Meta.Data is not null && Meta.Data.All.Contains(titleLow))
+                    if (Meta.Data is not null && Meta.Data.All.Contains(script.Name))
                     {
-                        warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
+                        warnScript(Warnings, script.LineNumber, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
                     }
-                    if (Meta.Commands.ContainsKey(titleLow) || KnownScriptTypes.ContainsKey(titleLow))
+                    if (Meta.Commands.ContainsKey(script.Name) || KnownScriptTypes.ContainsKey(script.Name))
                     {
-                        warnScript(Warnings, scriptTitle.Line, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
+                        warnScript(Warnings, script.LineNumber, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
                     }
-                    if (scriptData is not Dictionary<LineTrackedString, object> scriptSection)
-                    {
-                        continue;
-                    }
+                    Dictionary<LineTrackedString, object> scriptSection = script.Keys;
                     if (!scriptSection.TryGetValue(new LineTrackedString(0, "type", 0), out object typeValue) || typeValue is not LineTrackedString typeString)
                     {
-                        warnScript(Errors, scriptTitle.Line, "no_type_key", "Missing 'type' key!");
+                        warnScript(Errors, script.LineNumber, "no_type_key", "Missing 'type' key!");
                         continue;
                     }
-                    if (!KnownScriptTypes.TryGetValue(typeString.Text, out KnownScriptType scriptType))
-                    {
-                        warnScript(Errors, typeString.Line, "wrong_type", "Unknown script type (possibly a typo?)!");
-                        continue;
-                    }
-                    foreach (string key in scriptType.RequiredKeys)
+                    foreach (string key in script.KnownType.RequiredKeys)
                     {
                         if (!scriptSection.ContainsKey(new LineTrackedString(0, key, 0)))
                         {
                             warnScript(Warnings, typeString.Line, "missing_key_" + typeString.Text, $"Missing required key `{key}` (check `!lang {typeString.Text} script containers` for format rules)!");
                         }
                     }
-                    foreach (string key in scriptType.LikelyBadKeys)
+                    foreach (string key in script.KnownType.LikelyBadKeys)
                     {
                         if (scriptSection.ContainsKey(new LineTrackedString(0, key, 0)))
                         {
                             warnScript(Warnings, typeString.Line, "bad_key_" + typeString.Text, $"Unexpected key `{key.Replace('`', '\'')}` (probably doesn't belong in this script type - check `!lang {typeString.Text} script containers` for format rules)!");
                         }
-                    }
-                    static bool matchesSet(string key, string[] keySet)
-                    {
-                        return keySet.Contains(key) || keySet.Contains($"{key}.*") || keySet.Contains("*");
                     }
                     foreach ((LineTrackedString keyLine, object valueAtKey) in scriptSection)
                     {
@@ -864,7 +873,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             // Default run command definitions get used sometimes
                             context.Definitions.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-                            if (Injects.Contains(scriptTitle.Text) || Injects.Contains("*"))
+                            if (Injects.Contains(script.Name) || Injects.Contains("*"))
                             {
                                 context.HasUnknowableDefinitions = true;
                                 context.HasUnknowableSaveEntries = true;
@@ -873,12 +882,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 if (entry is LineTrackedString str)
                                 {
-                                    CheckSingleCommand(str.Line, str.StartChar, str.Text, context);
+                                    CheckSingleCommand(str.Line, str.StartChar, str.Text, context, script);
                                 }
                                 else if (entry is Dictionary<LineTrackedString, object> subMap)
                                 {
                                     KeyValuePair<LineTrackedString, object> onlyEntry = subMap.First();
-                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, context);
+                                    CheckSingleCommand(onlyEntry.Key.Line, onlyEntry.Key.StartChar, onlyEntry.Key.Text, context, script);
                                     if (!onlyEntry.Key.Text.StartsWith("definemap"))
                                     {
                                         checkAsScript((List<object>)onlyEntry.Value, context);
@@ -902,15 +911,15 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         if (valueAtKey is List<object> listAtKey)
                         {
-                            if (matchesSet(keyName, scriptType.ScriptKeys) || matchesSet(keyName, AlwaysScriptKeys))
+                            if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
                             {
                                 checkAsScript(listAtKey);
                             }
-                            else if (matchesSet(keyName, scriptType.ListKeys))
+                            else if (MatchesSet(keyName, script.KnownType.ListKeys))
                             {
                                 checkBasicList(listAtKey, true);
                             }
-                            else if (matchesSet(keyName, scriptType.ValueKeys))
+                            else if (MatchesSet(keyName, script.KnownType.ValueKeys))
                             {
                                 warnScript(Warnings, keyLine.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
@@ -919,11 +928,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 // Always allow 'data'
                                 checkBasicList(listAtKey, false);
                             }
-                            else if (scriptType.Strict)
+                            else if (script.KnownType.Strict)
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected list key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
-                            else if (scriptType.CanHaveRandomScripts)
+                            else if (script.KnownType.CanHaveRandomScripts)
                             {
                                 checkAsScript(listAtKey);
                             }
@@ -954,15 +963,15 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 context.HasUnknowableSaveEntries = true;
                                 context.HasUnknowableDefinitions = true;
                             }
-                            if (matchesSet(keyName, scriptType.ValueKeys))
+                            if (MatchesSet(keyName, script.KnownType.ValueKeys))
                             {
                                 CheckSingleDataLine(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, context);
                             }
-                            else if (matchesSet(keyName, scriptType.ListKeys) || matchesSet(keyName, scriptType.ScriptKeys))
+                            else if (MatchesSet(keyName, script.KnownType.ListKeys) || MatchesSet(keyName, script.KnownType.ScriptKeys))
                             {
                                 warnScript(Warnings, keyLine.Line, "bad_key_" + typeString.Text, $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a list or script, but was instead a direct Value - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
-                            else if (scriptType.Strict && keyName != "data")
+                            else if (script.KnownType.Strict && keyName != "data")
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected value key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
@@ -984,7 +993,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     }
                                     else if (subValue is List<object> listKey)
                                     {
-                                        if (canBeScript && (scriptType.ScriptKeys.Contains(keyText) || (!scriptType.ListKeys.Contains(keyText) && scriptType.CanHaveRandomScripts)))
+                                        if (canBeScript && (script.KnownType.ScriptKeys.Contains(keyText) || (!script.KnownType.ListKeys.Contains(keyText) && script.KnownType.CanHaveRandomScripts)))
                                         {
                                             checkAsScript(listKey);
                                         }
@@ -999,12 +1008,12 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     }
                                 }
                             }
-                            if (scriptType.ValueKeys.Contains(keyText) || scriptType.ListKeys.Contains(keyText) || scriptType.ScriptKeys.Contains(keyText) || AlwaysScriptKeys.Contains(keyName)
-                                || scriptType.ValueKeys.Contains("*") || scriptType.ListKeys.Contains("*") || scriptType.ScriptKeys.Contains("*"))
+                            if (script.KnownType.ValueKeys.Contains(keyText) || script.KnownType.ListKeys.Contains(keyText) || script.KnownType.ScriptKeys.Contains(keyText) || AlwaysScriptKeys.Contains(keyName)
+                                || script.KnownType.ValueKeys.Contains("*") || script.KnownType.ListKeys.Contains("*") || script.KnownType.ScriptKeys.Contains("*"))
                             {
                                 checkSubMaps(keyPairMap, typeString.Text != "data" && keyName != "data");
                             }
-                            else if (scriptType.Strict && keyName != "data")
+                            else if (script.KnownType.Strict && keyName != "data")
                             {
                                 warnScript(Warnings, keyLine.Line, "unknown_key_" + typeString.Text, $"Unexpected submapping key `{keyName.Replace('`', '\'')}` (unrecognized - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
@@ -1191,7 +1200,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 catch (Exception ex)
                 {
-                    warnScript(Warnings, scriptTitle.Line, "exception_internal", $"Internal exception (check internal debug console)!");
+                    warnScript(Warnings, script.LineNumber, "exception_internal", $"Internal exception (check internal debug console)!");
                     LogInternalMessage($"Script check exception: {ex}");
                 }
             }
@@ -1536,6 +1545,338 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
+        /// <summary>Converts the raw container data to trackable container objects.</summary>
+        public void ConvertContainers(Dictionary<LineTrackedString, object> containers)
+        {
+            foreach ((LineTrackedString title, object data) in containers)
+            {
+                try
+                {
+                    if (data is not Dictionary<LineTrackedString, object> map)
+                    {
+                        Warn(Errors, title.Line, "invalid_container", $"Script `{title.Text}` is invalid - missing content?", 0, Lines[title.Line].Length);
+                        continue;
+                    }
+                    if (!map.TryGetValue(new LineTrackedString(0, "type", 0), out object type) || type is not LineTrackedString typeString)
+                    {
+                        Warn(Errors, title.Line, "invalid_container", $"Script `{title.Text}` is invalid - missing 'type' key", 0, Lines[title.Line].Length);
+                        continue;
+                    }
+                    String cleanType = type.ToString().Trim().ToLowerFast();
+                    if (!KnownScriptTypes.TryGetValue(cleanType, out KnownScriptType scriptType))
+                    {
+                        Warn(Errors, title.Line, "wrong_type", "Unknown script type (possibly a typo?)!", 0, Lines[typeString.Line].Length);
+                        continue;
+                    }
+                    ScriptContainerData container = new()
+                    {
+                        Name = title.Text.Trim().ToLowerFast(),
+                        LineNumber = title.Line,
+                        Keys = map,
+                        Type = cleanType,
+                        KnownType = scriptType
+                    };
+                    if (map.TryGetValue(new LineTrackedString(0, "definitions", 0), out object defs))
+                    {
+                        IEnumerable<string> defNames = defs is List<object> defList ? defList.Select(o => o.ToString()) : defs.ToString().SplitFast('|');
+                        defNames = defNames.Select(d => d.ToLowerFast().Before('[').Trim());
+                        container.DefNames.AddAll(defNames.ToArray());
+                    }
+                    PreprocContainer(container);
+                    GeneratedWorkspace.Scripts[container.Name] = container;
+                }
+                catch (Exception ex)
+                {
+                    Warn(Errors, title.Line, "exception_internal_container", $"Script `{title.Text}` is invalid - internal exception (check internal debug console)!", 0, Lines[title.Line].Length);
+                    LogInternalMessage($"Script container conversion exception: {ex}");
+                }
+            }
+            Dictionary<string, ScriptContainerData> combined = new(GeneratedWorkspace.Scripts);
+            if (SurroundingWorkspace is not null)
+            {
+                combined.UnionWith(SurroundingWorkspace.Scripts);
+            }
+            foreach (ScriptContainerData script in GeneratedWorkspace.Scripts.Values)
+            {
+                if (!script.InjectedPaths.Any())
+                {
+                    continue;
+                }
+                void recurseAdd(ScriptContainerData script, ScriptContainerData body)
+                {
+                    foreach (string injected in body.InjectedPaths.GetAllMatchesIn(combined.Keys))
+                    {
+                        if (script.RealInjects.Add(injected))
+                        {
+                            ScriptContainerData injectedScript = combined[injected];
+                            script.DefNames.MergeIn(injectedScript.DefNames);
+                            script.SaveEntryNames.MergeIn(injectedScript.SaveEntryNames);
+                            recurseAdd(script, injectedScript);
+                        }
+                    }
+                }
+                recurseAdd(script, script);
+            }
+        }
+
+        /// <summary>Converts the raw container data to trackable container objects.</summary>
+        public static void PreprocContainer(ScriptContainerData script)
+        {
+            if (script.Type == "data")
+            {
+                return;
+            }
+            if (script.Type == "item")
+            {
+                if (script.Keys.TryGetValue(new LineTrackedString(0, "flags", 0), out object flags) && flags is Dictionary<LineTrackedString, object> flagMap)
+                {
+                    foreach (LineTrackedString flagName in flagMap.Keys)
+                    {
+                        script.ObjectFlags.AddAll(flagName.Text.Trim().ToLowerFast().Before('.'));
+                    }
+                }
+                return;
+            }
+            foreach ((LineTrackedString key, object valueAtKey) in script.Keys)
+            {
+                string keyName = key.Text.ToLowerFast().Trim();
+                if (keyName == "data")
+                {
+                    continue;
+                }
+                void procSingleCommand(string cmd)
+                {
+                    string[] split = cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (split.Length == 0)
+                    {
+                        return;
+                    }
+                    string[] fullArgs = split.Skip(1).Select(a => a.ToLowerFast()).ToArray();
+                    string[] cleanArgs = fullArgs.Where(a => !StartsWithAny(a, "save:", "player:", "npc:")).ToArray();
+                    switch (split[0].ToLowerFast())
+                    {
+                        case "define":
+                        case "definemap":
+                            if (cleanArgs.Any())
+                            {
+                                script.DefNames.Add(cleanArgs[0].Before(':').Before('.'));
+                            }
+                            break;
+                        case "inject":
+                            {
+                                string arg = cleanArgs.FirstOrDefault(a => a != "instantly" && !a.StartsWith("path:"));
+                                if (arg is not null)
+                                {
+                                    script.InjectedPaths.Add(arg.Before('.'));
+                                }
+                            }
+                            break;
+                        case "foreach":
+                            {
+                                script.DefNames.Add("loop_index");
+                                string arg = cleanArgs.FirstOrDefault(a => a.StartsWith("key:"));
+                                if (arg is not null)
+                                {
+                                    script.DefNames.Add(arg.After(':').Before('.'));
+                                }
+                                goto case "while";
+                            }
+                        case "repeat":
+                        case "while":
+                            {
+                                string arg = cleanArgs.FirstOrDefault(a => a.StartsWith("as:"));
+                                if (arg is not null)
+                                {
+                                    script.DefNames.Add(arg.After(':').Before('.'));
+                                }
+                                else
+                                {
+                                    script.DefNames.Add("value");
+                                }
+                            }
+                            break;
+                        case "flag":
+                            if (cleanArgs.Length >= 2)
+                            {
+                                string flag = cleanArgs[1].Before(':').Before('.').Before('[');
+                                if (cleanArgs[0] == "server")
+                                {
+                                    script.ServerFlags.Add(flag);
+                                }
+                                else
+                                {
+                                    script.ObjectFlags.Add(flag);
+                                }
+                            }
+                            break;
+                        case "inventory":
+                            if (cleanArgs.Contains("flag"))
+                            {
+                                string flag = cleanArgs.FirstOrDefault(a => !StartsWithAny(a,
+                                    // inventory command has a long legacy-style list of arg aliases
+                                    "origin", "o", "source", "items", "item", "i", "from", "f",
+                                    "destination", "dest", "d", "target", "to", "t",
+                                    "slot", "s",
+                                    "duration", "expire", "expires", "expiration"));
+                                if (flag is not null)
+                                {
+                                    script.ObjectFlags.Add(flag.Before(':').Before('.'));
+                                }
+                            }
+                            break;
+                    }
+                    int specialFlag = cmd.IndexOf("flag="); // Special case: data like 'stone[flag=x:y]'
+                    if (specialFlag != -1)
+                    {
+                        string flagData = cmd[(specialFlag + "flag=".Length)..].Before(' ').Before(';').Before(']').Before(':').Before('.');
+                        if (flagData != "")
+                        {
+                            script.ObjectFlags.Add(flagData);
+                        }
+                    }
+                    string save = fullArgs.FirstOrDefault(a => a.StartsWith("save:"));
+                    if (save is not null)
+                    {
+                        script.SaveEntryNames.Add(save.After(':'));
+                    }
+                }
+                void procAsScript(List<object> list)
+                {
+                    if (script.Type == "task")
+                    {
+                        // Workaround the weird way shoot command does things
+                        script.DefNames.AddAll("shot_entities", "last_entity", "location", "hit_entities");
+                    }
+                    else if (script.Type == "economy")
+                    {
+                        script.DefNames.Add("amount");
+                    }
+                    // Default run command definitions get used sometimes
+                    script.DefNames.AddAll("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
+                    foreach (object entry in list)
+                    {
+                        if (entry is LineTrackedString str)
+                        {
+                            procSingleCommand(str.Text);
+                        }
+                        else if (entry is Dictionary<LineTrackedString, object> subMap)
+                        {
+                            KeyValuePair<LineTrackedString, object> onlyEntry = subMap.First();
+                            procSingleCommand(onlyEntry.Key.Text);
+                            if (!onlyEntry.Key.Text.StartsWith("definemap"))
+                            {
+                                procAsScript((List<object>)onlyEntry.Value);
+                            }
+                        }
+                    }
+                }
+                if (valueAtKey is List<object> listAtKey)
+                {
+                    if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
+                    {
+                        procAsScript(listAtKey);
+                    }
+                    else if (MatchesSet(keyName, script.KnownType.ListKeys) || MatchesSet(keyName, script.KnownType.ValueKeys) || script.KnownType.Strict)
+                    {
+                        // ignore
+                    }
+                    else if (script.KnownType.CanHaveRandomScripts)
+                    {
+                        procAsScript(listAtKey);
+                    }
+                }
+                else if (valueAtKey is Dictionary<LineTrackedString, object> keyPairMap)
+                {
+                    string keyText = keyName + ".*";
+                    void procSubMaps(Dictionary<LineTrackedString, object> subMap)
+                    {
+                        foreach (object subValue in subMap.Values)
+                        {
+                            if (subValue is List<object> listKey)
+                            {
+                                if (script.KnownType.ScriptKeys.Contains(keyText) || (!script.KnownType.ListKeys.Contains(keyText) && script.KnownType.CanHaveRandomScripts))
+                                {
+                                    procAsScript(listKey);
+                                }
+                            }
+                            else if (subValue is Dictionary<LineTrackedString, object> mapWithin)
+                            {
+                                procSubMaps(mapWithin);
+                            }
+                        }
+                    }
+                    if (script.KnownType.ValueKeys.Contains(keyText) || script.KnownType.ListKeys.Contains(keyText) || script.KnownType.ScriptKeys.Contains(keyText) || AlwaysScriptKeys.Contains(keyName)
+                        || script.KnownType.ValueKeys.Contains("*") || script.KnownType.ListKeys.Contains("*") || script.KnownType.ScriptKeys.Contains("*") || (!script.KnownType.Strict && !keyName.StartsWith("definemap")))
+                    {
+                        procSubMaps(keyPairMap);
+                    }
+                }
+            }
+        }
+
+        /// <summary>Helper for 'StartsWith' over a set of options.</summary>
+        public static bool StartsWithAny(string input, params string[] checks)
+        {
+            return checks.Any(s => input.StartsWith(s));
+        }
+
+        /// <summary>Returns the first/best container if it is knowable and known.</summary>
+        public ScriptContainerData ContextValidatedGetScriptFor(string scriptName, string requireType)
+        {
+            if (SurroundingWorkspace is null || scriptName is null)
+            {
+                return null;
+            }
+            scriptName = scriptName.ToLowerFast().Before('.');
+            if (scriptName.StartsWith("script:"))
+            {
+                scriptName = scriptName.After(':');
+            }
+            ScriptContainerData res = null;
+            if (scriptName.Contains('<'))
+            {
+                string partial = scriptName.Before('<');
+                res = SurroundingWorkspace.Scripts.FirstOrDefault(k => k.Key.StartsWith(partial) && (requireType is null || k.Value.Type == requireType)).Value;
+                if (res is null)
+                {
+                    res = GeneratedWorkspace.Scripts.FirstOrDefault(k => k.Key.StartsWith(partial) && (requireType is null || k.Value.Type == requireType)).Value;
+                }
+            }
+            else
+            {
+                res = SurroundingWorkspace.Scripts.GetValueOrDefault(scriptName);
+                if (res is null)
+                {
+                    res = GeneratedWorkspace.Scripts.GetValueOrDefault(scriptName);
+                }
+                if (res is not null && requireType is not null && res.Type != requireType)
+                {
+                    return null;
+                }
+            }
+            return res;
+        }
+
+        /// <summary>Returns true if the scriptname is null, unknowable, or valid.</summary>
+        public bool ContextValidatedIsValidScriptName(string scriptName)
+        {
+            if (SurroundingWorkspace is null || scriptName is null)
+            {
+                return true;
+            }
+            return ContextValidatedGetScriptFor(scriptName, null) is not null;
+        }
+
+        /// <summary>Merges generated data together.</summary>
+        public void MergeData()
+        {
+            foreach (ScriptContainerData container in GeneratedWorkspace.Scripts.Values)
+            {
+                GeneratedWorkspace.AllKnownServerFlagNames.MergeIn(container.ServerFlags);
+                GeneratedWorkspace.AllKnownObjectFlagNames.MergeIn(container.ObjectFlags);
+            }
+        }
+
         /// <summary>Runs the full script check.</summary>
         public void Run()
         {
@@ -1548,7 +1889,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             CheckForBraces();
             CheckForOldDefs();
             Dictionary<LineTrackedString, object> containers = GatherActualContainers();
-            CheckAllContainers(containers);
+            ConvertContainers(containers);
+            CheckAllContainers();
+            MergeData();
             CollectStatisticInfos();
         }
     }
