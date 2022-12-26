@@ -243,7 +243,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         if (!details.Checker.Meta.Data.Items.Contains(item))
                         {
-                            if (details.Checker.ContextValidatedGetScriptFor(item, "item") is null)
+                            if (details.Checker.ContextValidatedGetScriptFor(item, "item") is null && details.Checker.ContextValidatedGetScriptFor(item, "book") is null)
                             {
                                 details.Warn(details.Checker.Errors, "give_invalid_item", $"Item `{item}` in 'give' command is not valid and thus cannot be given.");
                             }

@@ -503,13 +503,13 @@ namespace SharpDenizenTools.ScriptAnalysis
             switch (metaPart.Parameter)
             {
                 case "<material>":
-                    if (!Meta.Data.Items.Contains(input) && !Meta.Data.Blocks.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null)
+                    if (!Meta.Data.Items.Contains(input) && !Meta.Data.Blocks.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null && ContextValidatedGetScriptFor(input, "book") is null)
                     {
                         warnPart(metaPart, "invalid_tag_material", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Material, but is not.");
                     }
                     break;
                 case "<item>":
-                    if (!Meta.Data.Items.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null)
+                    if (!Meta.Data.Items.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null && ContextValidatedGetScriptFor(input, "book") is null)
                     {
                         warnPart(metaPart, "invalid_tag_item", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Item, but is not.");
                     }
