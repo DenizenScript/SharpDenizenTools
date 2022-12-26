@@ -40,6 +40,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             /// <summary>The starting index of the text within the command.</summary>
             public int StartChar;
 
+            /// <summary>The relevant script container.</summary>
+            public ScriptContainerData Script;
+
             /// <summary>Helper to produce a warning by calling <see cref="ScriptChecker.Warn(List{ScriptChecker.ScriptWarning}, int, string, string, int, int)"/>.</summary>
             public void Warn(List<ScriptChecker.ScriptWarning> warningSet, string key, string message, int start, int end)
             {
@@ -163,6 +166,20 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 details.Context.HasUnknowableDefinitions = true;
                 details.Context.HasUnknowableSaveEntries = true;
+                string scrName = details.Arguments.Select(a => a.Text.ToLowerFast()).FirstOrDefault(a => a != "instantly" && !a.StartsWith("path:"));
+                if (!details.Checker.ContextValidatedIsValidScriptName(scrName))
+                {
+                    details.Warn(details.Checker.Errors, "invalid_script_inject", $"Script name `{scrName}` is invalid. Cannot be injected.");
+                }
+            });
+            HashSet<string> runOtherArg = new() { "instant", "instantly", "local", "locally" };
+            Register(new[] { "run", "runlater" }, (details) =>
+            {
+                string scrName = details.Arguments.Select(a => a.Text.ToLowerFast()).FirstOrDefault(a => !runOtherArg.Contains(a) && !ScriptChecker.StartsWithAny(a, "path:", "id:", "speed:", "delay:", "def:", "def.", "defmap:"));
+                if (!details.Checker.ContextValidatedIsValidScriptName(scrName))
+                {
+                    details.Warn(details.Checker.Errors, "invalid_script_run", $"Script name `{scrName}` is invalid. Cannot be ran.");
+                }
             });
             Register(new[] { "queue" }, (details) =>
             {
@@ -217,6 +234,21 @@ namespace SharpDenizenTools.ScriptAnalysis
                 if (details.Arguments.Any(a => a.Text == "<player>" || a.Text == "<player.name>" || a.Text == "<npc>"))
                 {
                     details.Warn(details.Checker.Warnings, "give_player", "The 'give' will automatically give to the linked player, so you do not need to specify that. To specify a different target, use the 'to:<inventory>' argument.");
+                }
+                string itemGive = details.Arguments.Select(a => a.Text.ToLowerFast()).FirstOrDefault(a => ScriptChecker.StartsWithAny("quantity:", "unlimit_stack_size", "to:", "t:", "slot:"));
+                if (itemGive is not null && itemGive != "xp" && details.Checker.SurroundingWorkspace is not null)
+                {
+                    string item = itemGive.Before('[');
+                    if (!item.Contains('<'))
+                    {
+                        if (!details.Checker.Meta.Data.Items.Contains(item))
+                        {
+                            if (details.Checker.ContextValidatedGetScriptFor(item, "item") is null)
+                            {
+                                details.Warn(details.Checker.Errors, "give_invalid_item", $"Item `{item}` in 'give' command is not valid and thus cannot be given.");
+                            }
+                        }
+                    }
                 }
             });
             Register(new[] { "take" }, (details) =>

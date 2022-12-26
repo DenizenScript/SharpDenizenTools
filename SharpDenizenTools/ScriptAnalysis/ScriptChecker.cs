@@ -473,6 +473,66 @@ namespace SharpDenizenTools.ScriptAnalysis
                 DeprecationError = (s, part) => { Warn(MinorWarnings, line, "deprecated_tag_part", s, startChar + part.StartChar, startChar + part.StartChar + part.Text.Length); }
             };
             tracer.Trace();
+            if (SurroundingWorkspace is not null)
+            {
+                foreach (Part part in parsed.Parts)
+                {
+                    if (part.PossibleTags.Count == 1)
+                    {
+                        MetaTag actualTag = part.PossibleTags[0];
+                        if (actualTag.ParsedFormat.Parts.Count <= 2 && part.Parameter is not null && part.Parameter.Length > 0)
+                        {
+                            Part metaPart = actualTag.ParsedFormat.Parts[^1];
+                            if (metaPart.Parameter is not null && metaPart.Parameter.StartsWithFast('<'))
+                            {
+                                string input = part.Parameter.Before('[').ToLowerFast();
+                                if (!input.Contains('<'))
+                                {
+                                    CheckTagParam(part, metaPart, input, warnPart);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>Helper to check a single tag parameter.</summary>
+        public void CheckTagParam(Part part, Part metaPart, string input, Action<SingleTag.Part, string, string> warnPart)
+        {
+            switch (metaPart.Parameter)
+            {
+                case "<material>":
+                    if (!Meta.Data.Items.Contains(input) && !Meta.Data.Blocks.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null)
+                    {
+                        warnPart(metaPart, "invalid_tag_material", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Material, but is not.");
+                    }
+                    break;
+                case "<item>":
+                    if (!Meta.Data.Items.Contains(input) && ContextValidatedGetScriptFor(input, "item") is null)
+                    {
+                        warnPart(metaPart, "invalid_tag_item", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Item, but is not.");
+                    }
+                    break;
+                case "<entity>":
+                    if (!Meta.Data.Entities.Contains(input) && ContextValidatedGetScriptFor(input, "entity") is null)
+                    {
+                        warnPart(metaPart, "invalid_tag_entity", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Entity, but is not.");
+                    }
+                    break;
+                case "<inventory>":
+                    if (!ExtraData.InventoryMatchers.Contains(input) && ContextValidatedGetScriptFor(input, "inventory") is null)
+                    {
+                        warnPart(metaPart, "invalid_tag_inventory", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Inventory, but is not.");
+                    }
+                    break;
+                case "<procedure_script_name>":
+                    if (ContextValidatedGetScriptFor(input, "procedure") is null)
+                    {
+                        warnPart(metaPart, "invalid_tag_procedure", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Procedure script name, but is not.");
+                    }
+                    break;
+            }
         }
 
         private static readonly char[] tagMarksChars = new char[] { '<', '>' };
