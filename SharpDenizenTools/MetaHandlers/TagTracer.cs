@@ -1,5 +1,6 @@
 ﻿using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaObjects;
+using SharpDenizenTools.ScriptAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +110,7 @@ namespace SharpDenizenTools.MetaHandlers
             Tag.Parts[0].PossibleSubTypes = GetFullComplexSetFrom(Tag.Parts[0].PossibleTags.Select(t => t.ReturnType).Where(t => t is not null).ToHashSet());
             foreach (SingleTag.Part part in Tag.Parts)
             {
-                List<MetaTag> deprecated = part.PossibleTags.Where(p => p.Deprecated != null).ToList();
+                List<MetaTag> deprecated = part.PossibleTags.Where(p => p.Deprecated is not null).ToList();
                 if (deprecated.Any() && deprecated.Count == part.PossibleTags.Count)
                 {
                     MetaTag tag = deprecated[0];

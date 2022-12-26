@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Usage", "CA2211:Non-constant fields should not be visible")]
+[assembly: SuppressMessage("Style", "IDE0074:Use compound assignment", Justification = "awkward syntax")]
