@@ -920,7 +920,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             if (scriptSection.TryGetValue(new LineTrackedString(0, "definitions", 0), out object defList) && defList is LineTrackedString defListVal)
                             {
-                                context.Definitions.UnionWith(defListVal.Text.ToLowerFast().Split('|').Select(s => s.Trim()));
+                                context.Definitions.UnionWith(defListVal.Text.ToLowerFast().Split('|').Select(s => s.Before('[').Trim()));
                             }
                             if (typeString.Text == "task")
                             {
