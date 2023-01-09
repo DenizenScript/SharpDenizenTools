@@ -52,6 +52,9 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>A list of plaintext no-tag arguments this command has in its syntax line.</summary>
         public Tuple<string, string>[] FlatArguments = Array.Empty<Tuple<string, string>>();
 
+        /// <summary>A list of linear (non-prefixed, but dynamic input) arguments this command has in its syntax line.</summary>
+        public string[] LinearArguments = Array.Empty<string>();
+
         /// <summary>Parses this command's syntax data to create a list of helper data about the known arguments.</summary>
         public void ParseSyntax()
         {
@@ -64,6 +67,7 @@ namespace SharpDenizenTools.MetaObjects
             }
             List<Tuple<string, string>> prefixes = new();
             List<Tuple<string, string>> flatArgs = new();
+            List<string> linearArgs = new();
             string cleaned = Syntax[firstSpace..].Replace('/', ' ');
             foreach (string arg in cleaned.Split(' '))
             {
@@ -85,9 +89,14 @@ namespace SharpDenizenTools.MetaObjects
                 {
                     flatArgs.Add(new Tuple<string, string>(cleanedArg, arg));
                 }
+                else
+                {
+                    linearArgs.Add(arg);
+                }
             }
             ArgPrefixes = prefixes.ToArray();
             FlatArguments = flatArgs.ToArray();
+            LinearArguments = LinearArguments.ToArray();
         }
 
         /// <summary>Sample usages.</summary>
