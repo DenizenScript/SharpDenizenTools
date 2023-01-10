@@ -92,7 +92,7 @@ namespace SharpDenizenTools.MetaHandlers
             Biomes = GetDataSet("Biomes");
             Attributes = GetDataSet("Attributes");
             Gamerules = GetDataSet("Gamerules");
-            PotionEffects = GetDataSet("PotionEffects");
+            PotionEffects = GetDataSet("Potion_Effects");
             Potions = GetDataSet("Potions");
             Statistics = GetDataSet("Statistics");
             ItemArray = Items.ToArray();
