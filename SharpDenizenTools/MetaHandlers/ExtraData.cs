@@ -30,7 +30,7 @@ namespace SharpDenizenTools.MetaHandlers
         public FDSSection DataSection;
 
         /// <summary>The raw relevant data sets.</summary>
-        public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics;
+        public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics, Materials;
 
         /// <summary>A combination set of all enum keywords.</summary>
         public HashSet<string> All = new();
@@ -98,6 +98,9 @@ namespace SharpDenizenTools.MetaHandlers
             ItemArray = Items.ToArray();
             EntityArray = Entities.ToArray();
             BlockArray = Blocks.ToArray();
+            Materials = new HashSet<string>();
+            Materials.UnionWith(Blocks);
+            Materials.UnionWith(Items);
         }
 
         private HashSet<string> GetDataSet(string type)
