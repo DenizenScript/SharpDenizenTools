@@ -983,7 +983,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 warnScript(Warnings, keyLine.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
                             }
-                            else if (typeString.Text == "data" || keyName == "data")
+                            else if (typeString.Text == "data" || keyName == "data" || keyName == "description")
                             {
                                 // Always allow 'data'
                                 checkBasicList(listAtKey, false);
@@ -1023,7 +1023,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 context.HasUnknowableSaveEntries = true;
                                 context.HasUnknowableDefinitions = true;
                             }
-                            if (MatchesSet(keyName, script.KnownType.ValueKeys))
+                            if (MatchesSet(keyName, script.KnownType.ValueKeys) || keyName == "description")
                             {
                                 CheckSingleDataLine(keyLine.Line, lineAtKey.StartChar + 2, lineAtKey.Text, context);
                             }
@@ -1700,7 +1700,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             foreach ((LineTrackedString key, object valueAtKey) in script.Keys)
             {
                 string keyName = key.Text.ToLowerFast().Trim();
-                if (keyName == "data")
+                if (keyName == "data" || keyName == "description")
                 {
                     continue;
                 }
