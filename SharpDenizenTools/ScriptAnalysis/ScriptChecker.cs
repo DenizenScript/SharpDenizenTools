@@ -623,8 +623,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <param name="line">The line number.</param>
         /// <param name="startChar">The index of the character where this argument starts.</param>
         /// <param name="stringArgs">The raw arguments input.</param>
+        /// <param name="checker">Optionally linked checker for warnings.</param>
         /// <returns>The argument array.</returns>
-        public CommandArgument[] BuildArgs(int line, int startChar, string stringArgs)
+        public static CommandArgument[] BuildArgs(int line, int startChar, string stringArgs, ScriptChecker checker)
         {
             stringArgs = stringArgs.Trim().Replace('\r', ' ').Replace('\n', ' ');
             List<CommandArgument> matchList = new(stringArgs.CountCharacter(' '));
@@ -686,9 +687,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string matched = stringArgs[start..i];
                                 matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = matched });
-                                if (!matched.Contains(' ') && !matched.EndsWith(":"))
+                                if (!matched.Contains(' ') && !matched.EndsWith(":") && checker is not null)
                                 {
-                                    Warn(MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
+                                    checker.Warn(checker.MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
                                 }
                             }
                             i++;
@@ -697,9 +698,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                 }
             }
-            if (currentQuote != '\0')
+            if (currentQuote != '\0' && checker is not null)
             {
-                Warn(Warnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).", startChar + firstQuote, startChar + len);
+                checker.Warn(checker.Warnings, line, "missing_quotes", "Uneven quotes (forgot to close a quote?).", startChar + firstQuote, startChar + len);
             }
             if (start < len)
             {
@@ -749,7 +750,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 commandName = commandName[1..];
             }
-            CommandArgument[] arguments = parts.Length == 1 ? Array.Empty<CommandArgument>() : BuildArgs(line, startChar + parts[0].Length + 1, parts[1]);
+            CommandArgument[] arguments = parts.Length == 1 ? Array.Empty<CommandArgument>() : BuildArgs(line, startChar + parts[0].Length + 1, parts[1], this);
             if (!Meta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
@@ -1706,14 +1707,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 void procSingleCommand(string cmd)
                 {
-                    string[] split = cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (split.Length == 0)
-                    {
-                        return;
-                    }
-                    string[] fullArgs = split.Skip(1).Select(a => a.ToLowerFast()).ToArray();
+                    string cmdName = cmd.Trim().BeforeAndAfter(' ', out string argTextRaw).ToLowerFast();
+                    string[] fullArgs = BuildArgs(key.Line, 0, argTextRaw, null).Select(a => a.Text.ToLowerFast()).ToArray();
                     string[] cleanArgs = fullArgs.Where(a => !StartsWithAny(a, "save:", "player:", "npc:")).ToArray();
-                    switch (split[0].ToLowerFast())
+                    switch (cmdName)
                     {
                         case "define":
                         case "definemap":
