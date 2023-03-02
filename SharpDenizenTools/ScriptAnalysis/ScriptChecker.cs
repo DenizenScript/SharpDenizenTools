@@ -687,9 +687,29 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 string matched = stringArgs[start..i];
                                 matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = matched });
-                                if (!matched.Contains(' ') && !matched.EndsWith(":") && checker is not null)
+                                if (checker is not null)
                                 {
-                                    checker.Warn(checker.MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
+                                    int tagMarks = 0;
+                                    bool hasSpace = false;
+                                    foreach (char subC in matched)
+                                    {
+                                        if (subC == '<')
+                                        {
+                                            tagMarks++;
+                                        }
+                                        else if (subC == '>')
+                                        {
+                                            tagMarks--;
+                                        }
+                                        else if (subC == ' ' && tagMarks == 0)
+                                        {
+                                            hasSpace = true;
+                                        }
+                                    }
+                                    if (!(hasSpace || (tagMarks != 0 && matched.Contains(' '))) && !matched.EndsWith(":"))
+                                    {
+                                        checker.Warn(checker.MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
+                                    }
                                 }
                             }
                             i++;
