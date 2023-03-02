@@ -193,7 +193,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     string comment = CleanedLines[i][1..].Trim();
                     if (comment.ToLowerFast().StartsWith("todo"))
                     {
-                        Warn(Warnings, i, "todo_comment", $"TODO Line: {Lines[i].Trim()}", Lines[i].IndexOf('#'), Lines[i].Length);
+                        Warn(MinorWarnings, i, "todo_comment", $"TODO Line: {Lines[i].Trim()}", Lines[i].IndexOf('#'), Lines[i].Length);
                     }
                     CleanedLines[i] = "";
                     Lines[i] = "";
