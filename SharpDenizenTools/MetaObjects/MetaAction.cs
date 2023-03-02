@@ -69,7 +69,7 @@ namespace SharpDenizenTools.MetaObjects
                     {
                         outRegex = outRegex[0..^1];
                     }
-                    RegexMatcher = new Regex(outRegex, RegexOptions.Compiled);
+                    RegexMatcher = new Regex($"^(on )?{outRegex}$", RegexOptions.Compiled);
                     return true;
                 case "triggers":
                     Triggers = value;
