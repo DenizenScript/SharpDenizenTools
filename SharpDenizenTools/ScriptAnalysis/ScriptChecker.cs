@@ -1532,7 +1532,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, i, "tag_in_key", "Keys cannot contain tags.", 0, line.Length);
                 }
                 string[] inputArgs = startofline.SplitFast(' ');
-                if (spaces > 0 && CanWarnAboutCommandMissingDash(inputArgs, currentRootSection))
+                if (spaces > 0 && CanWarnAboutCommandMissingDash(inputArgs, currentRootSection) && !(secwaiting != null && secwaiting.Text == "data") && !spacedsections.Values.Any(sec => sec.Any() && sec.Keys.Last().Text == "data"))
                 {
                     Warn(Warnings, i, "key_line_looks_like_command", "Line appears to be intended as command, but forgot a '-'?", 0, line.Length);
                 }
