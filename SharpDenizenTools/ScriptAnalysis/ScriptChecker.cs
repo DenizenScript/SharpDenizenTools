@@ -1514,7 +1514,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 else if (cleaned.Contains(": "))
                 {
-                    startofline = cleaned.BeforeAndAfter(": ", out endofline);
+                    startofline = line.Trim().BeforeAndAfter(": ", out endofline);
                     endIndex += startofline.Length;
                 }
                 else
