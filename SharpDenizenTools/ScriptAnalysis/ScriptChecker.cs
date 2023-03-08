@@ -634,10 +634,11 @@ namespace SharpDenizenTools.ScriptAnalysis
             char currentQuote = '\0';
             int firstQuote = 0;
             int inTags = 0, inTagParams = 0;
+            bool currentTagHasFallback = false;
             for (int i = 0; i < len; i++)
             {
                 char c = stringArgs[i];
-                if (c == ' ' && currentQuote == '\0' && inTagParams == 0)
+                if (c == ' ' && currentQuote == '\0' && inTagParams == 0 && !currentTagHasFallback)
                 {
                     if (i > start)
                     {
@@ -655,6 +656,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else if (c == '>' && inTags > 0)
                 {
                     inTags--;
+                    if (inTags == 0)
+                    {
+                        currentTagHasFallback = false;
+                    }
                 }
                 else if (c == '[' && inTags > 0)
                 {
@@ -663,6 +668,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else if (c == ']' && inTagParams > 0)
                 {
                     inTagParams--;
+                }
+                else if (c == '|' && i > 0 && stringArgs[i - 1] == '|' && inTags == 1)
+                {
+                    currentTagHasFallback = true;
                 }
                 else if (c == '"' || c == '\'')
                 {
