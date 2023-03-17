@@ -105,6 +105,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Internal data value sets.</summary>
         public Dictionary<string, HashSet<string>> DataValueSets = new(32);
 
+        /// <summary>Set of raw adjustable keys.</summary>
+        public HashSet<string> RawAdjustables = new();
+
         /// <summary>Returns whether the given text value is in the named data set.</summary>
         public bool IsInDataValueSet(string set, string text)
         {

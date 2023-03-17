@@ -128,7 +128,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && s.Text != "server");
+                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && !details.Checker.Meta.RawAdjustables.Contains(s.Text));
                 if (mechanism is null)
                 {
                     if (details.Arguments.Length < 2 || !details.Arguments[1].Text.StartsWith('<') || !details.Arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
@@ -139,7 +139,30 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else
                 {
                     string mechanismName = mechanism.Text.Before(':').ToLowerFast();
-                    MetaMechanism mech = MetaDocs.CurrentMeta.Mechanisms.Values.FirstOrDefault(mech => mech.MechName == mechanismName);
+                    List<MetaMechanism> possible = MetaDocs.CurrentMeta.Mechanisms.Values.Where(m => m.MechName == mechanismName).ToList();
+                    MetaMechanism mech = null;
+                    if (possible.Count == 1)
+                    {
+                        mech = possible[0];
+                    }
+                    else if (possible.Count > 1)
+                    {
+                        ScriptChecker.CommandArgument objArg = details.Arguments.FirstOrDefault(s => !ArgHasPrefix(s.Text));
+                        if (objArg is null)
+                        {
+                            mech = possible.First();
+                        }
+                        else
+                        {
+                            string rawObj = objArg.Text;
+                            mech = possible.FirstOrDefault(m => m.MechObject == rawObj);
+                            // TODO: if a tag or "def:", determine possible types and use that
+                            if (mech is null)
+                            {
+                                mech = possible.First();
+                            }
+                        }
+                    }
                     if (mech is null)
                     {
                         details.Warn(details.Checker.Errors, "bad_adjust_unknown_mech", $"Malformed adjust command. Mechanism name given is unrecognized.", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
