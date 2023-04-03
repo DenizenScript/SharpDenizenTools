@@ -38,6 +38,7 @@ namespace SharpDenizenTools.MetaObjects
                 SourceFile = SourceFile,
                 Deprecated = Deprecated,
                 Synonyms = Synonyms,
+                Meta = Meta,
                 Tags = new[] { asTag }
             }.AddTo(docs);
             new MetaTag()
@@ -55,6 +56,7 @@ namespace SharpDenizenTools.MetaObjects
                 Plugin = Plugin,
                 SourceFile = SourceFile,
                 Deprecated = Deprecated,
+                Meta = Meta,
                 Synonyms = Synonyms
             }.AddTo(docs);
         }
