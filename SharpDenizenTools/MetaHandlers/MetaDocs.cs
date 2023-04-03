@@ -40,6 +40,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The "object type" meta type.</summary>
         public static MetaType META_TYPE_OBJECT = new() { Name = "ObjectType", WebPath = "ObjectTypes" };
 
+        /// <summary>The "property" meta type.</summary>
+        public static MetaType META_TYPE_PROPERTY = new() { Name = "Property", WebPath = "Properties" };
+
         /// <summary>The "guide page" meta type.</summary>
         public static MetaType META_TYPE_GUIDEPAGE = new() { Name = "GuidePage", WebPath = null };
 
@@ -54,6 +57,7 @@ namespace SharpDenizenTools.MetaHandlers
             { "mechanism", () => new MetaMechanism() },
             { "tag", () => new MetaTag() },
             { "objecttype", () => new MetaObjectType() },
+            { "property", () => new MetaProperty() },
             { "event", () => new MetaEvent() },
             { "action", () => new MetaAction() },
             { "language", () => new MetaLanguage() },
@@ -71,6 +75,9 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>All known object types.</summary>
         public Dictionary<string, MetaObjectType> ObjectTypes = new(512);
+
+        /// <summary>All known properties.</summary>
+        public Dictionary<string, MetaProperty> Properties = new(512);
 
         /// <summary>All known events.</summary>
         public Dictionary<string, MetaEvent> Events = new(1024);
@@ -200,6 +207,10 @@ namespace SharpDenizenTools.MetaHandlers
             foreach (MetaObjectType objType in ObjectTypes.Values)
             {
                 yield return objType;
+            }
+            foreach (MetaProperty prop in Properties.Values)
+            {
+                yield return prop;
             }
             foreach (MetaEvent evt in Events.Values)
             {
