@@ -128,7 +128,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !s.Text.StartsWith("def:") && !s.Text.StartsWith("if:")) ?? details.Arguments.FirstOrDefault(s => !s.Text.Contains('<') && !details.Checker.Meta.RawAdjustables.Contains(s.Text));
+                bool argReserved(ScriptChecker.CommandArgument s) => s.Text.StartsWith("def:") || s.Text.StartsWith("if:");
+                ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !argReserved(s))
+                ?? details.Arguments.FirstOrDefault(s => !argReserved(s) && !s.Text.Contains('<') && !details.Checker.Meta.RawAdjustables.Contains(s.Text));
                 if (mechanism is null)
                 {
                     if (details.Arguments.Length < 2 || !details.Arguments[1].Text.StartsWith('<') || !details.Arguments[1].Text.EndsWith('>')) // Allow a single tag as 2nd arg as the input, as that would be an adjust by MapTag
