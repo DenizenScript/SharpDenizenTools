@@ -128,7 +128,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             });
             Register(new[] { "adjust" }, (details) =>
             {
-                bool argReserved(ScriptChecker.CommandArgument s) => s.Text.StartsWith("def:") || s.Text.StartsWith("if:");
+                static bool argReserved(ScriptChecker.CommandArgument s) => s.Text.StartsWith("def:") || s.Text.StartsWith("if:");
                 ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !argReserved(s))
                 ?? details.Arguments.FirstOrDefault(s => !argReserved(s) && !s.Text.Contains('<') && !details.Checker.Meta.RawAdjustables.Contains(s.Text));
                 if (mechanism is null)
@@ -172,6 +172,15 @@ namespace SharpDenizenTools.ScriptAnalysis
                     else if (!string.IsNullOrWhiteSpace(mech.Deprecated))
                     {
                         details.Warn(details.Checker.Errors, "bad_adjust_deprecated_mech", $"Mechanism '{mech.Name}' is deprecated: {mech.Deprecated}", mechanism.StartChar, mechanism.StartChar + mechanismName.Length);
+                    }
+                    ScriptChecker.CommandArgument defArg = details.Arguments.FirstOrDefault(s => s.Text.StartsWith("def:"));
+                    if (defArg is not null)
+                    {
+                        string defName = defArg.Text.After(':').ToLowerFast();
+                        if (details.Context is not null && !details.Context.Definitions.Contains(defName) && !details.Context.HasUnknowableDefinitions)
+                        {
+                            details.Warn(details.Checker.Errors, "bad_adjust_unknown_def", $"Malformed adjust command. Definition name given is unrecognized.", defArg.StartChar, defArg.StartChar + defArg.Text.Length);
+                        }
                     }
                 }
             });
