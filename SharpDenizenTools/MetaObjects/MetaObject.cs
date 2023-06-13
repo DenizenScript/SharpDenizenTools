@@ -185,7 +185,7 @@ namespace SharpDenizenTools.MetaObjects
                     {
                         exists = docs.FindTag(searchText) != null;
                     }
-                    else if (type.Equals("mechanism"))
+                    else if (type.Equals("mechanism") || type.Equals("property"))
                     {
                         exists = docs.Mechanisms.ContainsKey(searchText);
                     }
