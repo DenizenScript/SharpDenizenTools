@@ -136,7 +136,7 @@ namespace SharpDenizenTools.MetaObjects
             {
                 docs.LoadErrors.Add($"Object {Name} has synonyms '{string.Join(',', badSynonyms)}' that match existing objects and will break meta searches.");
             }
-            IEnumerable<string> dupSynonyms = Synonyms.Where(s => objects.Values.Any(t => t != this && t.Synonyms.Contains(s)));
+            IEnumerable<string> dupSynonyms = Synonyms.Where(s => objects.Values.Any(t => t != this && t.Type == Type && t.Synonyms.Contains(s)));
             if (dupSynonyms.Any())
             {
                 docs.LoadErrors.Add($"Object {Name} has synonyms '{string.Join(',', dupSynonyms)}' that match other objects existing synonyms and will be invalid for searches.");
