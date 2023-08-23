@@ -48,6 +48,12 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Download all docs.</summary>
         public static MetaDocs DownloadAll()
         {
+            return DownloadAll(SourcesToUse);
+        }
+
+        /// <summary>Download all docs.</summary>
+        public static MetaDocs DownloadAll(string[] sources)
+        {
             using HttpClient webClient = new()
             {
                 Timeout = new TimeSpan(0, 2, 0)
@@ -65,7 +71,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             ConcurrentDictionary<string, ZipArchive> zips = new();
             List<ManualResetEvent> resets = new();
-            foreach (string src in SourcesToUse)
+            foreach (string src in sources)
             {
                 ManualResetEvent evt = new(false);
                 resets.Add(evt);
@@ -88,7 +94,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 evt.WaitOne();
             }
-            foreach (string src in SourcesToUse)
+            foreach (string src in sources)
             {
                 try
                 {
@@ -121,7 +127,7 @@ namespace SharpDenizenTools.MetaHandlers
             return docs;
         }
 
-        /// <summary>Verify all objects after <see cref="DownloadAll"/>. Automatically called.</summary>
+        /// <summary>Verify all objects after <see cref="DownloadAll()"/>. Automatically called.</summary>
         public static void PostDownloadVerify(MetaDocs docs)
         {
             foreach (MetaObject obj in docs.AllMetaObjects())
