@@ -1,4 +1,5 @@
 ﻿using FreneticUtilities.FreneticExtensions;
+using FreneticUtilities.FreneticToolkit;
 using SharpDenizenTools.MetaObjects;
 using System;
 using System.Collections.Concurrent;
@@ -161,7 +162,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Downloads guide source info.</summary>
         public static void ReadGuides(MetaDocs docs, HttpClient client)
         {
-            string page = client.GetStringAsync(DENIZEN_GUIDE_SOURCE).Result;
+            string page = StringConversionHelper.UTF8Encoding.GetString(client.GetByteArrayAsync(DENIZEN_GUIDE_SOURCE).Result);
             int contentIndex = page.IndexOf("<div class=\"section\" id=\"contents\">");
             if (contentIndex == -1)
             {
@@ -184,7 +185,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             foreach (string subPage in DENIZEN_GUIDE_SUBPAGES)
             {
-                string subpageContent = client.GetStringAsync(DENIZEN_GUIDE_SOURCE + subPage).Result;
+                string subpageContent = StringConversionHelper.UTF8Encoding.GetString(client.GetByteArrayAsync(DENIZEN_GUIDE_SOURCE + subPage).Result);
                 int pageTitleIndex = subpageContent.IndexOf("<title>");
                 int pageTitleEndIndex = subpageContent.IndexOf("</title>");
                 int tableIndex = subpageContent.IndexOf("<div class=\"contents local topic\" id=\"table-of-contents\">");

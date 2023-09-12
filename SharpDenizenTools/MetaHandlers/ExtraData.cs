@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using SharpDenizenTools.ScriptAnalysis;
+using FreneticUtilities.FreneticToolkit;
 
 namespace SharpDenizenTools.MetaHandlers
 {
@@ -59,7 +60,7 @@ namespace SharpDenizenTools.MetaHandlers
                         Timeout = new TimeSpan(0, 2, 0)
                     };
                     webClient.DefaultRequestHeaders.UserAgent.ParseAdd("DenizenMetaScanner/1.0");
-                    content = webClient.GetStringAsync(EXTRA_DATA_SOURCE).Result;
+                    content = StringConversionHelper.UTF8Encoding.GetString(webClient.GetByteArrayAsync(EXTRA_DATA_SOURCE).Result);
                     if (content != null && CachePath != null)
                     {
                         File.WriteAllText(CachePath, content);
