@@ -789,6 +789,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     Warn(Warnings, line, "raw_object_notation", "This line appears to contain raw object notation. There is almost always a better way to write a line than using raw object notation. Consider the relevant object constructor tags.", start, end);
                 }
             }
+            commandText = commandText.Replace('\n', ' ');
             string[] parts = commandText.Split(' ', 2);
             string commandName = parts[0].ToLowerFast();
             int cmdLen = commandName.Length;
