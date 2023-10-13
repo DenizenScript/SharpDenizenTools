@@ -8,10 +8,6 @@ using YamlDotNet.RepresentationModel;
 using SharpDenizenTools.MetaHandlers;
 using SharpDenizenTools.MetaObjects;
 using FreneticUtilities.FreneticToolkit;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Tokens;
-using System.ComponentModel;
-using static SharpDenizenTools.MetaHandlers.SingleTag;
 
 namespace SharpDenizenTools.ScriptAnalysis
 {
@@ -322,7 +318,28 @@ namespace SharpDenizenTools.ScriptAnalysis
                     endChar = Math.Max(0, endChar);
                     Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).", endChar, Math.Max(endChar, line.Length - 1));
                 }
-                else if (CleanedLines[i].Length > 0 && !CleanedLines[i].StartsWith("-") && !CleanedLines[i].Contains(':'))
+                else if (CleanedLines[i].StartsWith("- "))
+                {
+                    int spaces = CountPreSpaces(line);
+                    while (i + 1 < Lines.Length)
+                    {
+                        string line2 = Lines[i + 1].Replace("\t", "    ");
+                        string cleaned2 = CleanedLines[i + 1];
+                        if (CountPreSpaces(line2) > spaces && !cleaned2.StartsWith("- "))
+                        {
+                            i++;
+                            if (cleaned2.EndsWith(':'))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+                else if (CleanedLines[i].Length > 0 && !CleanedLines[i].Contains(':'))
                 {
                     Warn(Warnings, i, "useless_invalid_line", "Useless/invalid line (possibly missing a `-` or a `:`, or just accidentally hit enter or paste).", Lines[i].IndexOf(CleanedLines[i][0]), Lines[i].Length - 1);
                 }
@@ -475,14 +492,14 @@ namespace SharpDenizenTools.ScriptAnalysis
             tracer.Trace();
             if (SurroundingWorkspace is not null)
             {
-                foreach (Part part in parsed.Parts)
+                foreach (SingleTag.Part part in parsed.Parts)
                 {
                     if (part.PossibleTags.Count == 1)
                     {
                         MetaTag actualTag = part.PossibleTags[0];
                         if (actualTag.ParsedFormat.Parts.Count <= 2 && part.Parameter is not null && part.Parameter.Length > 0)
                         {
-                            Part metaPart = actualTag.ParsedFormat.Parts[^1];
+                            SingleTag.Part metaPart = actualTag.ParsedFormat.Parts[^1];
                             if (metaPart.Parameter is not null && metaPart.Parameter.StartsWithFast('<'))
                             {
                                 string input = part.Parameter.Before('[').ToLowerFast();
@@ -498,7 +515,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Helper to check a single tag parameter.</summary>
-        public void CheckTagParam(Part part, Part metaPart, string input, Action<SingleTag.Part, string, string> warnPart)
+        public void CheckTagParam(SingleTag.Part part, SingleTag.Part metaPart, string input, Action<SingleTag.Part, string, string> warnPart)
         {
             switch (metaPart.Parameter)
             {
@@ -638,7 +655,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             for (int i = 0; i < len; i++)
             {
                 char c = stringArgs[i];
-                if (c == ' ' && currentQuote == '\0' && inTagParams == 0 && !currentTagHasFallback)
+                if (c == ' ' && currentQuote == '\0' && inTags == 0 && !currentTagHasFallback)
                 {
                     if (i > start)
                     {
@@ -1481,11 +1498,30 @@ namespace SharpDenizenTools.ScriptAnalysis
                         pspaces = spaces;
                         continue;
                     }
-                    if (cleaned.EndsWith(":"))
+                    string text = cleaned["- ".Length..];
+                    while (i + 1 < Lines.Length)
                     {
-                        if (cleaned.StartsWith("- definemap "))
+                        string line2 = Lines[i + 1].Replace("\t", "    ");
+                        string cleaned2 = CleanedLines[i + 1];
+                        if (CountPreSpaces(line2) > spaces && !cleaned2.StartsWith("- "))
                         {
-                            clist.Add(new LineTrackedString(i, cleaned["- ".Length..], cleanStartCut + 2));
+                            text += "\n" + line2;
+                            i++;
+                            if (cleaned2.EndsWith(':'))
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    if (text.EndsWith(':'))
+                    {
+                        if (text.StartsWith("definemap "))
+                        {
+                            clist.Add(new LineTrackedString(i, text, cleanStartCut + 2));
                             while (i + 1 < Lines.Length)
                             {
                                 string subLine = Lines[i + 1].Replace("\t", "    ");
@@ -1501,13 +1537,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         else
                         {
-                            secwaiting = new LineTrackedString(i, cleaned.Substring("- ".Length, cleaned.Length - "- :".Length), cleanStartCut + 2);
+                            secwaiting = new LineTrackedString(i, text[..^1], cleanStartCut + 2);
                             buildingSubList = true;
                         }
                     }
                     else
                     {
-                        clist.Add(new LineTrackedString(i, cleaned["- ".Length..], cleanStartCut + 2));
+                        clist.Add(new LineTrackedString(i, text, cleanStartCut + 2));
                     }
                     pspaces = spaces;
                     continue;

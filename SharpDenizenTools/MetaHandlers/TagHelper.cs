@@ -28,7 +28,7 @@ namespace SharpDenizenTools.MetaHandlers
                     brackets++;
                     if (brackets == 1)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i].Trim(), StartChar = start, EndChar = i });
                         foundABracket = true;
                         start = i;
                         firstBracket = i;
@@ -51,7 +51,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     if (!foundABracket)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i - 1 });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i].Trim(), StartChar = start, EndChar = i - 1 });
                     }
                     foundABracket = false;
                     start = i + 1;
@@ -60,7 +60,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     if (!foundABracket)
                     {
-                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i], StartChar = start, EndChar = i - 1 });
+                        output.Parts.Add(new SingleTag.Part() { Text = tag[start..i].Trim(), StartChar = start, EndChar = i - 1 });
                     }
                     output.EndChar = i;
                     output.Fallback = tag[(i + 2)..];
@@ -78,7 +78,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (!foundABracket)
             {
-                output.Parts.Add(new SingleTag.Part() { Text = tag[start..], StartChar = start, EndChar = tag.Length - 1 });
+                output.Parts.Add(new SingleTag.Part() { Text = tag[start..].Trim(), StartChar = start, EndChar = tag.Length - 1 });
             }
             output.EndChar = tag.Length;
             return output;
