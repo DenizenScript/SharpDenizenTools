@@ -1,4 +1,5 @@
 ﻿using FreneticUtilities.FreneticExtensions;
+using FreneticUtilities.FreneticToolkit;
 using SharpDenizenTools.MetaObjects;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,9 @@ namespace SharpDenizenTools.MetaHandlers
     /// <summary>Helper to parse tags.</summary>
     public static class TagHelper
     {
+        /// <summary>Matcher for basic whitespace characters.</summary>
+        public static AsciiMatcher Whitespace = new(" \t\r\n");
+
         /// <summary>Parses the plaintext of a tag into something analyzable.</summary>
         public static SingleTag Parse(string tag, Action<string> trackErrors)
         {
@@ -66,7 +70,7 @@ namespace SharpDenizenTools.MetaHandlers
                     output.Fallback = tag[(i + 2)..];
                     return output;
                 }
-                else if (foundABracket && brackets == 0 && !declaredMisformat)
+                else if (foundABracket && brackets == 0 && !declaredMisformat && !Whitespace.IsMatch(tag[i]))
                 {
                     declaredMisformat = true;
                     trackErrors("Invalid tag format, text after closing ']' symbol before '.' symbol");
