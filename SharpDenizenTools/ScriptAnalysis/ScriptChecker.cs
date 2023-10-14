@@ -318,7 +318,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     endChar = Math.Max(0, endChar);
                     Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).", endChar, Math.Max(endChar, line.Length - 1));
                 }
-                else if (CleanedLines[i].StartsWith("- "))
+                else if (CleanedLines[i].StartsWith("- ") && !CleanedLines[i].EndsWith(":"))
                 {
                     int spaces = CountPreSpaces(line);
                     while (i + 1 < Lines.Length)
@@ -1500,22 +1500,25 @@ namespace SharpDenizenTools.ScriptAnalysis
                         continue;
                     }
                     string text = cleaned["- ".Length..];
-                    while (i + 1 < Lines.Length)
+                    if (!cleaned.EndsWith(":"))
                     {
-                        string line2 = Lines[i + 1].Replace("\t", "    ");
-                        string cleaned2 = CleanedLines[i + 1];
-                        if (CountPreSpaces(line2) > spaces && !cleaned2.StartsWith("- "))
+                        while (i + 1 < Lines.Length)
                         {
-                            text += "\n" + line2;
-                            i++;
-                            if (cleaned2.EndsWith(':'))
+                            string line2 = Lines[i + 1].Replace("\t", "    ");
+                            string cleaned2 = CleanedLines[i + 1];
+                            if (CountPreSpaces(line2) > spaces && !cleaned2.StartsWith("- "))
+                            {
+                                text += "\n" + line2;
+                                i++;
+                                if (cleaned2.EndsWith(':'))
+                                {
+                                    break;
+                                }
+                            }
+                            else
                             {
                                 break;
                             }
-                        }
-                        else
-                        {
-                            break;
                         }
                     }
                     if (text.EndsWith(':'))
