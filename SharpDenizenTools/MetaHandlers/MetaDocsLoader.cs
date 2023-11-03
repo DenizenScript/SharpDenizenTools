@@ -71,6 +71,7 @@ namespace SharpDenizenTools.MetaHandlers
                 Console.Error.WriteLine($"Error: {ex}");
             }
             ConcurrentDictionary<string, ZipArchive> zips = new();
+            ConcurrentDictionary<string, string> plainText = new();
             List<ManualResetEvent> resets = new();
             foreach (string src in sources)
             {
@@ -80,13 +81,22 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     try
                     {
-                        ZipArchive zip = DownloadZip(webClient, src);
-                        zips[src] = zip;
+                        byte[] data = DownloadData(webClient, src);
+                        if (data[0] == 0x50 && data[1] == 0x4b)
+                        {
+                            ZipArchive archive = new ZipArchive(new MemoryStream(data));
+                            zips[src] = archive;    
+                        }
+                        else
+                        {
+                            String str = Encoding.UTF8.GetString(data, 0, data.Length);
+                            plainText[src] = str;
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Zip download exception {ex}");
-                        docs.LoadErrors.Add($"Zip download error: {ex.GetType().Name}: {ex.Message}");
+                        Console.Error.WriteLine($"Source download or process exception {ex}");
+                        docs.LoadErrors.Add($"Download error: {ex.GetType().Name}: {ex.Message}");
                     }
                     evt.Set();
                 });
@@ -99,7 +109,16 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 try
                 {
-                    (int, string, string)[] fullLines = ReadLines(zips[src]);
+                    (int, string, string)[] fullLines;
+                    if (zips.TryGetValue(src, out var zip))
+                    {
+                        fullLines = ReadLines(zip);
+                    }
+                    else
+                    {
+                        fullLines = ReadLines(src, plainText[src]);
+                    }
+                     
                     LoadDataFromLines(docs, src, fullLines);
                 }
                 catch (Exception ex)
@@ -229,7 +248,7 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>Download a zip file from a URL.</summary>
-        public static ZipArchive DownloadZip(HttpClient webClient, string url)
+        public static byte[] DownloadData(HttpClient webClient, string url)
         {
             byte[] zipDataBytes;
             if (AlternateZipSourcer != null)
@@ -240,8 +259,22 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 zipDataBytes = webClient.GetByteArrayAsync(url).Result;
             }
-            MemoryStream zipDataStream = new(zipDataBytes);
-            return new ZipArchive(zipDataStream);
+
+            return zipDataBytes;
+        }
+
+        /// <summary>Read lines of meta docs from a plain text file.</summary>
+        public static (int, string, string)[] ReadLines(string source, string data)
+        {
+            List<(int, string, string)> lines = new();
+            int lineNum = 0;
+            foreach (string line in data.Split(Environment.NewLine))
+            {
+                lineNum++;
+                lines.Add((lineNum, source, line.Trim().Replace("\r", "")));
+            }
+
+            return lines.ToArray();
         }
 
         /// <summary>Read lines of meta docs from Java files in a zip.</summary>
