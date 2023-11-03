@@ -258,7 +258,6 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 zipDataBytes = webClient.GetByteArrayAsync(url).Result;
             }
-
             return zipDataBytes;
         }
 
