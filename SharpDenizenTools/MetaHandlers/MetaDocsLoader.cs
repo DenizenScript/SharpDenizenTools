@@ -70,8 +70,7 @@ namespace SharpDenizenTools.MetaHandlers
                 docs.LoadErrors.Add($"Internal exception while reading extra data - {ex.GetType().FullName} ... see bot console for details.");
                 Console.Error.WriteLine($"Error: {ex}");
             }
-            ConcurrentDictionary<string, ZipArchive> zips = new();
-            ConcurrentDictionary<string, string> plainText = new();
+            ConcurrentDictionary<string, object> files = new();
             List<ManualResetEvent> resets = new();
             foreach (string src in sources)
             {
@@ -82,21 +81,20 @@ namespace SharpDenizenTools.MetaHandlers
                     try
                     {
                         byte[] data = DownloadData(webClient, src);
-                        if (data[0] == 0x50 && data[1] == 0x4b)
+                        // Note: backup check based on PKWARE zip header (PK followed by 2 control bytes, usually 0x03 0x04)
+                        if (src.EndsWith(".zip") || (data[0] == 0x50 && data[1] == 0x4b && data[1] < 0x20 && data[2] < 0x20))
                         {
-                            ZipArchive archive = new ZipArchive(new MemoryStream(data));
-                            zips[src] = archive;    
+                            files[src] = new ZipArchive(new MemoryStream(data));
                         }
                         else
                         {
-                            String str = Encoding.UTF8.GetString(data, 0, data.Length);
-                            plainText[src] = str;
+                            files[src] = StringConversionHelper.UTF8Encoding.GetString(data, 0, data.Length);
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"Source download or process exception {ex}");
-                        docs.LoadErrors.Add($"Download error: {ex.GetType().Name}: {ex.Message}");
+                        Console.Error.WriteLine($"Source download exception {ex}");
+                        docs.LoadErrors.Add($"Source download error: {ex.GetType().Name}: {ex.Message}");
                     }
                     evt.Set();
                 });
@@ -105,20 +103,21 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 evt.WaitOne();
             }
-            foreach (string src in sources)
+            foreach ((string src, object file) in files)
             {
                 try
                 {
                     (int, string, string)[] fullLines;
-                    if (zips.TryGetValue(src, out var zip))
+                    if (file is ZipArchive zip)
                     {
                         fullLines = ReadLines(zip);
                     }
                     else
                     {
-                        fullLines = ReadLines(src, plainText[src]);
+                        List<(int, string, string)> lines = new();
+                        SeparateDataLines(lines, src, (file as string).Split('\n'));
+                        fullLines = lines.ToArray();
                     }
-                     
                     LoadDataFromLines(docs, src, fullLines);
                 }
                 catch (Exception ex)
@@ -261,20 +260,6 @@ namespace SharpDenizenTools.MetaHandlers
             }
 
             return zipDataBytes;
-        }
-
-        /// <summary>Read lines of meta docs from a plain text file.</summary>
-        public static (int, string, string)[] ReadLines(string source, string data)
-        {
-            List<(int, string, string)> lines = new();
-            int lineNum = 0;
-            foreach (string line in data.Split(Environment.NewLine))
-            {
-                lineNum++;
-                lines.Add((lineNum, source, line.Trim().Replace("\r", "")));
-            }
-
-            return lines.ToArray();
         }
 
         /// <summary>Read lines of meta docs from Java files in a zip.</summary>
