@@ -47,8 +47,8 @@ namespace SharpDenizenTools.MetaHandlers
         public static MetaType META_TYPE_GUIDEPAGE = new() { Name = "GuidePage", WebPath = null };
 
         /// <summary>All meta types.</summary>
-        public static MetaType[] META_TYPES = new MetaType[] { META_TYPE_COMMAND, META_TYPE_MECHANISM,
-            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE };
+        public static MetaType[] META_TYPES = [ META_TYPE_COMMAND, META_TYPE_MECHANISM,
+            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE ];
 
         /// <summary>Getters for standard meta object types.</summary>
         public static Dictionary<string, Func<MetaObject>> MetaObjectGetters = new()
@@ -104,16 +104,16 @@ namespace SharpDenizenTools.MetaHandlers
         public MetaObjectType ObjectTagType, ElementTagType;
 
         /// <summary>Special mapping of first-word to contents for event lookup optimization.</summary>
-        public Dictionary<string, List<MetaEvent>> EventLookupOpti = new();
+        public Dictionary<string, List<MetaEvent>> EventLookupOpti = [];
 
         /// <summary>Events that can't fit into <see cref="EventLookupOpti"/>.</summary>
-        public List<MetaEvent> LegacyCouldMatchEvents = new();
+        public List<MetaEvent> LegacyCouldMatchEvents = [];
 
         /// <summary>Internal data value sets.</summary>
         public Dictionary<string, HashSet<string>> DataValueSets = new(32);
 
         /// <summary>Set of raw adjustable keys.</summary>
-        public HashSet<string> RawAdjustables = new();
+        public HashSet<string> RawAdjustables = [];
 
         /// <summary>Returns whether the given text value is in the named data set.</summary>
         public bool IsInDataValueSet(string set, string text)
@@ -155,9 +155,9 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (Events.TryGetValue(text, out MetaEvent evt))
             {
-                return new List<(MetaEvent, int)>() { (evt, 10) };
+                return [(evt, 10)];
             }
-            List<(MetaEvent, int)> result = new();
+            List<(MetaEvent, int)> result = [];
             string[] parts = text.SplitFast(' ');
             if (EventLookupOpti.TryGetValue(parts[0], out List<MetaEvent> possible))
             {
@@ -268,6 +268,6 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>A list of load-time errors, if any.</summary>
-        public List<string> LoadErrors = new();
+        public List<string> LoadErrors = [];
     }
 }

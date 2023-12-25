@@ -51,31 +51,31 @@ namespace SharpDenizenTools.MetaObjects
         public override IEnumerable<string> MultiNames => CleanEvents;
 
         /// <summary>The names of the event.</summary>
-        public string[] Events = Array.Empty<string>();
+        public string[] Events = [];
 
         /// <summary>The names of the events, autocleaned.</summary>
-        public string[] CleanEvents = Array.Empty<string>();
+        public string[] CleanEvents = [];
 
         /// <summary>The names of the events, with optionals stripped and other symbols removed.</summary>
-        public string[] OverlyCleanedEvents = Array.Empty<string>();
+        public string[] OverlyCleanedEvents = [];
 
         /// <summary>Could-Matchers for this event.</summary>
-        public ScriptEventCouldMatcher[] CouldMatchers = Array.Empty<ScriptEventCouldMatcher>();
+        public ScriptEventCouldMatcher[] CouldMatchers = [];
 
         /// <summary>Switches available to the event.</summary>
-        public List<string> Switches = new();
+        public List<string> Switches = [];
 
         /// <summary>Just the names of the event's switches.</summary>
-        public HashSet<string> SwitchNames = new();
+        public HashSet<string> SwitchNames = [];
 
         /// <summary>The trigger reason.</summary>
         public string Triggers;
 
         /// <summary>Context tags. One tag per string.</summary>
-        public string[] Context = Array.Empty<string>();
+        public string[] Context = [];
 
         /// <summary>Determination options. One Determination per string.</summary>
-        public string[] Determinations = Array.Empty<string>();
+        public string[] Determinations = [];
 
         /// <summary>Whether there's a player attached to the event.</summary>
         public string Player = "";
@@ -90,7 +90,7 @@ namespace SharpDenizenTools.MetaObjects
         public bool HasLocation = false;
 
         /// <summary>Manual examples of this tag. One full script per entry.</summary>
-        public List<string> Examples = new();
+        public List<string> Examples = [];
 
         /// <summary>Returns whether the switch name given is valid for this event.</summary>
         public bool IsValidSwitch(string switchName)

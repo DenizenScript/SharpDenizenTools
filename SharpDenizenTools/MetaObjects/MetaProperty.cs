@@ -21,7 +21,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void AddTo(MetaDocs docs)
         {
             FullName = $"{PropObject}.{PropName}";
-            NameForms = new string[] { FullName.ToLowerFast(), PropName.ToLowerFast() };
+            NameForms = [FullName.ToLowerFast(), PropName.ToLowerFast()];
             HasMultipleNames = true;
             docs.Properties.Add(CleanName, this);
             string asTag = $"<{FullName}>";
@@ -39,7 +39,7 @@ namespace SharpDenizenTools.MetaObjects
                 Deprecated = Deprecated,
                 Synonyms = Synonyms,
                 Meta = Meta,
-                Tags = new[] { asTag }
+                Tags = [asTag]
             }.AddTo(docs);
             new MetaTag()
             {
@@ -65,7 +65,7 @@ namespace SharpDenizenTools.MetaObjects
         public override IEnumerable<string> MultiNames => NameForms;
 
         /// <summary>Both forms of the mech name (the full name, and the partial name).</summary>
-        public string[] NameForms = Array.Empty<string>();
+        public string[] NameForms = [];
 
         /// <summary>The full mechanism name (Object.Name).</summary>
         public string FullName;
@@ -83,7 +83,7 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>Manual examples of this tag. One full script per entry.</summary>
-        public List<string> Examples = new();
+        public List<string> Examples = [];
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

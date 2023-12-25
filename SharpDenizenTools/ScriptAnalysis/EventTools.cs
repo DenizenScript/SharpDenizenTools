@@ -24,7 +24,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             string[] parts = eventLine.SplitFast(' ');
             StringBuilder output = new();
-            switches = new List<KeyValuePair<string, string>>();
+            switches = [];
             foreach (string part in parts)
             {
                 if (part.Contains(':') && !meta.IsInDataValueSet("not_switches", part.Before(':')) && !NumbersMatcher.IsOnlyMatches(part.Before(':')))
@@ -43,7 +43,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Parse some event format input into a set of could-matchers.</summary>
         public static List<ScriptEventCouldMatcher> ParseMatchers(string format, Dictionary<string, Func<string, bool, int>> validatorTypes, Action<string> error)
         {
-            List<ScriptEventCouldMatcher> matcherList = new();
+            List<ScriptEventCouldMatcher> matcherList = [];
             BuildMainContent(matcherList, format, validatorTypes, (s) => error($"while parsing event '{format}': {s}"));
             return matcherList;
         }

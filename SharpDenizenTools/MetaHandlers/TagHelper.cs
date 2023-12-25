@@ -108,14 +108,14 @@ namespace SharpDenizenTools.MetaHandlers
             public int EndChar;
 
             /// <summary>The traced possible tag object for this part (if known).</summary>
-            public List<MetaTag> PossibleTags = new();
+            public List<MetaTag> PossibleTags = [];
 
             /// <summary>The possibly valid object types after this part (if known).</summary>
-            public HashSet<MetaObjectType> PossibleSubTypes = new();
+            public HashSet<MetaObjectType> PossibleSubTypes = [];
         }
 
         /// <summary>The parts of the tag.</summary>
-        public List<Part> Parts = new();
+        public List<Part> Parts = [];
 
         /// <summary>The tag fallback text (if any).</summary>
         public string Fallback;

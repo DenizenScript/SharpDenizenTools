@@ -34,7 +34,7 @@ namespace SharpDenizenTools.MetaHandlers
         public HashSet<string> Blocks, Items, Particles, Effects, Sounds, Entities, Enchantments, Biomes, Attributes, Gamerules, PotionEffects, Potions, Statistics, Materials;
 
         /// <summary>A combination set of all enum keywords.</summary>
-        public HashSet<string> All = new();
+        public HashSet<string> All = [];
 
         /// <summary>Relevant data sets as arrays.</summary>
         public string[] ItemArray, BlockArray, EntityArray;
@@ -96,17 +96,17 @@ namespace SharpDenizenTools.MetaHandlers
             PotionEffects = GetDataSet("Potion_Effects");
             Potions = GetDataSet("Potions");
             Statistics = GetDataSet("Statistics");
-            ItemArray = Items.ToArray();
-            EntityArray = Entities.ToArray();
-            BlockArray = Blocks.ToArray();
-            Materials = new HashSet<string>();
+            ItemArray = [.. Items];
+            EntityArray = [.. Entities];
+            BlockArray = [.. Blocks];
+            Materials = [];
             Materials.UnionWith(Blocks);
             Materials.UnionWith(Items);
         }
 
         private HashSet<string> GetDataSet(string type)
         {
-            HashSet<string> result = new((DataSection.GetStringList(type.ToLowerFast()) ?? new List<string>()).Select(s => s.ToLowerFast()));
+            HashSet<string> result = new((DataSection.GetStringList(type.ToLowerFast()) ?? []).Select(s => s.ToLowerFast()));
             All.UnionWith(result);
             return result;
         }
@@ -135,24 +135,24 @@ namespace SharpDenizenTools.MetaHandlers
             }
             return type switch
             {
-                "entity" => random.NextDouble() > 0.5 ? Select(SpecialEntityMatchables.ToArray()) : Select(EntityArray),
+                "entity" => random.NextDouble() > 0.5 ? Select([.. SpecialEntityMatchables]) : Select(EntityArray),
                 "projectile" => Select("projectile", "arrow", "snowball"),
                 "vehicle" => Select("vehicle", "minecart", "horse"),
                 "item" => Select(ItemArray),
                 "block" => Select(BlockArray),
                 "material" => random.NextDouble() > 0.5 ? Select(BlockArray) : Select(ItemArray),
                 "area" => Select("area", "cuboid", "polygon"),
-                "inventory" => Select(InventoryMatchers.ToArray()),
+                "inventory" => Select([.. InventoryMatchers]),
                 "world" => Select("world", "world_nether", "world_the_end", "space", "survivalland"),
                 _ => type,
             };
         }
 
         /// <summary>Known always-valid entity labels.</summary>
-        public static HashSet<string> SpecialEntityMatchables = new()
-        {
+        public static HashSet<string> SpecialEntityMatchables =
+        [
             "entity", "npc", "player", "living", "vehicle", "fish", "projectile", "hanging", "monster", "mob", "animal"
-        };
+        ];
 
         /// <summary>Type matcher for EntityTag.</summary>
         public int MatchEntity(string word, bool precise)
@@ -184,10 +184,10 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>Known always-valid item labels.</summary>
-        public static HashSet<string> ItemCouldMatchPrefixes = new()
-        {
+        public static HashSet<string> ItemCouldMatchPrefixes =
+        [
             "item_flagged", "vanilla_tagged", "item_enchanted", "material_flagged", "raw_exact"
-        };
+        ];
 
         /// <summary>Type matcher for ItemTag.</summary>
         public int MatchItem(string word, bool precise)
@@ -223,15 +223,15 @@ namespace SharpDenizenTools.MetaHandlers
         }
 
         /// <summary>Known always-valid inventory labels.</summary>
-        public static HashSet<string> InventoryMatchers = new()
-        {
+        public static HashSet<string> InventoryMatchers =
+        [
             "inventory", "notable", "note",
             "npc", "player", "crafting", "enderchest", "workbench", "entity", "location", "generic",
             // This should maybe be in the data file.
             "chest", "dispenser", "dropper", "furnace", "workbench", "crafting", "enchanting", "brewing", "player",
             "creative", "merchant", "ender_chest", "anvil", "smithing", "beacon", "hopper", "shulker_box", "barrel", "blast_furnace",
             "lectern", "smoker", "loom", "cartography", "grindstone", "stonecutter", "composter"
-        };
+        ];
 
         /// <summary>Type matcher for InventoryTag.</summary>
         public int MatchInventory(string word, bool precise)

@@ -53,16 +53,16 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>The names of other types or pseudo-types implemented by this type.</summary>
-        public string[] ImplementsNames = Array.Empty<string>();
+        public string[] ImplementsNames = [];
 
         /// <summary>All tags available directly to this base (not counting base/implements).</summary>
-        public Dictionary<string, MetaTag> SubTags = new();
+        public Dictionary<string, MetaTag> SubTags = [];
 
         /// <summary>Other types or pseudo-types implemented by this type.</summary>
-        public MetaObjectType[] Implements = Array.Empty<MetaObjectType>();
+        public MetaObjectType[] Implements = [];
 
         /// <summary>Other types or pseudo-types that extend this type.</summary>
-        public List<MetaObjectType> ExtendedBy = new();
+        public List<MetaObjectType> ExtendedBy = [];
 
         /// <summary>The tag base component for generated examples, like 'player' for PlayerTag.</summary>
         public string GeneratedExampleTagBase;
@@ -71,10 +71,10 @@ namespace SharpDenizenTools.MetaObjects
         public string GeneratedExampleAdjust;
 
         /// <summary>A set of example text blocks for usage with tag return example generation.</summary>
-        public List<string> GeneratedReturnUsageExample = new();
+        public List<string> GeneratedReturnUsageExample = [];
 
         /// <summary>Set of randomly selectable example values of this object type.</summary>
-        public string[] ExampleValues = Array.Empty<string>();
+        public string[] ExampleValues = [];
 
         /// <summary>Information about matchable options for this type.</summary>
         public string Matchable;

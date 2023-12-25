@@ -20,7 +20,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void AddTo(MetaDocs docs)
         {
             FullName = $"{MechObject}.{MechName}";
-            NameForms = new string[] { FullName.ToLowerFast(), MechName.ToLowerFast() };
+            NameForms = [FullName.ToLowerFast(), MechName.ToLowerFast()];
             HasMultipleNames = true;
             docs.Mechanisms.Add(CleanName, this);
         }
@@ -29,7 +29,7 @@ namespace SharpDenizenTools.MetaObjects
         public override IEnumerable<string> MultiNames => NameForms;
 
         /// <summary>Both forms of the mech name (the full name, and the partial name).</summary>
-        public string[] NameForms = Array.Empty<string>();
+        public string[] NameForms = [];
 
         /// <summary>The full mechanism name (Object.Name).</summary>
         public string FullName;
@@ -47,10 +47,10 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>Tags documented for this mechanism. One tag per string.</summary>
-        public string[] Tags = Array.Empty<string>();
+        public string[] Tags = [];
 
         /// <summary>Manual examples of this tag. One full script per entry.</summary>
-        public List<string> Examples = new();
+        public List<string> Examples = [];
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

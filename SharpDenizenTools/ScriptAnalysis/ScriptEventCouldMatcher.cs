@@ -34,10 +34,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             KnownValidatorTypes = validatorTypes;
             Error = _error;
             Format = _format;
-            List<Func<string, bool, int>> validatorList = new();
+            List<Func<string, bool, int>> validatorList = [];
             Parts = Format.Split(' ');
-            List<int> argOrderList = new();
-            List<int> secondaryArgList = new();
+            List<int> argOrderList = [];
+            List<int> secondaryArgList = [];
             int index = 0;
             foreach (string arg in Parts)
             {
@@ -84,9 +84,9 @@ namespace SharpDenizenTools.ScriptAnalysis
                     argOrderList.Add(index++);
                 }
             }
-            Validators = validatorList.ToArray();
+            Validators = [.. validatorList];
             argOrderList.AddRange(secondaryArgList);
-            ArgOrder = argOrderList.ToArray();
+            ArgOrder = [.. argOrderList];
         }
 
         /// <summary>Returns 0 for no match, 1 for bare minimum match, up to 10 for best match.</summary>

@@ -29,13 +29,13 @@ namespace SharpDenizenTools.MetaObjects
         public virtual string SearchName => Name;
 
         /// <summary>Other words that mean the same thing.</summary>
-        public List<string> Synonyms = new();
+        public List<string> Synonyms = [];
 
         /// <summary>What categorization group the object is in.</summary>
         public string Group;
 
         /// <summary>Any warnings applied to this object type.</summary>
-        public List<string> Warnings = new();
+        public List<string> Warnings = [];
 
         /// <summary>Required plugin(s) if applicable.</summary>
         public string Plugin;
@@ -255,8 +255,8 @@ namespace SharpDenizenTools.MetaObjects
         public class SearchableHelpers
         {
             /// <summary>Names for search quality levels.</summary>
-            public static readonly string[] SearchQualityName = new string[]
-                {
+            public static readonly string[] SearchQualityName =
+                [
                     "Not Matched", // 0
                     "Just Barely Matched", // 1
                     "Backup Match", // 2
@@ -268,22 +268,22 @@ namespace SharpDenizenTools.MetaObjects
                     "Perfect Synonym Match", // 8
                     "Partial Name Match", // 9
                     "Perfect Name Match", // 10
-                };
+                ];
 
             /// <summary>Perfect match text, like a name.</summary>
-            public List<string> PerfectMatches = new();
+            public List<string> PerfectMatches = [];
 
             /// <summary>Hand-chosen additional semiperfect search terms.</summary>
-            public List<string> Synonyms = new();
+            public List<string> Synonyms = [];
 
             /// <summary>Very important matchables.</summary>
-            public List<string> Strongs = new();
+            public List<string> Strongs = [];
 
             /// <summary>Other normal matchables.</summary>
-            public List<string> Decents = new();
+            public List<string> Decents = [];
 
             /// <summary>Any/all remaining text.</summary>
-            public List<string> Backups = new();
+            public List<string> Backups = [];
 
             private static bool Try(List<string> list, string search, int val, out int toUse)
             {

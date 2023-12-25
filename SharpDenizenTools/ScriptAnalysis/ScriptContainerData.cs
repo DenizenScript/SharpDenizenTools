@@ -35,7 +35,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public MixedKnowledgeSet InjectedPaths = new();
 
         /// <summary>The list of all script names that are known to actually be injected by this script.</summary>
-        public HashSet<string> RealInjects = new();
+        public HashSet<string> RealInjects = [];
 
         /// <summary>Any/all server flags set by command sections of this script.</summary>
         public MixedKnowledgeSet ServerFlags = new();
@@ -44,6 +44,6 @@ namespace SharpDenizenTools.ScriptAnalysis
         public MixedKnowledgeSet ObjectFlags = new();
 
         /// <summary>Data keys on the script.</summary>
-        public Dictionary<ScriptChecker.LineTrackedString, object> Keys = new();
+        public Dictionary<ScriptChecker.LineTrackedString, object> Keys = [];
     }
 }

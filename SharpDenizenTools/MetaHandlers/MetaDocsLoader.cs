@@ -18,18 +18,18 @@ namespace SharpDenizenTools.MetaHandlers
     public static class MetaDocsLoader
     {
         /// <summary>Primary Denizen official sources.</summary>
-        public static readonly string[] DENIZEN_SOURCES = new string[]
-        {
+        public static readonly string[] DENIZEN_SOURCES =
+        [
             "https://github.com/DenizenScript/Denizen/archive/dev.zip",
             "https://github.com/DenizenScript/Denizen-Core/archive/master.zip"
-        };
+        ];
 
         /// <summary>Denizen secondary addon sources.</summary>
-        public static readonly string[] DENIZEN_ADDON_SOURCES = new string[]
-        {
+        public static readonly string[] DENIZEN_ADDON_SOURCES =
+        [
             "https://github.com/DenizenScript/Depenizen/archive/master.zip",
             "https://github.com/DenizenScript/dDiscordBot/archive/master.zip"
-        };
+        ];
 
         /// <summary>The actual source array to use, by default built from <see cref="DENIZEN_SOURCES"/> and <see cref="DENIZEN_ADDON_SOURCES"/>.</summary>
         public static string[] SourcesToUse = DENIZEN_SOURCES.JoinWith(DENIZEN_ADDON_SOURCES);
@@ -41,7 +41,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static string DENIZEN_GUIDE_SOURCE = "https://guide.denizenscript.com/";
 
         /// <summary>Guide sub-pages to scan headers from.</summary>
-        public static string[] DENIZEN_GUIDE_SUBPAGES = new string[] { "guides/troubleshooting/common-mistakes.html" };
+        public static string[] DENIZEN_GUIDE_SUBPAGES = ["guides/troubleshooting/common-mistakes.html"];
 
         /// <summary>Whether links to the guides need to be loaded. Defaults to false.</summary>
         public static bool LoadGuideData = false;
@@ -71,7 +71,7 @@ namespace SharpDenizenTools.MetaHandlers
                 Console.Error.WriteLine($"Error: {ex}");
             }
             ConcurrentDictionary<string, object> files = new();
-            List<ManualResetEvent> resets = new();
+            List<ManualResetEvent> resets = [];
             foreach (string src in sources)
             {
                 ManualResetEvent evt = new(false);
@@ -114,9 +114,9 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                     else
                     {
-                        List<(int, string, string)> lines = new();
+                        List<(int, string, string)> lines = [];
                         SeparateDataLines(lines, src, (file as string).Split('\n'));
-                        fullLines = lines.ToArray();
+                        fullLines = [.. lines];
                     }
                     LoadDataFromLines(docs, src, fullLines);
                 }
@@ -264,7 +264,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Read lines of meta docs from Java files in a zip.</summary>
         public static (int, string, string)[] ReadLines(ZipArchive zip, string folderLimit = null)
         {
-            List<(int, string, string)> lines = new();
+            List<(int, string, string)> lines = [];
             foreach (ZipArchiveEntry entry in zip.Entries)
             {
                 if (folderLimit != null && !entry.FullName.StartsWith(folderLimit))
@@ -278,7 +278,7 @@ namespace SharpDenizenTools.MetaHandlers
                 using Stream entryStream = entry.Open();
                 SeparateDataLines(lines, entry.FullName, entryStream.AllLinesOfText());
             }
-            return lines.ToArray();
+            return [.. lines];
         }
 
         /// <summary>Internal call for <see cref="ReadLines(ZipArchive, string)"/>.</summary>
@@ -306,7 +306,7 @@ namespace SharpDenizenTools.MetaHandlers
                 if (line.StartsWith("<--[") && line.EndsWith("]"))
                 {
                     string objectType = line.Substring("<--[".Length, line.Length - "<--[]".Length);
-                    List<string> objectData = new();
+                    List<string> objectData = [];
                     for (i++; i < lines.Length; i++)
                     {
                         if (lines[i].Item3 == "-->")
@@ -331,7 +331,7 @@ namespace SharpDenizenTools.MetaHandlers
                         continue;
                     }
                     objectData.Add("@end_meta");
-                    LoadInObject(docs, objectType, GetCorrectURL(websrc, file, lineNum), objectData.ToArray());
+                    LoadInObject(docs, objectType, GetCorrectURL(websrc, file, lineNum), [.. objectData]);
                 }
                 else if (line.StartsWith("<--"))
                 {

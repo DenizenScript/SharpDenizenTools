@@ -12,10 +12,10 @@ namespace SharpDenizenTools.ScriptAnalysis
     public class MixedKnowledgeSet
     {
         /// <summary>The set of exactly-known strings.</summary>
-        public HashSet<string> ExactKnown = new();
+        public HashSet<string> ExactKnown = [];
 
         /// <summary>The set of partially-known strings.</summary>
-        public HashSet<string> PartialKnown = new();
+        public HashSet<string> PartialKnown = [];
 
         /// <summary>The lowest known length in the set.</summary>
         public int MinLength;

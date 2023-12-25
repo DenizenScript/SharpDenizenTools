@@ -16,7 +16,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         public MixedKnowledgeSet AllKnownObjectFlagNames = new();
 
         /// <summary>All containers within the workspace.</summary>
-        public Dictionary<string, ScriptContainerData> Scripts = new();
+        public Dictionary<string, ScriptContainerData> Scripts = [];
 
         /// <summary>AllMerges another workspace data into this one.</summary>
         public void MergeIn(ScriptingWorkspaceData other)

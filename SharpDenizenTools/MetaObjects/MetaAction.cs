@@ -27,10 +27,10 @@ namespace SharpDenizenTools.MetaObjects
         public override IEnumerable<string> MultiNames => CleanActions;
 
         /// <summary>The names of the action.</summary>
-        public string[] Actions = Array.Empty<string>();
+        public string[] Actions = [];
 
         /// <summary>The names of the actions, autocleaned.</summary>
-        public string[] CleanActions = Array.Empty<string>();
+        public string[] CleanActions = [];
 
         /// <summary>The trigger reason.</summary>
         public string Triggers;
@@ -39,10 +39,10 @@ namespace SharpDenizenTools.MetaObjects
         public Regex RegexMatcher = null;
 
         /// <summary>Context tags. One tag per string.</summary>
-        public string[] Context = Array.Empty<string>();
+        public string[] Context = [];
 
         /// <summary>Determination options. One Determination per string.</summary>
-        public string[] Determinations = Array.Empty<string>();
+        public string[] Determinations = [];
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

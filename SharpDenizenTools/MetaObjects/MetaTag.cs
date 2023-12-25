@@ -105,7 +105,7 @@ namespace SharpDenizenTools.MetaObjects
         public string Mechanism = "";
 
         /// <summary>Manual examples of this tag. One full script per entry.</summary>
-        public List<string> Examples = new();
+        public List<string> Examples = [];
 
         /// <summary>The parsed <see cref="SingleTag"/> of this tag.</summary>
         public SingleTag ParsedFormat;

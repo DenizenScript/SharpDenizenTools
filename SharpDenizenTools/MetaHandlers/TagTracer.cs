@@ -27,7 +27,7 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>Special tags that used to exist and get special handling.</summary>
         [Obsolete("Deprecated tag support")]
-        public static HashSet<string> LegacySpecialTags = new() { "permission", "text", "name", "amount" };
+        public static HashSet<string> LegacySpecialTags = ["permission", "text", "name", "amount"];
 
         /// <summary>Traces through a written tag, trying to find the documented tag parts inside it.</summary>
         public void Trace()
@@ -101,7 +101,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     Error($"Tag base '{Tag.Parts[0].Text}' seems to refer to a pseudo-object-type, but not one that can be used as a free-standing tag base.");
                 }
-                TraceTagParts(new HashSet<MetaObjectType>() { documentedObjectBase }, 1);
+                TraceTagParts([documentedObjectBase], 1);
             }
             else
             {
@@ -133,7 +133,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (known != null)
             {
-                HashSet<MetaObjectType> result = new() { known };
+                HashSet<MetaObjectType> result = [known];
                 result.UnionWith(known.ExtendedBy);
                 return result;
             }
@@ -256,7 +256,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 return null;
             }
-            List<(MetaTag, int)> result = new();
+            List<(MetaTag, int)> result = [];
             string part = Tag.Parts[index].Text.ToLowerFast();
             foreach (MetaObjectType type in GetFullComplexSetFrom(possibleRoots))
             {

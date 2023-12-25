@@ -41,19 +41,19 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>Tags documented for this command. One tag per string.</summary>
-        public string[] Tags = Array.Empty<string>();
+        public string[] Tags = [];
 
         /// <summary>An associated beginner's guide link.</summary>
         public string Guide = "";
 
         /// <summary>A list of argument prefixes this command has in its syntax line.</summary>
-        public Tuple<string, string>[] ArgPrefixes = Array.Empty<Tuple<string, string>>();
+        public Tuple<string, string>[] ArgPrefixes = [];
 
         /// <summary>A list of plaintext no-tag arguments this command has in its syntax line.</summary>
-        public Tuple<string, string>[] FlatArguments = Array.Empty<Tuple<string, string>>();
+        public Tuple<string, string>[] FlatArguments = [];
 
         /// <summary>A list of linear (non-prefixed, but dynamic input) arguments this command has in its syntax line.</summary>
-        public string[] LinearArguments = Array.Empty<string>();
+        public string[] LinearArguments = [];
 
         /// <summary>Parses this command's syntax data to create a list of helper data about the known arguments.</summary>
         public void ParseSyntax()
@@ -61,13 +61,13 @@ namespace SharpDenizenTools.MetaObjects
             int firstSpace = Syntax.IndexOf(' ');
             if (firstSpace < 0)
             {
-                ArgPrefixes = Array.Empty<Tuple<string, string>>();
-                FlatArguments = Array.Empty<Tuple<string, string>>();
+                ArgPrefixes = [];
+                FlatArguments = [];
                 return;
             }
-            List<Tuple<string, string>> prefixes = new();
-            List<Tuple<string, string>> flatArgs = new();
-            List<string> linearArgs = new();
+            List<Tuple<string, string>> prefixes = [];
+            List<Tuple<string, string>> flatArgs = [];
+            List<string> linearArgs = [];
             string cleaned = Syntax[firstSpace..].Replace('/', ' ');
             foreach (string arg in cleaned.Split(' '))
             {
@@ -94,13 +94,13 @@ namespace SharpDenizenTools.MetaObjects
                     linearArgs.Add(arg);
                 }
             }
-            ArgPrefixes = prefixes.ToArray();
-            FlatArguments = flatArgs.ToArray();
-            LinearArguments = LinearArguments.ToArray();
+            ArgPrefixes = [.. prefixes];
+            FlatArguments = [.. flatArgs];
+            LinearArguments = [.. LinearArguments];
         }
 
         /// <summary>Sample usages.</summary>
-        public List<string> Usages = new();
+        public List<string> Usages = [];
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

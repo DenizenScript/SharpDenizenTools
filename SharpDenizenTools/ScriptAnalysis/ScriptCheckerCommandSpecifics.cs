@@ -84,8 +84,8 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A set of Bukkit commands that if they appear in an 'execute' script command should receive a warning automatically.</summary>
-        public static HashSet<string> BadExecuteCommands = new()
-        {
+        public static HashSet<string> BadExecuteCommands =
+        [
             // From the vanilla command list
             "advancement", "ban", "banlist", "bossbar", "clear", "clone", "data", "datapack", "deop", "detect", "difficulty", "effect", "enchant", "execute",
             "exp", "experience", "fill", "forceload", "gamemode", "gamerule", "help", "kick", "kill", "list", "locate", "loot", "me", "msg", "op", "pardon",
@@ -96,7 +96,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             "give", "take", "gmc", "gms", "gm", "warp",
             // Obviously never run Denizen or Citizens commands
             "ex", "exs", "denizen", "npc", "trait"
-        };
+        ];
 
         /// <summary>Matcher for symbols that may not appear in an argument prefix, including the ':' that separates the prefix from suffix.</summary>
         public static AsciiMatcher PREFIX_FORBIDDEN_SYMBOLS = new("<> :.!");
@@ -111,7 +111,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Relevant command-specific error check impls.</summary>
         static ScriptCheckerCommandSpecifics()
         {
-            Register(new[] { "if", "waituntil", "while" }, (details) =>
+            Register(["if", "waituntil", "while"], (details) =>
             {
                 int borkLen = " == true".Length;
                 int borkIndex = details.CommandText.IndexOf(" == true");
@@ -126,7 +126,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     details.Warn(details.Checker.Errors, "truly_true", warningMessage, details.StartChar + borkIndex, details.StartChar + borkIndex + borkLen);
                 }
             });
-            Register(new[] { "adjust" }, (details) =>
+            Register(["adjust"], (details) =>
             {
                 static bool argReserved(ScriptChecker.CommandArgument s) => s.Text.StartsWith("def:") || s.Text.StartsWith("if:");
                 ScriptChecker.CommandArgument mechanism = details.Arguments.FirstOrDefault(s => ArgHasPrefix(s.Text) && !argReserved(s))
@@ -184,7 +184,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                 }
             });
-            Register(new[] { "execute" }, (details) =>
+            Register(["execute"], (details) =>
             {
                 if (details.ArgCount >= 2)
                 {
@@ -196,7 +196,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                 }
             });
-            Register(new[] { "inject" }, (details) =>
+            Register(["inject"], (details) =>
             {
                 details.Context.HasUnknowableDefinitions = true;
                 details.Context.HasUnknowableSaveEntries = true;
@@ -206,8 +206,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                     details.Warn(details.Checker.Errors, "invalid_script_inject", $"Script name `{scrName}` is invalid. Cannot be injected.");
                 }
             });
-            HashSet<string> runOtherArg = new() { "instant", "instantly", "local", "locally" };
-            Register(new[] { "run", "runlater" }, (details) =>
+            HashSet<string> runOtherArg = ["instant", "instantly", "local", "locally"];
+            Register(["run", "runlater"], (details) =>
             {
                 string scrName = details.Arguments.Select(a => a.Text.ToLowerFast()).FirstOrDefault(a => !runOtherArg.Contains(a) && !ScriptChecker.StartsWithAny(a, "path:", "id:", "speed:", "delay:", "def:", "def.", "defmap:"));
                 if (!details.Checker.ContextValidatedIsValidScriptName(scrName))
@@ -215,14 +215,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                     details.Warn(details.Checker.Errors, "invalid_script_run", $"Script name `{scrName}` is invalid. Cannot be ran.");
                 }
             });
-            Register(new[] { "queue" }, (details) =>
+            Register(["queue"], (details) =>
             {
                 if (details.ArgCount == 1 && (details.Arguments[0].Text.ToLowerFast() == "stop" || details.Arguments[0].Text.ToLowerFast() == "clear"))
                 {
                     details.Warn(details.Checker.MinorWarnings, "queue_clear", "Old style 'queue clear'. Use the modern 'stop' command instead. Refer to <https://guide.denizenscript.com/guides/troubleshooting/updates-since-videos.html#stop-is-the-new-queue-clear> for more info.");
                 }
             });
-            Register(new[] { "define", "definemap" }, (details) =>
+            Register(["define", "definemap"], (details) =>
             {
                 if (details.ArgCount >= 1)
                 {
@@ -230,7 +230,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     details.TrackDefinition(defName);
                 }
             });
-            Register(new[] { "foreach", "repeat", "while" }, (details) =>
+            Register(["foreach", "repeat", "while"], (details) =>
             {
                 if (details.CommandName != "while")
                 {
@@ -250,7 +250,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     details.TrackDefinition("loop_index");
                 }
             });
-            Register(new[] { "foreach" }, (details) =>
+            Register(["foreach"], (details) =>
             {
                 string keyArgument = details.Arguments.FirstOrDefault(s => s.Text.ToLowerFast().StartsWith("key:"))?.Text;
                 if (keyArgument == null)
@@ -263,7 +263,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 details.TrackDefinition(keyArgument.ToLowerFast());
             });
-            Register(new[] { "give" }, (details) =>
+            Register(["give"], (details) =>
             {
                 if (details.Arguments.Any(a => a.Text == "<player>" || a.Text == "<player.name>" || a.Text == "<npc>"))
                 {
@@ -285,21 +285,21 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                 }
             });
-            Register(new[] { "take" }, (details) =>
+            Register(["take"], (details) =>
             {
                 if (details.Arguments.Any(a => !a.Text.Contains(':') && a.Text != "money" && a.Text != "xp" && a.Text != "iteminhand" && a.Text != "cursoritem"))
                 {
                     details.Warn(details.Checker.MinorWarnings, "take_raw", "The 'take' command should always be used with a standard prefixed take style, like 'take item:my_item_here' or 'take slot:5'.");
                 }
             });
-            Register(new[] { "case" }, (details) =>
+            Register(["case"], (details) =>
             {
                 if (details.ArgCount == 1 && details.Arguments[0].Text.ToLowerFast().Replace(":", "") == "default")
                 {
                     details.Warn(details.Checker.MinorWarnings, "case_default", "'- case default:' is a likely mistake - you probably meant '- default:'");
                 }
             });
-            Register(new[] { "determine" }, (details) =>
+            Register(["determine"], (details) =>
             {
                 if (details.Arguments.Any(arg => arg.Text.ToLowerFast() == "canceled"))
                 {

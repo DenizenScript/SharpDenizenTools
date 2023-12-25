@@ -21,39 +21,39 @@ namespace SharpDenizenTools.ScriptAnalysis
         public static readonly Dictionary<string, KnownScriptType> KnownScriptTypes = new()
         {
             // Denizen Core
-            { "custom", new KnownScriptType() { LikelyBadKeys = new[] { "script", "actions", "events", "steps" }, ValueKeys = new[] { "inherit", "*" }, ScriptKeys = new[] { "tags.*", "mechanisms.*" }, Strict = false, CanHaveRandomScripts = false } },
-            { "procedure", new KnownScriptType() { RequiredKeys = new[] { "script" }, LikelyBadKeys = new[] { "events", "actions", "steps" }, ValueKeys = new[] { "definitions" }, ScriptKeys = new[] { "script" }, Strict = true } },
-            { "task", new KnownScriptType() { RequiredKeys = new[] { "script" }, LikelyBadKeys = new[] { "events", "actions", "steps" }, ValueKeys = new[] { "definitions" }, ScriptKeys = new[] { "script" }, Strict = false } },
-            { "world", new KnownScriptType() { RequiredKeys = new[] { "events" }, ValueKeys = new[] { "enabled" }, LikelyBadKeys = new[] { "script", "actions", "steps" }, ScriptKeys = new[] { "events.*" }, Strict = false } },
-            { "data", new KnownScriptType() { LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "*" }, ListKeys = new[] { "*" }, Strict = false, CanHaveRandomScripts = false } },
+            { "custom", new KnownScriptType() { LikelyBadKeys = ["script", "actions", "events", "steps"], ValueKeys = ["inherit", "*"], ScriptKeys = ["tags.*", "mechanisms.*"], Strict = false, CanHaveRandomScripts = false } },
+            { "procedure", new KnownScriptType() { RequiredKeys = ["script"], LikelyBadKeys = ["events", "actions", "steps"], ValueKeys = ["definitions"], ScriptKeys = ["script"], Strict = true } },
+            { "task", new KnownScriptType() { RequiredKeys = ["script"], LikelyBadKeys = ["events", "actions", "steps"], ValueKeys = ["definitions"], ScriptKeys = ["script"], Strict = false } },
+            { "world", new KnownScriptType() { RequiredKeys = ["events"], ValueKeys = ["enabled"], LikelyBadKeys = ["script", "actions", "steps"], ScriptKeys = ["events.*"], Strict = false } },
+            { "data", new KnownScriptType() { LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["*"], ListKeys = ["*"], Strict = false, CanHaveRandomScripts = false } },
             // Denizen-Bukkit
-            { "assignment", new KnownScriptType() { RequiredKeys = new[] { "actions" }, LikelyBadKeys = new[] { "script", "steps", "events" }, ValueKeys = new[] { "default constants.*", "constants.*", "enabled" }, ListKeys = new[] { "interact scripts" }, ScriptKeys = new[] { "actions.*" }, Strict = true } },
-            { "book", new KnownScriptType() { RequiredKeys = new[] { "title", "author", "text" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "title", "author", "signed" }, ListKeys = new[] { "text" }, Strict = true, CanHaveRandomScripts = false } },
-            { "command", new KnownScriptType() { RequiredKeys = new[] { "name", "description", "usage", "script" }, LikelyBadKeys = new[] { "steps", "actions", "events" }, ValueKeys = new[] { "name", "description", "usage", "permission", "permission message", "enabled" }, ListKeys = new[] { "aliases" }, ScriptKeys = new[] { "allowed help", "tab complete", "script" }, Strict = false } },
-            { "economy", new KnownScriptType() { RequiredKeys = new[] { "priority", "name single", "name plural", "digits", "format", "balance", "has", "withdraw", "deposit" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "priority", "name single", "name plural", "digits", "format", "balance", "has", "enabled" }, ScriptKeys = new[] { "withdraw", "deposit" }, Strict = true, CanHaveRandomScripts = false } },
-            { "entity", new KnownScriptType() { RequiredKeys = new[] { "entity_type" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "entity_type", "flags.*", "mechanisms.*" }, ListKeys = new[] { "flags.*", "mechanisms.*" }, Strict = true, CanHaveRandomScripts = false } },
-            { "format", new KnownScriptType() { RequiredKeys = new[] { "format" }, LikelyBadKeys = new[] { "script", "actions", "steps", "events" }, ValueKeys = new[] { "format" }, Strict = true, CanHaveRandomScripts = false } },
-            { "interact", new KnownScriptType() { RequiredKeys = new[] { "steps" }, ValueKeys = new[] { "enabled" }, LikelyBadKeys = new[] { "script", "actions", "events" }, ScriptKeys = new[] { "steps.*" }, Strict = true } },
-            { "inventory", new KnownScriptType() { RequiredKeys = new[] { "inventory" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "inventory", "title", "size", "definitions.*", "gui" }, ScriptKeys = new[] { "procedural items" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } },
-            { "item", new KnownScriptType() { RequiredKeys = new[] { "material" }, LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book", "flags.*", "allow in material recipes" }, ListKeys = new[] { "mechanisms.*", "lore", "enchantments", "recipes.*", "flags.*" }, Strict = true, CanHaveRandomScripts = false } },
-            { "map", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ValueKeys = new[] { "original", "display name", "auto update", "objects.*", "contextual" }, Strict = true, CanHaveRandomScripts = false } },
-            { "enchantment", new KnownScriptType() { LikelyBadKeys = new[] { "script", "steps", "actions", "events" }, ScriptKeys = new[] { "after attack", "after hurt" }, ValueKeys = new[] { "id", "rarity", "category", "full_name", "min_level", "max_level", "min_cost", "max_cost", "treasure_only", "is_curse", "is_tradable", "is_discoverable", "is_compatible", "can_enchant", "damage_bonus", "damage_protection", "enabled" }, ListKeys = new[] { "slots" }, Strict = true, CanHaveRandomScripts = false } }
+            { "assignment", new KnownScriptType() { RequiredKeys = ["actions"], LikelyBadKeys = ["script", "steps", "events"], ValueKeys = ["default constants.*", "constants.*", "enabled"], ListKeys = ["interact scripts"], ScriptKeys = ["actions.*"], Strict = true } },
+            { "book", new KnownScriptType() { RequiredKeys = ["title", "author", "text"], LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["title", "author", "signed"], ListKeys = ["text"], Strict = true, CanHaveRandomScripts = false } },
+            { "command", new KnownScriptType() { RequiredKeys = ["name", "description", "usage", "script"], LikelyBadKeys = ["steps", "actions", "events"], ValueKeys = ["name", "description", "usage", "permission", "permission message", "enabled"], ListKeys = ["aliases"], ScriptKeys = ["allowed help", "tab complete", "script"], Strict = false } },
+            { "economy", new KnownScriptType() { RequiredKeys = ["priority", "name single", "name plural", "digits", "format", "balance", "has", "withdraw", "deposit"], LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["priority", "name single", "name plural", "digits", "format", "balance", "has", "enabled"], ScriptKeys = ["withdraw", "deposit"], Strict = true, CanHaveRandomScripts = false } },
+            { "entity", new KnownScriptType() { RequiredKeys = ["entity_type"], LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["entity_type", "flags.*", "mechanisms.*"], ListKeys = ["flags.*", "mechanisms.*"], Strict = true, CanHaveRandomScripts = false } },
+            { "format", new KnownScriptType() { RequiredKeys = ["format"], LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["format"], Strict = true, CanHaveRandomScripts = false } },
+            { "interact", new KnownScriptType() { RequiredKeys = ["steps"], ValueKeys = ["enabled"], LikelyBadKeys = ["script", "actions", "events"], ScriptKeys = ["steps.*"], Strict = true } },
+            { "inventory", new KnownScriptType() { RequiredKeys = ["inventory"], LikelyBadKeys = ["script", "steps", "actions", "events"], ValueKeys = ["inventory", "title", "size", "definitions.*", "gui"], ScriptKeys = ["procedural items"], ListKeys = ["slots"], Strict = true, CanHaveRandomScripts = false } },
+            { "item", new KnownScriptType() { RequiredKeys = ["material"], LikelyBadKeys = ["script", "steps", "actions", "events"], ValueKeys = ["material", "mechanisms.*", "display name", "durability", "recipes.*", "no_id", "color", "book", "flags.*", "allow in material recipes"], ListKeys = ["mechanisms.*", "lore", "enchantments", "recipes.*", "flags.*"], Strict = true, CanHaveRandomScripts = false } },
+            { "map", new KnownScriptType() { LikelyBadKeys = ["script", "steps", "actions", "events"], ValueKeys = ["original", "display name", "auto update", "objects.*", "contextual"], Strict = true, CanHaveRandomScripts = false } },
+            { "enchantment", new KnownScriptType() { LikelyBadKeys = ["script", "steps", "actions", "events"], ScriptKeys = ["after attack", "after hurt"], ValueKeys = ["id", "rarity", "category", "full_name", "min_level", "max_level", "min_cost", "max_cost", "treasure_only", "is_curse", "is_tradable", "is_discoverable", "is_compatible", "can_enchant", "damage_bonus", "damage_protection", "enabled"], ListKeys = ["slots"], Strict = true, CanHaveRandomScripts = false } }
         };
 
         /// <summary>Keys that always mean a section is a script.</summary>
-        public static string[] AlwaysScriptKeys = new[] { "script", "scripts", "subscripts", "subtasks", "inject", "injects", "injectables", "subprocedures" };
+        public static string[] AlwaysScriptKeys = ["script", "scripts", "subscripts", "subtasks", "inject", "injects", "injectables", "subprocedures"];
 
         /// <summary>A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.</summary>
-        public static HashSet<string> CommandsWithColonsAndArguments = new()
-        {
+        public static HashSet<string> CommandsWithColonsAndArguments =
+        [
             "if", "else", "foreach", "while", "repeat", "choose", "case"
-        };
+        ];
 
         /// <summary>A non-complete set of Denizen commands that can end with a colon and do not have to contain any arguments, for checking certain syntax errors.</summary>
-        public static HashSet<string> CommandsWithColonsButNoArguments = new()
-        {
+        public static HashSet<string> CommandsWithColonsButNoArguments =
+        [
             "else", "default", "random"
-        };
+        ];
 
         /// <summary>The applicable MetaDocs set.</summary>
         public MetaDocs Meta;
@@ -102,25 +102,25 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>A list of all errors about this script.</summary>
-        public List<ScriptWarning> Errors = new();
+        public List<ScriptWarning> Errors = [];
 
         /// <summary>A list of all warnings about this script.</summary>
-        public List<ScriptWarning> Warnings = new();
+        public List<ScriptWarning> Warnings = [];
 
         /// <summary>A list of all minor warnings about this script.</summary>
-        public List<ScriptWarning> MinorWarnings = new();
+        public List<ScriptWarning> MinorWarnings = [];
 
         /// <summary>A list of informational notices about this script.</summary>
-        public List<ScriptWarning> Infos = new();
+        public List<ScriptWarning> Infos = [];
 
         /// <summary>A list of debug notices about this script, generally don't actually show to users.</summary>
-        public List<string> Debugs = new();
+        public List<string> Debugs = [];
 
         /// <summary>A track of all script names that appear to be injected, for false-warning reduction.</summary>
-        public List<string> Injects = new();
+        public List<string> Injects = [];
 
         /// <summary>A user-specified list of warning types to ignore.</summary>
-        public HashSet<string> IgnoredWarningTypes = new();
+        public HashSet<string> IgnoredWarningTypes = [];
 
         /// <summary>Optional workspace this script exists within.</summary>
         public ScriptingWorkspaceData SurroundingWorkspace = null;
@@ -368,7 +368,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        private static readonly char[] BracesChars = new char[] { '{', '}' };
+        private static readonly char[] BracesChars = ['{', '}'];
 
         /// <summary>Checks if { braces } are used (instead of modern "colon:" syntax). If so, error.</summary>
         public void CheckForBraces()
@@ -552,7 +552,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
-        private static readonly char[] tagMarksChars = new char[] { '<', '>' };
+        private static readonly char[] tagMarksChars = ['<', '>'];
 
         /// <summary>Performs the necessary checks on a single argument.</summary>
         /// <param name="line">The line number.</param>
@@ -752,17 +752,17 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 matchList.Add(new CommandArgument() { StartChar = startChar + start, Text = stringArgs[start..] });
             }
-            return matchList.ToArray();
+            return [.. matchList];
         }
 
         /// <summary>Context for checking a single script-container.</summary>
         public class ScriptCheckContext
         {
             /// <summary>Known definition names.</summary>
-            public HashSet<string> Definitions = new();
+            public HashSet<string> Definitions = [];
 
             /// <summary>Known save-entry names.</summary>
-            public HashSet<string> SaveEntries = new();
+            public HashSet<string> SaveEntries = [];
 
             /// <summary>If true, there are injects or other issues that make def names unknownable.</summary>
             public bool HasUnknowableDefinitions = false;
@@ -797,7 +797,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 commandName = commandName[1..];
             }
-            CommandArgument[] arguments = parts.Length == 1 ? Array.Empty<CommandArgument>() : BuildArgs(line, startChar + parts[0].Length + 1, parts[1], this);
+            CommandArgument[] arguments = parts.Length == 1 ? [] : BuildArgs(line, startChar + parts[0].Length + 1, parts[1], this);
             if (!Meta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
@@ -872,19 +872,19 @@ namespace SharpDenizenTools.ScriptAnalysis
         public class KnownScriptType
         {
             /// <summary>Keys that must always be present.</summary>
-            public string[] RequiredKeys = Array.Empty<string>();
+            public string[] RequiredKeys = [];
 
             /// <summary>Keys that generally shouldn't be present unless something's gone wrong.</summary>
-            public string[] LikelyBadKeys = Array.Empty<string>();
+            public string[] LikelyBadKeys = [];
 
             /// <summary>Value-based keys.</summary>
-            public string[] ValueKeys = Array.Empty<string>();
+            public string[] ValueKeys = [];
 
             /// <summary>Data list keys.</summary>
-            public string[] ListKeys = Array.Empty<string>();
+            public string[] ListKeys = [];
 
             /// <summary>Script keys.</summary>
-            public string[] ScriptKeys = Array.Empty<string>();
+            public string[] ScriptKeys = [];
 
             /// <summary>Whether to be strict in checks (if true, unrecognize keys will receive a warning).</summary>
             public bool Strict = false;
@@ -1349,24 +1349,16 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Helper class for strings that remember where they came from.</summary>
-        public class LineTrackedString
+        public class LineTrackedString(int line, string text, int start)
         {
             /// <summary>The text of the line.</summary>
-            public string Text;
+            public string Text = text;
 
             /// <summary>The line number.</summary>
-            public int Line;
+            public int Line = line;
 
             /// <summary>The character index of where this line starts.</summary>
-            public int StartChar;
-
-            /// <summary>Constructs the LineTrackedString.</summary>
-            public LineTrackedString(int line, string text, int start)
-            {
-                Line = line;
-                Text = text;
-                StartChar = start;
-            }
+            public int StartChar = start;
 
             /// <summary>HashCode impl, for Dictionary functionality.</summary>
             public override int GetHashCode()
@@ -1404,9 +1396,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Gathers a dictionary of all actual containers, checking for errors as it goes, and returning the dictionary.</summary>
         public Dictionary<LineTrackedString, object> GatherActualContainers()
         {
-            Dictionary<LineTrackedString, object> rootScriptSection = new();
+            Dictionary<LineTrackedString, object> rootScriptSection = [];
             Dictionary<int, Dictionary<LineTrackedString, object>> spacedsections = new() { { 0, rootScriptSection } };
-            Dictionary<int, List<object>> spacedlists = new();
+            Dictionary<int, List<object>> spacedlists = [];
             Dictionary<LineTrackedString, object> currentSection = rootScriptSection;
             Dictionary<LineTrackedString, object> currentRootSection = null;
             int pspaces = 0;
@@ -1464,7 +1456,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         if (clist is null)
                         {
-                            clist = new List<object>();
+                            clist = [];
                             spacedlists[spaces] = clist;
                             if (currentSection.Keys.Any(k => k.Text == secwaiting.Text))
                             {
@@ -1479,7 +1471,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             {
                                 Warn(Errors, "empty_command_section", "Script section within command is empty (add contents, or remove the section).", secwaiting);
                             }
-                            List<object> newclist = new();
+                            List<object> newclist = [];
                             clist.Add(new Dictionary<LineTrackedString, object>() { { secwaiting, newclist } });
                             secwaiting = null;
                             buildingSubList = false;
@@ -1593,7 +1585,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         pspaces = spaces;
                         continue;
                     }
-                    Dictionary<LineTrackedString, object> sect = new();
+                    Dictionary<LineTrackedString, object> sect = [];
                     if (currentSection == rootScriptSection)
                     {
                         currentRootSection = sect;
