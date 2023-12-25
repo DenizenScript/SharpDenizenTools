@@ -118,7 +118,7 @@ namespace SharpDenizenTools.MetaObjects
                 case "attribute":
                     TagFull = value;
                     CleanedName = CleanTag(TagFull);
-                    if (CleanedName.Contains('.') && !CleanedName.StartsWith("&"))
+                    if (CleanedName.Contains('.') && !CleanedName.StartsWith('&'))
                     {
                         BeforeDot = CleanedName.Before('.');
                     }

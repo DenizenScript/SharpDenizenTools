@@ -239,7 +239,7 @@ namespace SharpDenizenTools.MetaObjects
         {
             foreach (string tag in tags)
             {
-                if (tag.EndsWith(">"))
+                if (tag.EndsWith('>'))
                 {
                     MetaTag realTag = docs.FindTag(tag);
                     if (realTag == null)

@@ -26,64 +26,44 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class ExactMatchHelper : MatchHelper
+        public class ExactMatchHelper(string _text) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public ExactMatchHelper(string _text)
-            {
-                Text = _text.ToLowerFast();
-            }
 
             /// <summary>Required data.</summary>
-            public string Text;
+            public string Text = _text.ToLowerFast();
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input) => Text == input.ToLowerFast();
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class PrefixAsteriskMatchHelper : MatchHelper
+        public class PrefixAsteriskMatchHelper(string _text) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public PrefixAsteriskMatchHelper(string _text)
-            {
-                Text = _text.ToLowerFast();
-            }
 
             /// <summary>Required data.</summary>
-            public string Text;
+            public string Text = _text.ToLowerFast();
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input) => input.ToLowerFast().EndsWith(Text);
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class PostfixAsteriskMatchHelper : MatchHelper
+        public class PostfixAsteriskMatchHelper(string _text) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public PostfixAsteriskMatchHelper(string _text)
-            {
-                Text = _text.ToLowerFast();
-            }
 
             /// <summary>Required data.</summary>
-            public string Text;
+            public string Text = _text.ToLowerFast();
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input) => input.ToLowerFast().StartsWith(Text);
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class MultipleAsteriskMatchHelper : MatchHelper
+        public class MultipleAsteriskMatchHelper(string[] _texts) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public MultipleAsteriskMatchHelper(string[] _texts)
-            {
-                Texts = _texts;
-            }
 
             /// <summary>Required data.</summary>
-            public string[] Texts;
+            public string[] Texts = _texts;
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input)
@@ -112,32 +92,22 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class RegexMatchHelper : MatchHelper
+        public class RegexMatchHelper(string _regex) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public RegexMatchHelper(string _regex)
-            {
-                Pattern = new Regex(_regex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            }
 
             /// <summary>Required data.</summary>
-            public Regex Pattern;
+            public Regex Pattern = new(_regex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input) => Pattern.IsMatch(input);
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class MultipleMatchesHelper : MatchHelper
+        public class MultipleMatchesHelper(MatchHelper[] _matches) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public MultipleMatchesHelper(MatchHelper[] _matches)
-            {
-                Matches = _matches;
-            }
 
             /// <summary>Required data.</summary>
-            public MatchHelper[] Matches;
+            public MatchHelper[] Matches = _matches;
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input)
@@ -154,16 +124,11 @@ namespace SharpDenizenTools.ScriptAnalysis
         }
 
         /// <summary>Implements <see cref="MatchHelper"/>.</summary>
-        public class InverseMatchHelper : MatchHelper
+        public class InverseMatchHelper(MatchHelper _matcher) : MatchHelper
         {
-            /// <summary>Constructor.</summary>
-            public InverseMatchHelper(MatchHelper _matcher)
-            {
-                Matcher = _matcher;
-            }
 
             /// <summary>Required data.</summary>
-            public MatchHelper Matcher;
+            public MatchHelper Matcher = _matcher;
 
             /// <summary>Implements <see cref="MatchHelper.DoesMatch(string)"/>.</summary>
             public override bool DoesMatch(string input) => !Matcher.DoesMatch(input);
@@ -180,7 +145,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             MatchHelper result;
             int asterisk;
-            if (input.StartsWith("!"))
+            if (input.StartsWith('!'))
             {
                 result = new InverseMatchHelper(CreateMatcher(input[1..]));
             }

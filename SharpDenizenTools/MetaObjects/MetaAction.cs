@@ -65,7 +65,7 @@ namespace SharpDenizenTools.MetaObjects
                         }
                         outRegex += $"({regexable})|";
                     }
-                    if (outRegex.EndsWith("|"))
+                    if (outRegex.EndsWith('|'))
                     {
                         outRegex = outRegex[0..^1];
                     }

@@ -180,7 +180,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             for (int i = 0; i < CleanedLines.Length; i++)
             {
-                if (CleanedLines[i].StartsWith("#"))
+                if (CleanedLines[i].StartsWith('#'))
                 {
                     if (Lines[i].StartsWith("##") && CleanedLines[i].StartsWith("##ignorewarning "))
                     {
@@ -199,11 +199,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                 {
                     BlankLines++;
                 }
-                else if (CleanedLines[i].StartsWith("-"))
+                else if (CleanedLines[i].StartsWith('-'))
                 {
                     CodeLines++;
                 }
-                else if (CleanedLines[i].EndsWith(":"))
+                else if (CleanedLines[i].EndsWith(':'))
                 {
                     StructureLines++;
                 }
@@ -277,7 +277,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         for (int x = i; x >= 0; x--)
                         {
-                            if (CleanedLines[x].Length > 0 && CleanedLines[x].EndsWith(":") && !Lines[x].Replace("\t", "    ").StartsWith(" "))
+                            if (CleanedLines[x].Length > 0 && CleanedLines[x].EndsWith(':') && !Lines[x].Replace("\t", "    ").StartsWith(' '))
                             {
                                 string scriptName = CleanedLines[x][0..^1];
                                 Injects.Add(scriptName);
@@ -305,7 +305,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             for (int i = 0; i < Lines.Length; i++)
             {
                 string line = Lines[i];
-                if (line.EndsWith(" "))
+                if (line.EndsWith(' '))
                 {
                     int endChar;
                     for (endChar = line.Length - 1; endChar >= 0; endChar--)
@@ -318,7 +318,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     endChar = Math.Max(0, endChar);
                     Warn(MinorWarnings, i, "stray_space_eol", "Stray space after end of line (possible copy/paste mixup. Enable View->Render Whitespace in VS Code).", endChar, Math.Max(endChar, line.Length - 1));
                 }
-                else if (CleanedLines[i].StartsWith("- ") && !CleanedLines[i].EndsWith(":"))
+                else if (CleanedLines[i].StartsWith("- ") && !CleanedLines[i].EndsWith(':'))
                 {
                     int spaces = CountPreSpaces(line);
                     while (i + 1 < Lines.Length)
@@ -379,7 +379,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             for (int i = 0; i < Lines.Length; i++)
             {
-                if (Lines[i].EndsWith("{") || Lines[i].EndsWith("}"))
+                if (Lines[i].EndsWith('{') || Lines[i].EndsWith('}'))
                 {
                     int start = Lines[i].IndexOfAny(BracesChars);
                     int end = Lines[i].LastIndexOfAny(BracesChars);
@@ -732,7 +732,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                             hasSpace = true;
                                         }
                                     }
-                                    if (!(hasSpace || (tagMarks != 0 && matched.Contains(' '))) && !matched.EndsWith(":"))
+                                    if (!(hasSpace || (tagMarks != 0 && matched.Contains(' '))) && !matched.EndsWith(':'))
                                     {
                                         checker.Warn(checker.MinorWarnings, line, "bad_quotes", "Pointless quotes (arguments quoted but do not contain spaces).", startChar + start, startChar + i);
                                     }
@@ -793,7 +793,7 @@ namespace SharpDenizenTools.ScriptAnalysis
             string[] parts = commandText.Split(' ', 2);
             string commandName = parts[0].ToLowerFast();
             int cmdLen = commandName.Length;
-            if (commandName.StartsWith("~") || commandName.StartsWith("^"))
+            if (commandName.StartsWith('~') || commandName.StartsWith('^'))
             {
                 commandName = commandName[1..];
             }
@@ -973,14 +973,14 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (typeString.Text == "task")
                             {
                                 // Workaround the weird way shoot command does things
-                                context.Definitions.UnionWith(new[] { "shot_entities", "last_entity", "location", "hit_entities" });
+                                context.Definitions.UnionWith(["shot_entities", "last_entity", "location", "hit_entities"]);
                             }
                             else if (typeString.Text == "economy")
                             {
-                                context.Definitions.UnionWith(new[] { "amount" });
+                                context.Definitions.UnionWith(["amount"]);
                             }
                             // Default run command definitions get used sometimes
-                            context.Definitions.UnionWith(new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
+                            context.Definitions.UnionWith(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
                             if (Injects.Contains(script.Name) || Injects.Contains("*"))
                             {
                                 context.HasUnknowableDefinitions = true;
@@ -1492,7 +1492,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                         continue;
                     }
                     string text = cleaned["- ".Length..];
-                    if (!cleaned.EndsWith(":"))
+                    if (!cleaned.EndsWith(':'))
                     {
                         while (i + 1 < Lines.Length)
                         {
@@ -1549,7 +1549,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 string startofline;
                 string endofline = "";
                 int endIndex = cleanStartCut;
-                if (cleaned.EndsWith(":"))
+                if (cleaned.EndsWith(':'))
                 {
                     startofline = cleaned[0..^1];
                 }

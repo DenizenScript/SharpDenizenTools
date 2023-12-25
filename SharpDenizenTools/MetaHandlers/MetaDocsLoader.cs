@@ -303,7 +303,7 @@ namespace SharpDenizenTools.MetaHandlers
             for (int i = 0; i < lines.Length; i++)
             {
                 (int lineNum, string file, string line) = lines[i];
-                if (line.StartsWith("<--[") && line.EndsWith("]"))
+                if (line.StartsWith("<--[") && line.EndsWith(']'))
                 {
                     string objectType = line.Substring("<--[".Length, line.Length - "<--[]".Length);
                     List<string> objectData = [];
@@ -367,7 +367,7 @@ namespace SharpDenizenTools.MetaHandlers
                 string curValue = null;
                 foreach (string line in objectData)
                 {
-                    if (line.StartsWith("@"))
+                    if (line.StartsWith('@'))
                     {
                         if (curKey != null && curValue != null)
                         {
