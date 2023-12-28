@@ -1663,6 +1663,10 @@ namespace SharpDenizenTools.ScriptAnalysis
             {
                 return false;
             }
+            if (typeString.Text.ToLowerFast() == "interact" && cmdName == "default")
+            {
+                return false;
+            }
             return true;
         }
 
