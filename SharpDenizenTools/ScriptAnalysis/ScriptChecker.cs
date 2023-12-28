@@ -1501,7 +1501,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                         pspaces = spaces;
                         continue;
                     }
-                    string text = cleaned["- ".Length..];
+                    string textRaw = Lines[i].Trim()["- ".Length..];
+                    string textLow = textRaw.ToLowerFast();
                     if (!cleaned.EndsWith(':'))
                     {
                         while (i + 1 < Lines.Length)
@@ -1510,7 +1511,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                             string cleaned2 = CleanedLines[i + 1];
                             if (CountPreSpaces(line2) > spaces && !cleaned2.StartsWith("- "))
                             {
-                                text += "\n" + line2;
+                                textRaw += "\n" + line2;
+                                textLow += "\n" + cleaned2;
                                 i++;
                                 if (cleaned2.EndsWith(':'))
                                 {
@@ -1523,11 +1525,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                         }
                     }
-                    if (text.EndsWith(':'))
+                    if (textLow.EndsWith(':'))
                     {
-                        if (text.StartsWith("definemap "))
+                        if (textLow.StartsWith("definemap "))
                         {
-                            clist.Add(new LineTrackedString(i, text, cleanStartCut + 2));
+                            clist.Add(new LineTrackedString(i, textRaw, cleanStartCut + 2));
                             while (i + 1 < Lines.Length)
                             {
                                 string subLine = Lines[i + 1].Replace("\t", "    ");
@@ -1543,13 +1545,13 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         else
                         {
-                            secwaiting = new LineTrackedString(i, text[..^1], cleanStartCut + 2);
+                            secwaiting = new LineTrackedString(i, textRaw[..^1], cleanStartCut + 2);
                             buildingSubList = true;
                         }
                     }
                     else
                     {
-                        clist.Add(new LineTrackedString(i, text, cleanStartCut + 2));
+                        clist.Add(new LineTrackedString(i, textRaw, cleanStartCut + 2));
                     }
                     pspaces = spaces;
                     continue;
@@ -1885,7 +1887,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         if (entry is LineTrackedString str)
                         {
-                            procSingleCommand(str.Text);
+                            procSingleCommand(str.Text.ToLowerFast());
                         }
                         else if (entry is Dictionary<LineTrackedString, object> subMap)
                         {
