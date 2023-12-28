@@ -44,6 +44,9 @@ namespace SharpDenizenTools.ScriptAnalysis
         /// <summary>Keys that always mean a section is a script.</summary>
         public static string[] AlwaysScriptKeys = ["script", "scripts", "subscripts", "subtasks", "inject", "injects", "injectables", "subprocedures"];
 
+        /// <summary>Keys that always mean simple data.</summary>
+        public static string[] AlwaysDataKeys = ["data", "description"];
+
         /// <summary>A non-complete set of Denizen commands that can end with a colon and contain arguments, for checking certain syntax errors.</summary>
         public static HashSet<string> CommandsWithColonsAndArguments =
         [
@@ -1029,7 +1032,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                         }
                         if (valueAtKey is List<object> listAtKey)
                         {
-                            if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
+                            if (MatchesSet(keyName, AlwaysDataKeys) || typeString.Text == "data")
+                            {
+                                checkBasicList(listAtKey, false);
+                            }
+                            else if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
                             {
                                 checkAsScript(listAtKey);
                             }
@@ -1040,11 +1047,6 @@ namespace SharpDenizenTools.ScriptAnalysis
                             else if (MatchesSet(keyName, script.KnownType.ValueKeys))
                             {
                                 warnScript(Warnings, keyLine.Line, "list_should_be_value", $"Bad key `{keyName.Replace('`', '\'')}` (was expected to be a direct Value, but was instead a list - check `!lang {typeString.Text} script containers` for format rules)!");
-                            }
-                            else if (typeString.Text == "data" || keyName == "data" || keyName == "description")
-                            {
-                                // Always allow 'data'
-                                checkBasicList(listAtKey, false);
                             }
                             else if (script.KnownType.Strict)
                             {
@@ -1129,7 +1131,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             if (script.KnownType.ValueKeys.Contains(keyText) || script.KnownType.ListKeys.Contains(keyText) || script.KnownType.ScriptKeys.Contains(keyText) || AlwaysScriptKeys.Contains(keyName)
                                 || script.KnownType.ValueKeys.Contains("*") || script.KnownType.ListKeys.Contains("*") || script.KnownType.ScriptKeys.Contains("*"))
                             {
-                                checkSubMaps(keyPairMap, typeString.Text != "data" && keyName != "data");
+                                checkSubMaps(keyPairMap, typeString.Text != "data" && !MatchesSet(keyName, AlwaysDataKeys));
                             }
                             else if (script.KnownType.Strict && keyName != "data")
                             {
@@ -1137,7 +1139,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                             }
                             else
                             {
-                                checkSubMaps(keyPairMap, typeString.Text != "data" && !keyName.StartsWith("definemap") && keyName != "data");
+                                checkSubMaps(keyPairMap, typeString.Text != "data" && !keyName.StartsWith("definemap") && !MatchesSet(keyName, AlwaysDataKeys));
                             }
                         }
                     }
@@ -1906,7 +1908,11 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 if (valueAtKey is List<object> listAtKey)
                 {
-                    if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
+                    if (MatchesSet(keyName, AlwaysDataKeys))
+                    {
+                        // ignore
+                    }
+                    else if (MatchesSet(keyName, script.KnownType.ScriptKeys) || MatchesSet(keyName, AlwaysScriptKeys))
                     {
                         procAsScript(listAtKey);
                     }
