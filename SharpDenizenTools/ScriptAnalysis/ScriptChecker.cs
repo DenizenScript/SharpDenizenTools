@@ -23,7 +23,7 @@ namespace SharpDenizenTools.ScriptAnalysis
         {
             // Denizen Core
             { "custom", new KnownScriptType() { LikelyBadKeys = ["script", "actions", "events", "steps"], ValueKeys = ["inherit", "*"], ScriptKeys = ["tags.*", "mechanisms.*"], Strict = false, CanHaveRandomScripts = false } },
-            { "procedure", new KnownScriptType() { RequiredKeys = ["script"], LikelyBadKeys = ["events", "actions", "steps"], ValueKeys = ["definitions"], ScriptKeys = ["script"], Strict = true } },
+            { "procedure", new KnownScriptType() { RequiredKeys = ["script"], LikelyBadKeys = ["events", "actions", "steps"], ValueKeys = ["definitions"], ScriptKeys = ["script", "*"], Strict = true } },
             { "task", new KnownScriptType() { RequiredKeys = ["script"], LikelyBadKeys = ["events", "actions", "steps"], ValueKeys = ["definitions"], ScriptKeys = ["script"], Strict = false } },
             { "world", new KnownScriptType() { RequiredKeys = ["events"], ValueKeys = ["enabled"], LikelyBadKeys = ["script", "actions", "steps"], ScriptKeys = ["events.*"], Strict = false } },
             { "data", new KnownScriptType() { LikelyBadKeys = ["script", "actions", "steps", "events"], ValueKeys = ["*"], ListKeys = ["*"], Strict = false, CanHaveRandomScripts = false } },
