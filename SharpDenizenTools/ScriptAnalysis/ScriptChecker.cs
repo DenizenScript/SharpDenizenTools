@@ -521,6 +521,9 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
         }
 
+        /// <summary>Matcher for characters allowed in a simple note name.</summary>
+        public static AsciiMatcher AllowedSimpleNoteName = new(AsciiMatcher.BothCaseLetters + AsciiMatcher.Digits + "_-");
+
         /// <summary>Helper to check a single tag parameter.</summary>
         public void CheckTagParam(SingleTag.Part part, SingleTag.Part metaPart, string input, Action<SingleTag.Part, string, string> warnPart)
         {
@@ -545,7 +548,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     }
                     break;
                 case "<inventory>":
-                    if (!ExtraData.InventoryMatchers.Contains(input) && ContextValidatedGetScriptFor(input, "inventory") is null)
+                    if (!ExtraData.InventoryMatchers.Contains(input) && ContextValidatedGetScriptFor(input, "inventory") is null && !AllowedSimpleNoteName.IsOnlyMatches(input))
                     {
                         warnPart(metaPart, "invalid_tag_inventory", $"Tag part `{part.Text}` has parameter `{part.Parameter}` which has to be a valid Inventory, but is not.");
                     }
