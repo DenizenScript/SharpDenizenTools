@@ -371,9 +371,15 @@ namespace SharpDenizenTools.MetaHandlers
                     {
                         if (curKey != null && curValue != null)
                         {
-                            if (!obj.ApplyValue(docs, curKey.ToLowerFast(), curValue.Trim(' ', '\t', '\n')))
+                            string cleanKey = curKey.ToLowerFast();
+                            string cleanValue = obj.CleanValue(curValue);
+                            if (!obj.ApplyValue(docs, cleanKey, cleanValue))
                             {
                                 docs.LoadErrors.Add($"While processing {file} in object type '{objectType}' for '{obj.Name}' could not apply key '{curKey}' with value '{curValue}'.");
+                            }
+                            else
+                            {
+                                obj.RawValues[cleanKey] = cleanValue;
                             }
                             curKey = null;
                             curValue = null;

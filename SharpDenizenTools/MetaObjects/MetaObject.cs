@@ -49,6 +49,16 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The backing <see cref="MetaDocs"/> instance.</summary>
         public MetaDocs Meta;
 
+        /// <summary>The original raw values specified for the object</summary>
+        public Dictionary<string, string> RawValues = new();
+
+        /// <summary>Cleans a meta value before applying it onto this meta object.</summary>
+        /// <param name="rawValue">The raw value to clean.</param>
+        public virtual string CleanValue(string rawValue)
+        {
+            return rawValue.Trim(' ', '\t', '\n');
+        }
+
         /// <summary>Apply a setting value to this meta object.</summary>
         /// <param name="docs">The relevant meta docs instance.</param>
         /// <param name="key">The setting key.</param>

@@ -46,9 +46,13 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The "guide page" meta type.</summary>
         public static MetaType META_TYPE_GUIDEPAGE = new() { Name = "GuidePage", WebPath = null };
 
+        /// <summary>The "extension" meta type.</summary>
+        public static MetaType META_TYPE_EXTENSION = new() { Name = "Extension", WebPath = null };
+
         /// <summary>All meta types.</summary>
         public static MetaType[] META_TYPES = [ META_TYPE_COMMAND, META_TYPE_MECHANISM,
-            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE ];
+            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE,
+            META_TYPE_EXTENSION ];
 
         /// <summary>Getters for standard meta object types.</summary>
         public static Dictionary<string, Func<MetaObject>> MetaObjectGetters = new()
@@ -61,7 +65,8 @@ namespace SharpDenizenTools.MetaHandlers
             { "event", () => new MetaEvent() },
             { "action", () => new MetaAction() },
             { "language", () => new MetaLanguage() },
-            { "data", () => new MetaDataValue() }
+            { "data", () => new MetaDataValue() },
+            { "extension", () => new MetaExtension() }
         };
 
         /// <summary>All known commands.</summary>
@@ -90,6 +95,9 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>All known guide pages.</summary>
         public Dictionary<string, MetaGuidePage> GuidePages = new(512);
+
+        /// <summary>All known meta extensions.</summary>
+        public Dictionary<string, MetaExtension> Extensions = new(256);
 
         /// <summary>A set of all known tag bases.</summary>
         public HashSet<string> TagBases = new(512) { "context", "entry" };
@@ -192,6 +200,11 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {
+            // Extensions explicitly first
+            foreach (MetaExtension extension in Extensions.Values)
+            {
+                yield return extension;
+            }
             foreach (MetaCommand command in Commands.Values)
             {
                 yield return command;
