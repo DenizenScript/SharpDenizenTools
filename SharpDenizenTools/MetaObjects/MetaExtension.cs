@@ -73,7 +73,7 @@ namespace SharpDenizenTools.MetaObjects
                 "language" => docs.Languages.GetValueOrDefault(metaName, null),
                 _ => null
             };
-            if (extended == null)
+            if (extended is null)
             {
                 docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta to extend '{Extend}'.");
                 return;
