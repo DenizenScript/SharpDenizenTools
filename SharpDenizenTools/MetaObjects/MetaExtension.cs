@@ -30,12 +30,6 @@ namespace SharpDenizenTools.MetaObjects
         }
 
         /// <inheritdoc/>
-        public override string CleanValue(string rawValue)
-        {
-            return rawValue;
-        }
-
-        /// <inheritdoc/>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
         {
             switch (key)
@@ -83,7 +77,7 @@ namespace SharpDenizenTools.MetaObjects
                 string currentValue = IncludeExisting && extended.RawValues.TryGetValue(key, out List<string> currentValues) ? currentValues.Last() : null;
                 foreach (string value in values)
                 {
-                    string newValue = currentValue is not null ? currentValue + value : base.CleanValue(value);
+                    string newValue = currentValue is not null ? currentValue + "\n\n" + value : value;
                     if (!extended.ApplyValue(docs, key, newValue))
                     {
                         docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {extended.Type.Name.ToLowerFast()} meta '{extended.Name}', key/value pair '{key}' -> '{value}' is invalid.");
