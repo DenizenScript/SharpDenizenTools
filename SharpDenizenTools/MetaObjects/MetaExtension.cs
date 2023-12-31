@@ -50,9 +50,6 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             Require(docs, Extend, ExtensionName);
-            RawValues.Remove("extend");
-            RawValues.Remove("name");
-            RawValues.Remove("include_existing");
             string metaName;
             string metaType = Extend.ToLowerFast().BeforeAndAfter(' ', out metaName);
             MetaObject extended = metaType switch
@@ -72,7 +69,7 @@ namespace SharpDenizenTools.MetaObjects
                 docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta to extend '{Extend}'.");
                 return;
             }
-            foreach ((string key, List<string> values) in RawValues)
+            foreach ((string key, List<string> values) in RawValues.ExceptBy(["extend", "name", "include_existing"], pair => pair.Key))
             {
                 string currentValue = IncludeExisting && extended.RawValues.TryGetValue(key, out List<string> currentValues) ? currentValues.Last() : null;
                 foreach (string value in values)
