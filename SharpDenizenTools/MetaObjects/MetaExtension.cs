@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SharpDenizenTools.MetaObjects
 {
-    /// <summary>A extension to an existing meta object.</summary>
+    /// <summary>An extension to an existing meta object.</summary>
     public class MetaExtension : MetaObject
     {
         /// <inheritdoc/>
