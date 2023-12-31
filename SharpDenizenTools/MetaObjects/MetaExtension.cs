@@ -1,6 +1,7 @@
 ﻿using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaHandlers;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SharpDenizenTools.MetaObjects
 {
@@ -77,12 +78,16 @@ namespace SharpDenizenTools.MetaObjects
                 docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta to extend '{Extend}'.");
                 return;
             }
-            foreach ((string key, string value) in RawValues)
+            foreach ((string key, List<string> values) in RawValues)
             {
-                string newValue = IncludeExisting && extended.RawValues.TryGetValue(key, out string currentValue) ? currentValue + value : base.CleanValue(value);
-                if (!extended.ApplyValue(docs, key, newValue))
+                string currentValue = IncludeExisting && extended.RawValues.TryGetValue(key, out List<string> currentValues) ? currentValues.Last() : null;
+                foreach (string value in values)
                 {
-                    docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {extended.Type.Name.ToLowerFast()} meta '{extended.Name}', key/value pair '{key}' -> '{value}' is invalid.");
+                    string newValue = currentValue is not null ? currentValue + value : base.CleanValue(value);
+                    if (!extended.ApplyValue(docs, key, newValue))
+                    {
+                        docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {extended.Type.Name.ToLowerFast()} meta '{extended.Name}', key/value pair '{key}' -> '{value}' is invalid.");
+                    }
                 }
             }
         }

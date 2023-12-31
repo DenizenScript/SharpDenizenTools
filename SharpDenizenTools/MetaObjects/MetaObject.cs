@@ -50,7 +50,7 @@ namespace SharpDenizenTools.MetaObjects
         public MetaDocs Meta;
 
         /// <summary>The original raw values specified for the object</summary>
-        public Dictionary<string, string> RawValues = new();
+        public Dictionary<string, List<string>> RawValues = [];
 
         /// <summary>Cleans a meta value before applying it onto this meta object.</summary>
         /// <param name="rawValue">The raw value to clean.</param>

@@ -379,7 +379,7 @@ namespace SharpDenizenTools.MetaHandlers
                             }
                             else
                             {
-                                obj.RawValues[cleanKey] = cleanValue;
+                                obj.RawValues.GetOrCreate(cleanKey, () => []).Add(cleanValue);
                             }
                             curKey = null;
                             curValue = null;
