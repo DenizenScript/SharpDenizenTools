@@ -9,9 +9,6 @@ namespace SharpDenizenTools.MetaObjects
     public class MetaExtension : MetaObject
     {
         /// <inheritdoc/>
-        public override MetaType Type => MetaDocs.META_TYPE_EXTENSION;
-
-        /// <inheritdoc/>
         public override string Name => ExtensionName;
 
         /// <summary>The name of the extension.</summary>
@@ -26,7 +23,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.Extensions.Add(CleanName, this);
+            docs.META_TYPE_EXTENSION.Meta.Add(CleanName, this);
         }
 
         /// <inheritdoc/>
@@ -52,18 +49,7 @@ namespace SharpDenizenTools.MetaObjects
             Require(docs, Extend, ExtensionName);
             string metaName;
             string metaType = Extend.ToLowerFast().BeforeAndAfter(' ', out metaName);
-            MetaObject extended = metaType switch
-            {
-                "command" => docs.Commands.GetValueOrDefault(metaName, null),
-                "mechanism" => docs.Mechanisms.GetValueOrDefault(metaName, null),
-                "tag" => docs.Tags.GetValueOrDefault(metaName, null),
-                "objecttype" => docs.ObjectTypes.GetValueOrDefault(metaName, null),
-                "property" => docs.Properties.GetValueOrDefault(metaName, null),
-                "event" => docs.Events.GetValueOrDefault(metaName, null),
-                "action" => docs.Actions.GetValueOrDefault(metaName, null),
-                "language" => docs.Languages.GetValueOrDefault(metaName, null),
-                _ => null
-            };
+            MetaObject extended = docs.MetaTypes.TryGetValue(metaType, out IMetaType type) ? type.Meta.GetValueOrDefault(metaName) : null;
             if (extended is null)
             {
                 docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta to extend '{Extend}'.");

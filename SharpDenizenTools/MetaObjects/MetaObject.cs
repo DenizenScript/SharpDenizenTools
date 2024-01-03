@@ -10,8 +10,8 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>Abstract base for a type of meta object.</summary>
     public abstract class MetaObject
     {
-        /// <summary>Get the meta type of the object.</summary>
-        public abstract MetaType Type { get; }
+        /// <summary>The meta type of the object.</summary>
+        public IMetaType Type;
 
         /// <summary>Get the name of the object. May have capitals.</summary>
         public abstract string Name { get; }
@@ -182,7 +182,7 @@ namespace SharpDenizenTools.MetaObjects
                     bool exists;
                     if (type.Equals("command"))
                     {
-                        exists = docs.Commands.ContainsKey(searchText);
+                        exists = docs.META_TYPE_COMMAND.Meta.ContainsKey(searchText);
                     }
                     else if (type.Equals("tag"))
                     {
@@ -190,7 +190,7 @@ namespace SharpDenizenTools.MetaObjects
                     }
                     else if (type.Equals("mechanism") || type.Equals("property"))
                     {
-                        exists = docs.Mechanisms.ContainsKey(searchText);
+                        exists = docs.META_TYPE_MECHANISM.Meta.ContainsKey(searchText);
                     }
                     else if (type.Equals("event"))
                     {
@@ -201,7 +201,7 @@ namespace SharpDenizenTools.MetaObjects
                         exists = docs.FindEventsFor(searchText, true, true) != null;
                         if (!exists)
                         {
-                            exists = docs.Events.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
+                            exists = docs.META_TYPE_EVENT.Meta.Values.Any(e => e.CleanEvents.Any(s => s.Contains(searchText)));
                         }
                     }
                     else if (type.Equals("action"))
@@ -210,15 +210,15 @@ namespace SharpDenizenTools.MetaObjects
                         {
                             searchText = searchText["on ".Length..];
                         }
-                        exists = docs.Actions.Values.Any(a => a.CleanActions.Any(s => s.Contains(searchText)));
+                        exists = docs.META_TYPE_ACTION.Meta.Values.Any(a => a.CleanActions.Any(s => s.Contains(searchText)));
                     }
                     else if (type.Equals("language"))
                     {
-                        exists = docs.Languages.Keys.Any(s => s.Contains(searchText));
+                        exists = docs.META_TYPE_LANGUAGE.Meta.Keys.Any(s => s.Contains(searchText));
                     }
                     else if (type.Equals("objecttype"))
                     {
-                        exists = docs.ObjectTypes.Keys.Any(s => s.Contains(searchText));
+                        exists = docs.META_TYPE_OBJECT.Meta.Keys.Any(s => s.Contains(searchText));
                     }
                     else
                     {

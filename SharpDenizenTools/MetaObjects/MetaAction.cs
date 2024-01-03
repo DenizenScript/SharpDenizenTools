@@ -11,17 +11,8 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented action.</summary>
     public class MetaAction : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_ACTION;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => Actions[0];
-
-        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.Actions.Add(CleanName, this);
-        }
 
         /// <summary><see cref="MetaObject.MultiNames"/></summary>
         public override IEnumerable<string> MultiNames => CleanActions;
@@ -43,6 +34,12 @@ namespace SharpDenizenTools.MetaObjects
 
         /// <summary>Determination options. One Determination per string.</summary>
         public string[] Determinations = [];
+
+        /// <inheritdoc/>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.META_TYPE_ACTION.Meta.Add(CleanName, this);
+        }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

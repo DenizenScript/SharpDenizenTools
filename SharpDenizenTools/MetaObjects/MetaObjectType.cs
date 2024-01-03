@@ -11,8 +11,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented type of object.</summary>
     public class MetaObjectType : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_OBJECT;
 
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => TypeName;
@@ -23,7 +21,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
-            docs.ObjectTypes.Add(CleanName, this);
+            docs.META_TYPE_OBJECT.Meta.Add(CleanName, this);
             if (CleanName == "objecttag")
             {
                 docs.ObjectTagType = this;
@@ -132,7 +130,7 @@ namespace SharpDenizenTools.MetaObjects
             Require(docs, TypeName, Prefix, BaseTypeName, Format, Description);
             if (BaseTypeName.ToLowerFast() != "none")
             {
-                BaseType = docs.ObjectTypes.GetValueOrDefault(BaseTypeName.ToLowerFast());
+                BaseType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(BaseTypeName.ToLowerFast());
                 if (BaseType == null)
                 {
                     docs.LoadErrors.Add($"Object type name '{TypeName}' specifies basetype '{BaseType}' which is invalid.");
@@ -145,7 +143,7 @@ namespace SharpDenizenTools.MetaObjects
             Implements = new MetaObjectType[ImplementsNames.Length];
             for (int i = 0; i < Implements.Length; i++)
             {
-                Implements[i] = docs.ObjectTypes.GetValueOrDefault(ImplementsNames[i].ToLowerFast());
+                Implements[i] = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(ImplementsNames[i].ToLowerFast());
                 if (Implements[i] == null)
                 {
                     docs.LoadErrors.Add($"Object type name '{TypeName}' specifies implement type '{Implements[i]}' which is invalid.");
@@ -155,17 +153,17 @@ namespace SharpDenizenTools.MetaObjects
                     Implements[i].ExtendedBy.Add(this);
                 }
             }
-            PostCheckSynonyms(docs, docs.ObjectTypes);
+            PostCheckSynonyms(docs, docs.META_TYPE_OBJECT.Meta);
             if (!TypeName.EndsWith("Tag") && !TypeName.EndsWith("Object") && (Prefix.ToLowerFast() != "none" || BaseTypeName.ToLowerFast() != "none"))
             {
                 docs.LoadErrors.Add($"Object type name '{TypeName}' has unrecognized format.");
             }
-            if (Prefix != "none" && docs.ObjectTypes.Values.Any(t => t != this && t.Prefix == Prefix))
+            if (Prefix != "none" && docs.META_TYPE_OBJECT.Meta.Values.Any(t => t != this && t.Prefix == Prefix))
             {
                 docs.LoadErrors.Add($"Object type name '{TypeName}' uses prefix '{Prefix}' which is also used by another object type.");
             }
             string lowName = CleanName;
-            foreach (MetaTag tag in docs.Tags.Values.Where(t => t.BeforeDot.ToLowerFast() == lowName))
+            foreach (MetaTag tag in docs.META_TYPE_TAG.Meta.Values.Where(t => t.BeforeDot.ToLowerFast() == lowName))
             {
                 SubTags.Add(tag.AfterDotCleaned, tag);
             }
@@ -176,7 +174,7 @@ namespace SharpDenizenTools.MetaObjects
                 {
                     break;
                 }
-                subType = docs.ObjectTypes.GetValueOrDefault(subType.BaseTypeName.ToLowerFast());
+                subType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(subType.BaseTypeName.ToLowerFast());
             }
             if (subType != null)
             {

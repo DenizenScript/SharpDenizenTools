@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaObjects;
 
@@ -20,84 +13,67 @@ namespace SharpDenizenTools.MetaHandlers
         public static MetaDocs CurrentMeta = null;
 
         /// <summary>The "command" meta type.</summary>
-        public static MetaType META_TYPE_COMMAND = new() { Name = "Command", WebPath = "Commands" };
+        public MetaType<MetaCommand> META_TYPE_COMMAND;
 
         /// <summary>The "mechanism" meta type.</summary>
-        public static MetaType META_TYPE_MECHANISM = new() { Name = "Mechanism", WebPath = "Mechanisms" };
+        public MetaType<MetaMechanism> META_TYPE_MECHANISM;
 
         /// <summary>The "event" meta type.</summary>
-        public static MetaType META_TYPE_EVENT = new() { Name = "Event", WebPath = "Events" };
+        public MetaType<MetaEvent> META_TYPE_EVENT;
 
         /// <summary>The "action" meta type.</summary>
-        public static MetaType META_TYPE_ACTION = new() { Name = "Action", WebPath = "Actions" };
+        public MetaType<MetaAction> META_TYPE_ACTION;
 
         /// <summary>The "language" meta type.</summary>
-        public static MetaType META_TYPE_LANGUAGE = new() { Name = "Language", WebPath = "Languages" };
+        public MetaType<MetaLanguage> META_TYPE_LANGUAGE;
 
         /// <summary>The "tag" meta type.</summary>
-        public static MetaType META_TYPE_TAG = new() { Name = "Tag", WebPath = "Tags" };
+        public MetaType<MetaTag> META_TYPE_TAG;
 
         /// <summary>The "object type" meta type.</summary>
-        public static MetaType META_TYPE_OBJECT = new() { Name = "ObjectType", WebPath = "ObjectTypes" };
+        public MetaType<MetaObjectType> META_TYPE_OBJECT;
 
         /// <summary>The "property" meta type.</summary>
-        public static MetaType META_TYPE_PROPERTY = new() { Name = "Property", WebPath = "Properties" };
+        public MetaType<MetaProperty> META_TYPE_PROPERTY;
 
         /// <summary>The "guide page" meta type.</summary>
-        public static MetaType META_TYPE_GUIDEPAGE = new() { Name = "GuidePage", WebPath = null };
+        public MetaType<MetaGuidePage> META_TYPE_GUIDEPAGE;
 
         /// <summary>The "extension" meta type.</summary>
-        public static MetaType META_TYPE_EXTENSION = new() { Name = "Extension", WebPath = null };
+        public MetaType<MetaExtension> META_TYPE_EXTENSION;
 
-        /// <summary>All meta types.</summary>
-        public static MetaType[] META_TYPES = [ META_TYPE_COMMAND, META_TYPE_MECHANISM,
-            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE,
-            META_TYPE_EXTENSION ];
+        /// <summary>The "data" meta type.</summary>
+        public MetaType<MetaDataValue> META_TYPE_DATA;
 
-        /// <summary>Getters for standard meta object types.</summary>
-        public static Dictionary<string, Func<MetaObject>> MetaObjectGetters = new()
-        {
-            { "command", () => new MetaCommand() },
-            { "mechanism", () => new MetaMechanism() },
-            { "tag", () => new MetaTag() },
-            { "objecttype", () => new MetaObjectType() },
-            { "property", () => new MetaProperty() },
-            { "event", () => new MetaEvent() },
-            { "action", () => new MetaAction() },
-            { "language", () => new MetaLanguage() },
-            { "data", () => new MetaDataValue() },
-            { "extension", () => new MetaExtension() }
-        };
+        /// <summary>All meta types, by name.</summary>
+        public Dictionary<string, IMetaType> MetaTypes = [];
 
         /// <summary>All known commands.</summary>
-        public Dictionary<string, MetaCommand> Commands = new(512);
+        public Dictionary<string, MetaCommand> Commands => META_TYPE_COMMAND.Meta;
 
         /// <summary>All known mechanisms.</summary>
-        public Dictionary<string, MetaMechanism> Mechanisms = new(1024);
+        public Dictionary<string, MetaMechanism> Mechanisms => META_TYPE_MECHANISM.Meta;
 
         /// <summary>All known tags.</summary>
-        public Dictionary<string, MetaTag> Tags = new(2048);
+        public Dictionary<string, MetaTag> Tags => META_TYPE_TAG.Meta;
 
         /// <summary>All known object types.</summary>
-        public Dictionary<string, MetaObjectType> ObjectTypes = new(512);
+        public Dictionary<string, MetaObjectType> ObjectTypes => META_TYPE_OBJECT.Meta;
 
         /// <summary>All known properties.</summary>
-        public Dictionary<string, MetaProperty> Properties = new(512);
+        public Dictionary<string, MetaProperty> Properties => META_TYPE_PROPERTY.Meta;
 
         /// <summary>All known events.</summary>
-        public Dictionary<string, MetaEvent> Events = new(1024);
+        public Dictionary<string, MetaEvent> Events => META_TYPE_EVENT.Meta;
 
         /// <summary>All known actions.</summary>
-        public Dictionary<string, MetaAction> Actions = new(512);
+        public Dictionary<string, MetaAction> Actions => META_TYPE_ACTION.Meta;
 
         /// <summary>All known languages.</summary>
-        public Dictionary<string, MetaLanguage> Languages = new(512);
+        public Dictionary<string, MetaLanguage> Languages => META_TYPE_LANGUAGE.Meta;
 
         /// <summary>All known guide pages.</summary>
-        public Dictionary<string, MetaGuidePage> GuidePages = new(512);
-
-        /// <summary>All known meta extensions.</summary>
-        public Dictionary<string, MetaExtension> Extensions = new(256);
+        public Dictionary<string, MetaGuidePage> GuidePages => META_TYPE_GUIDEPAGE.Meta;
 
         /// <summary>A set of all known tag bases.</summary>
         public HashSet<string> TagBases = new(512) { "context", "entry" };
@@ -122,6 +98,23 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>Set of raw adjustable keys.</summary>
         public HashSet<string> RawAdjustables = [];
+
+        /// <inheritdoc/>
+        public MetaDocs()
+        {
+            // Extensions explicitly first
+            META_TYPE_EXTENSION = new(this, "Extension", null, 256, () => new MetaExtension());
+            META_TYPE_COMMAND = new(this, "Command", "Commands", 512, () => new MetaCommand());
+            META_TYPE_MECHANISM = new(this, "Mechanism", "Mechanisms", 1024, () => new MetaMechanism());
+            META_TYPE_EVENT = new(this, "Event", "Events", 1024, () => new MetaEvent());
+            META_TYPE_ACTION = new(this, "Action", "Actions", 512, () => new MetaAction());
+            META_TYPE_LANGUAGE = new(this, "Language", "Languages", 512, () => new MetaLanguage());
+            META_TYPE_TAG = new(this, "Tag", "Tags", 2048, () => new MetaTag());
+            META_TYPE_OBJECT = new(this, "ObjectType", "ObjectTypes", 512, () => new MetaObjectType());
+            META_TYPE_PROPERTY = new(this, "Property", "Properties", 512, () => new MetaProperty());
+            META_TYPE_GUIDEPAGE = new(this, "GuidePage", null, 512, () => new MetaGuidePage());
+            META_TYPE_DATA = new(this, "Data", null, 0, () => new MetaDataValue());
+        }
 
         /// <summary>Returns whether the given text value is in the named data set.</summary>
         public bool IsInDataValueSet(string set, string text)
@@ -161,7 +154,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 text = text["after ".Length..];
             }
-            if (Events.TryGetValue(text, out MetaEvent evt))
+            if (META_TYPE_EVENT.Meta.TryGetValue(text, out MetaEvent evt))
             {
                 return [(evt, 10)];
             }
@@ -200,47 +193,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {
-            // Extensions explicitly first
-            foreach (MetaExtension extension in Extensions.Values)
-            {
-                yield return extension;
-            }
-            foreach (MetaCommand command in Commands.Values)
-            {
-                yield return command;
-            }
-            foreach (MetaMechanism mechanism in Mechanisms.Values)
-            {
-                yield return mechanism;
-            }
-            foreach (MetaTag tag in Tags.Values)
-            {
-                yield return tag;
-            }
-            foreach (MetaObjectType objType in ObjectTypes.Values)
-            {
-                yield return objType;
-            }
-            foreach (MetaProperty prop in Properties.Values)
-            {
-                yield return prop;
-            }
-            foreach (MetaEvent evt in Events.Values)
-            {
-                yield return evt;
-            }
-            foreach (MetaAction action in Actions.Values)
-            {
-                yield return action;
-            }
-            foreach (MetaLanguage language in Languages.Values)
-            {
-                yield return language;
-            }
-            foreach (MetaGuidePage guidePage in GuidePages.Values)
-            {
-                yield return guidePage;
-            }
+            return MetaTypes.SelectMany(type => type.Value.Meta.Values);
         }
 
         /// <summary>
@@ -252,7 +205,7 @@ namespace SharpDenizenTools.MetaHandlers
         public MetaTag FindTag(string tagText)
         {
             string cleaned = MetaTag.CleanTag(tagText).ToLowerFast();
-            if (Tags.TryGetValue(cleaned, out MetaTag result))
+            if (META_TYPE_TAG.Meta.TryGetValue(cleaned, out MetaTag result))
             {
                 return result;
             }

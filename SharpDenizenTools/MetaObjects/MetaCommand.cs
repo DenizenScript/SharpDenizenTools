@@ -10,17 +10,8 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented command.</summary>
     public class MetaCommand : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_COMMAND;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => CommandName;
-
-        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.Commands.Add(CleanName, this);
-        }
 
         /// <summary>The name of the command.</summary>
         public string CommandName;
@@ -54,6 +45,12 @@ namespace SharpDenizenTools.MetaObjects
 
         /// <summary>A list of linear (non-prefixed, but dynamic input) arguments this command has in its syntax line.</summary>
         public string[] LinearArguments = [];
+
+        /// <inheritdoc/>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.META_TYPE_COMMAND.Meta.Add(CleanName, this);
+        }
 
         /// <summary>Parses this command's syntax data to create a list of helper data about the known arguments.</summary>
         public void ParseSyntax()

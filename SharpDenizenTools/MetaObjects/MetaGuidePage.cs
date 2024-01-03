@@ -10,17 +10,8 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A page of the beginner's guide.</summary>
     public class MetaGuidePage : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_GUIDEPAGE;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => PageName;
-
-        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.GuidePages.Add(CleanName, this);
-        }
 
         /// <summary>The name of the page.</summary>
         public string PageName;
@@ -30,6 +21,12 @@ namespace SharpDenizenTools.MetaObjects
 
         /// <summary>If true, this is an entry within a page rather than its own page.</summary>
         public bool IsSubPage;
+
+        /// <inheritdoc/>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.META_TYPE_GUIDEPAGE.Meta.Add(CleanName, this);
+        }
 
         /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
         public override void BuildSearchables()

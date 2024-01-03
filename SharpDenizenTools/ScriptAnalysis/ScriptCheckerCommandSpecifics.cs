@@ -141,7 +141,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 else
                 {
                     string mechanismName = mechanism.Text.Before(':').ToLowerFast();
-                    List<MetaMechanism> possible = MetaDocs.CurrentMeta.Mechanisms.Values.Where(m => m.MechName == mechanismName).ToList();
+                    List<MetaMechanism> possible = MetaDocs.CurrentMeta.META_TYPE_MECHANISM.Meta.Values.Where(m => m.MechName == mechanismName).ToList();
                     MetaMechanism mech = null;
                     if (possible.Count == 1)
                     {

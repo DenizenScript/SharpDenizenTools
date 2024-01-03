@@ -10,9 +10,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented tag.</summary>
     public class MetaTag : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_TAG;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => TagFull;
 
@@ -22,7 +19,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
-            docs.Tags.Add(CleanName, this);
+            docs.META_TYPE_TAG.Meta.Add(CleanName, this);
             docs.TagBases.Add(CleanName.BeforeAndAfter('.', out string otherBits));
             foreach (string bit in otherBits.Split('.'))
             {
@@ -161,7 +158,7 @@ namespace SharpDenizenTools.MetaObjects
             }
             if (!string.IsNullOrWhiteSpace(Mechanism))
             {
-                if (!docs.Mechanisms.ContainsKey(Mechanism.ToLowerFast()))
+                if (!docs.META_TYPE_MECHANISM.Meta.ContainsKey(Mechanism.ToLowerFast()))
                 {
                     docs.LoadErrors.Add($"Tag '{Name}' references mechanism '{Mechanism}', which doesn't exist.");
                 }
@@ -169,17 +166,17 @@ namespace SharpDenizenTools.MetaObjects
             }
             else
             {
-                if (docs.Mechanisms.ContainsKey(CleanedName))
+                if (docs.META_TYPE_MECHANISM.Meta.ContainsKey(CleanedName))
                 {
                     docs.LoadErrors.Add($"Tag '{Name}' has no mechanism link, but has the same name as an existing mechanism. A link should be added.");
                 }
             }
-            ReturnType = docs.ObjectTypes.GetValueOrDefault(Returns.ToLowerFast().Before('('));
+            ReturnType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(Returns.ToLowerFast().Before('('));
             if (ReturnType == null)
             {
                 docs.LoadErrors.Add($"Tag '{Name}' specifies return type '{Returns}' which does not appear to be a valid object type.");
             }
-            BaseType = docs.ObjectTypes.GetValueOrDefault(BeforeDot.ToLowerFast());
+            BaseType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(BeforeDot.ToLowerFast());
             PostCheckLinkableText(docs, Description);
         }
 

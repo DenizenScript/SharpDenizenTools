@@ -10,23 +10,20 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A language documentation.</summary>
     public class MetaLanguage : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_LANGUAGE;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => LangName;
-
-        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.Languages.Add(CleanName, this);
-        }
 
         /// <summary>The name of the language.</summary>
         public string LangName;
 
         /// <summary>The long-form description.</summary>
         public string Description;
+
+        /// <inheritdoc/>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.META_TYPE_LANGUAGE.Meta.Add(CleanName, this);
+        }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
