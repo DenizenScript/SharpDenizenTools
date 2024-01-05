@@ -14,8 +14,11 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The name of the extension.</summary>
         public string ExtensionName;
 
-        /// <summary>The type and name of the object this extension meta extends.</summary>
-        public string Extend;
+        /// <summary>The type of the meta object this extension meta extends.</summary>
+        public string ExtendType;
+
+        /// <summary>The name of the meta object this extension meta extends.</summary>
+        public string ExtendName;
 
         /// <summary>Whether the existing values from the extended meta should be included when adding the new values.</summary>
         public bool IncludeExisting = true;
@@ -31,8 +34,11 @@ namespace SharpDenizenTools.MetaObjects
         {
             switch (key)
             {
-                case "extend":
-                    Extend = value;
+                case "target_type":
+                    ExtendType = value;
+                    return true;
+                case "target_name":
+                    ExtendName = value;
                     return true;
                 case "name":
                     ExtensionName = value;
@@ -46,16 +52,14 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void PostCheck(MetaDocs docs)
         {
-            Require(docs, Extend, ExtensionName);
-            string metaName;
-            string metaType = Extend.ToLowerFast().BeforeAndAfter(' ', out metaName);
-            MetaObject extended = docs.MetaTypes.TryGetValue(metaType, out IMetaType type) ? type.Meta.GetValueOrDefault(metaName) : null;
+            Require(docs, ExtendType, ExtendName, ExtensionName);
+            MetaObject extended = docs.MetaTypes.TryGetValue(ExtendType.ToLowerFast(), out IMetaType type) ? type.Meta.GetValueOrDefault(ExtendName.ToLowerFast()) : null;
             if (extended is null)
             {
-                docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta to extend '{Extend}'.");
+                docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta type/name to extend: '{ExtendType}'/'{ExtendName}'.");
                 return;
             }
-            foreach ((string key, List<string> values) in RawValues.ExceptBy(["extend", "name", "include_existing"], pair => pair.Key))
+            foreach ((string key, List<string> values) in RawValues.ExceptBy(["target_type", "target_name", "name", "include_existing"], pair => pair.Key))
             {
                 string currentValue = IncludeExisting && extended.RawValues.TryGetValue(key, out List<string> currentValues) ? currentValues.Last() : null;
                 foreach (string value in values)
@@ -63,7 +67,7 @@ namespace SharpDenizenTools.MetaObjects
                     string newValue = currentValue is not null ? currentValue + "\n\n" + value : value;
                     if (!extended.ApplyValue(docs, key, newValue))
                     {
-                        docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {extended.Type.Name.ToLowerFast()} meta '{extended.Name}', key/value pair '{key}' -> '{value}' is invalid.");
+                        docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {ExtendType} meta '{ExtendName}', key/value pair '{key}' -> '{value}' is invalid.");
                     }
                 }
             }
