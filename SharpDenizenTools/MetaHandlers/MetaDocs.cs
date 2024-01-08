@@ -103,31 +103,31 @@ namespace SharpDenizenTools.MetaHandlers
         public MetaDocs()
         {
             // Extensions explicitly first
-            RegisterMetaData(META_TYPE_EXTENSION, Extensions, () => new MetaExtension());
-            RegisterMetaData(META_TYPE_COMMAND, Commands, () => new MetaCommand());
-            RegisterMetaData(META_TYPE_MECHANISM, Mechanisms, () => new MetaMechanism());
-            RegisterMetaData(META_TYPE_TAG, Tags, () => new MetaTag());
-            RegisterMetaData(META_TYPE_OBJECT, ObjectTypes, () => new MetaObjectType());
-            RegisterMetaData(META_TYPE_PROPERTY, Properties, () => new MetaProperty());
-            RegisterMetaData(META_TYPE_EVENT, Events, () => new MetaEvent());
-            RegisterMetaData(META_TYPE_ACTION, Actions, () => new MetaAction());
-            RegisterMetaData(META_TYPE_LANGUAGE, Languages, () => new MetaLanguage());
-            RegisterMetaData(META_TYPE_GUIDEPAGE, GuidePages, () => new MetaGuidePage());
-            RegisterMetaData("data", null, () => new MetaDataValue());
+            RegisterMetaData(META_TYPE_EXTENSION, Extensions);
+            RegisterMetaData(META_TYPE_COMMAND, Commands);
+            RegisterMetaData(META_TYPE_MECHANISM, Mechanisms);
+            RegisterMetaData(META_TYPE_TAG, Tags);
+            RegisterMetaData(META_TYPE_OBJECT, ObjectTypes);
+            RegisterMetaData(META_TYPE_PROPERTY, Properties);
+            RegisterMetaData(META_TYPE_EVENT, Events);
+            RegisterMetaData(META_TYPE_ACTION, Actions);
+            RegisterMetaData(META_TYPE_LANGUAGE, Languages);
+            RegisterMetaData(META_TYPE_GUIDEPAGE, GuidePages);
+            RegisterMetaData<MetaDataValue>("data", null);
         }
 
         /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
-        public void RegisterMetaData<T>(MetaType type, Dictionary<string, T> storage, Func<T> getter)
-            where T : MetaObject
+        public void RegisterMetaData<T>(MetaType type, Dictionary<string, T> storage)
+            where T : MetaObject, new()
         {
-            MetaTypesData.Add(type.Name.ToLowerFast(), new MetaTypeData<T>(storage, getter, type));
+            MetaTypesData.Add(type.Name.ToLowerFast(), new MetaTypeData<T>(storage, type));
         }
 
         /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
-        public void RegisterMetaData<T>(string type, Dictionary<string, T> storage, Func<T> getter)
-            where T : MetaObject
+        public void RegisterMetaData<T>(string type, Dictionary<string, T> storage)
+            where T : MetaObject, new()
         {
-            MetaTypesData.Add(type, new MetaTypeData<T>(storage, getter, null));
+            MetaTypesData.Add(type, new MetaTypeData<T>(storage, null));
         }
 
         /// <summary>Returns whether the given text value is in the named data set.</summary>

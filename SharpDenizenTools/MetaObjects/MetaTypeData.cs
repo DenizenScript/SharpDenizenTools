@@ -20,12 +20,12 @@ namespace SharpDenizenTools.MetaObjects
     }
 
     /// <summary>Data for a specific <see cref="MetaType"/>.</summary>
-    public record MetaTypeData<T>(Dictionary<string, T> Meta, Func<T> Getter, MetaType Type) : IMetaTypeData where T : MetaObject
+    public record MetaTypeData<T>(Dictionary<string, T> Meta, MetaType Type) : IMetaTypeData where T : MetaObject, new()
     {
         /// <inheritdoc/>
         public MetaObject CreateNewMeta()
         {
-            MetaObject newMeta = Getter();
+            MetaObject newMeta = new T();
             newMeta.Type = Type;
             return newMeta;
         }
