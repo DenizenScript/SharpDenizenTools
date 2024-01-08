@@ -13,17 +13,17 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => LangName;
 
+        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.Languages.Add(CleanName, this);
+        }
+
         /// <summary>The name of the language.</summary>
         public string LangName;
 
         /// <summary>The long-form description.</summary>
         public string Description;
-
-        /// <inheritdoc/>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.Languages.Add(CleanName, this);
-        }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)

@@ -13,6 +13,12 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => PageName;
 
+        /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
+        public override void AddTo(MetaDocs docs)
+        {
+            docs.GuidePages.Add(CleanName, this);
+        }
+
         /// <summary>The name of the page.</summary>
         public string PageName;
 
@@ -21,12 +27,6 @@ namespace SharpDenizenTools.MetaObjects
 
         /// <summary>If true, this is an entry within a page rather than its own page.</summary>
         public bool IsSubPage;
-
-        /// <inheritdoc/>
-        public override void AddTo(MetaDocs docs)
-        {
-            docs.GuidePages.Add(CleanName, this);
-        }
 
         /// <summary><see cref="MetaObject.BuildSearchables"/></summary>
         public override void BuildSearchables()
