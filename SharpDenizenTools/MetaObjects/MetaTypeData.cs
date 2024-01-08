@@ -43,7 +43,7 @@ namespace SharpDenizenTools.MetaObjects
         }
     }
 
-    /// <summary>Data for a specific <see cref="MetaType"/></summary>
+    /// <summary>Data for a specific <see cref="MetaType"/>.</summary>
     public record MetaTypeData<T>(Dictionary<string, T> Meta, Func<T> Getter, MetaType Type) : IMetaTypeData where T : MetaObject
     {
         Func<MetaObject> IMetaTypeData.Getter => Getter;
