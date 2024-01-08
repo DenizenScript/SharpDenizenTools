@@ -1,4 +1,8 @@
-﻿namespace SharpDenizenTools.MetaObjects
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SharpDenizenTools.MetaObjects
 {
     /// <summary>Represents a type of meta documentations.</summary>
     public class MetaType
