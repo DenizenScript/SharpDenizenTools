@@ -13,7 +13,7 @@ namespace SharpDenizenTools.MetaObjects
         Func<MetaObject> Getter { get; }
 
         /// <summary>All meta docs of this type, by name.</summary>
-        Dictionary<string, MetaObject> Meta {  get; }
+        Dictionary<string, MetaObject> Meta { get; }
 
         /// <summary>The meta type this data is for.</summary>
         MetaType Type { get; }
