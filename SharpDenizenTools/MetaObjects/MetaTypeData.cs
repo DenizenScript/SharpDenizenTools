@@ -12,9 +12,6 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Getter to create a new instance of this meta type.</summary>
         Func<MetaObject> Getter { get; }
 
-        /// <summary>All meta docs of this type, by name.</summary>
-        Dictionary<string, MetaObject> Meta { get; }
-
         /// <summary>The meta type this data is for.</summary>
         MetaType Type { get; }
 
@@ -25,13 +22,30 @@ namespace SharpDenizenTools.MetaObjects
             newMeta.Type = Type;
             return newMeta;
         }
+
+        /// <summary>Gets a <see cref="MetaObject"/> by name, or <c>null</c> if one by that name doesn't exist.</summary>
+        MetaObject MetaByNameIfPresent(string name);
+
+        /// <summary>Returns all <see cref="MetaObject"/>s of this type.</summary>
+        IEnumerable<MetaObject> AllMetaObjects();
     }
 
     /// <summary>Data for a specific <see cref="MetaType"/>.</summary>
     public record MetaTypeData<T>(Dictionary<string, T> Meta, Func<T> Getter, MetaType Type) : IMetaTypeData where T : MetaObject
     {
         Func<MetaObject> IMetaTypeData.Getter => Getter;
-        Dictionary<string, MetaObject> IMetaTypeData.Meta => Meta?.ToDictionary(pair => pair.Key, pair => pair.Value as MetaObject);
         MetaType IMetaTypeData.Type => Type;
+
+        /// <inheritdoc/>
+        public MetaObject MetaByNameIfPresent(string name)
+        {
+            return Meta?.GetValueOrDefault(name);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<MetaObject> AllMetaObjects()
+        {
+            return Meta?.Values ?? Enumerable.Empty<MetaObject>();
+        }
     }
 }

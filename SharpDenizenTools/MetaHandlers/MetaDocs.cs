@@ -207,7 +207,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {
-            return MetaTypesData.SelectMany(type => type.Value.Meta?.Values ?? Enumerable.Empty<MetaObject>());
+            return MetaTypesData.SelectMany(type => type.Value.AllMetaObjects());
         }
 
         /// <summary>
