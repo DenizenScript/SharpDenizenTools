@@ -18,22 +18,6 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The meta type this data is for.</summary>
         MetaType Type { get; }
 
-        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
-        public static void Register<T>(MetaDocs meta, MetaType type, Dictionary<string, T> storage, Func<T> getter)
-            where T : MetaObject
-        {
-            MetaTypeData<T> newData = new(storage, getter, type);
-            meta.MetaTypesData.Add(type.Name.ToLowerFast(), newData);
-        }
-
-        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
-        public static void Register<T>(MetaDocs meta, string type, Dictionary<string, T> storage, Func<T> getter)
-            where T : MetaObject
-        {
-            MetaTypeData<T> newData = new(storage, getter, null);
-            meta.MetaTypesData.Add(type, newData);
-        }
-
         /// <summary>Creates a new <see cref="MetaObject"/> using <see cref="Getter"/> and sets it's type.</summary>
         public MetaObject CreateNewMeta()
         {

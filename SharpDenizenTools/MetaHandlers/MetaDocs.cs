@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaObjects;
@@ -102,17 +103,31 @@ namespace SharpDenizenTools.MetaHandlers
         public MetaDocs()
         {
             // Extensions explicitly first
-            IMetaTypeData.Register(this, META_TYPE_EXTENSION, Extensions, () => new MetaExtension());
-            IMetaTypeData.Register(this, META_TYPE_COMMAND, Commands, () => new MetaCommand());
-            IMetaTypeData.Register(this, META_TYPE_MECHANISM, Mechanisms, () => new MetaMechanism());
-            IMetaTypeData.Register(this, META_TYPE_TAG, Tags, () => new MetaTag());
-            IMetaTypeData.Register(this, META_TYPE_OBJECT, ObjectTypes, () => new MetaObjectType());
-            IMetaTypeData.Register(this, META_TYPE_PROPERTY, Properties, () => new MetaProperty());
-            IMetaTypeData.Register(this, META_TYPE_EVENT, Events, () => new MetaEvent());
-            IMetaTypeData.Register(this, META_TYPE_ACTION, Actions, () => new MetaAction());
-            IMetaTypeData.Register(this, META_TYPE_LANGUAGE, Languages, () => new MetaLanguage());
-            IMetaTypeData.Register(this, META_TYPE_GUIDEPAGE, GuidePages, () => new MetaGuidePage());
-            IMetaTypeData.Register(this, "data", null, () => new MetaDataValue());
+            RegisterMetaData(META_TYPE_EXTENSION, Extensions, () => new MetaExtension());
+            RegisterMetaData(META_TYPE_COMMAND, Commands, () => new MetaCommand());
+            RegisterMetaData(META_TYPE_MECHANISM, Mechanisms, () => new MetaMechanism());
+            RegisterMetaData(META_TYPE_TAG, Tags, () => new MetaTag());
+            RegisterMetaData(META_TYPE_OBJECT, ObjectTypes, () => new MetaObjectType());
+            RegisterMetaData(META_TYPE_PROPERTY, Properties, () => new MetaProperty());
+            RegisterMetaData(META_TYPE_EVENT, Events, () => new MetaEvent());
+            RegisterMetaData(META_TYPE_ACTION, Actions, () => new MetaAction());
+            RegisterMetaData(META_TYPE_LANGUAGE, Languages, () => new MetaLanguage());
+            RegisterMetaData(META_TYPE_GUIDEPAGE, GuidePages, () => new MetaGuidePage());
+            RegisterMetaData("data", null, () => new MetaDataValue());
+        }
+
+        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
+        public void RegisterMetaData<T>(MetaType type, Dictionary<string, T> storage, Func<T> getter)
+            where T : MetaObject
+        {
+            MetaTypesData.Add(type.Name.ToLowerFast(), new MetaTypeData<T>(storage, getter, type));
+        }
+
+        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
+        public void RegisterMetaData<T>(string type, Dictionary<string, T> storage, Func<T> getter)
+            where T : MetaObject
+        {
+            MetaTypesData.Add(type, new MetaTypeData<T>(storage, getter, null));
         }
 
         /// <summary>Returns whether the given text value is in the named data set.</summary>
