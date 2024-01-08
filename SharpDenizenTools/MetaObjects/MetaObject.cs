@@ -49,7 +49,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The backing <see cref="MetaDocs"/> instance.</summary>
         public MetaDocs Meta;
 
-        /// <summary>The original raw values specified for the object</summary>
+        /// <summary>The original raw values specified for the object.</summary>
         public Dictionary<string, List<string>> RawValues = [];
 
         /// <summary>Apply a setting value to this meta object.</summary>
