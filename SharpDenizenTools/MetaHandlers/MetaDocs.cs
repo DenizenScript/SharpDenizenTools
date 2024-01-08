@@ -98,7 +98,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Set of raw adjustable keys.</summary>
         public HashSet<string> RawAdjustables = [];
 
-        /// <inheritdoc/>
+        /// <summary>Creates a new instance of <see cref="MetaDocs"/> and registers it's <see cref="MetaTypeData{T}"/>.</summary>
         public MetaDocs()
         {
             // Extensions explicitly first
