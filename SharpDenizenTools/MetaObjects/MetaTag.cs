@@ -19,7 +19,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_TAG.Meta.Add(CleanName, this);
+            docs.Tags.Add(CleanName, this);
             docs.TagBases.Add(CleanName.BeforeAndAfter('.', out string otherBits));
             foreach (string bit in otherBits.Split('.'))
             {
@@ -158,7 +158,7 @@ namespace SharpDenizenTools.MetaObjects
             }
             if (!string.IsNullOrWhiteSpace(Mechanism))
             {
-                if (!docs.META_TYPE_MECHANISM.Meta.ContainsKey(Mechanism.ToLowerFast()))
+                if (!docs.Mechanisms.ContainsKey(Mechanism.ToLowerFast()))
                 {
                     docs.LoadErrors.Add($"Tag '{Name}' references mechanism '{Mechanism}', which doesn't exist.");
                 }
@@ -166,17 +166,17 @@ namespace SharpDenizenTools.MetaObjects
             }
             else
             {
-                if (docs.META_TYPE_MECHANISM.Meta.ContainsKey(CleanedName))
+                if (docs.Mechanisms.ContainsKey(CleanedName))
                 {
                     docs.LoadErrors.Add($"Tag '{Name}' has no mechanism link, but has the same name as an existing mechanism. A link should be added.");
                 }
             }
-            ReturnType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(Returns.ToLowerFast().Before('('));
+            ReturnType = docs.ObjectTypes.GetValueOrDefault(Returns.ToLowerFast().Before('('));
             if (ReturnType == null)
             {
                 docs.LoadErrors.Add($"Tag '{Name}' specifies return type '{Returns}' which does not appear to be a valid object type.");
             }
-            BaseType = docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(BeforeDot.ToLowerFast());
+            BaseType = docs.ObjectTypes.GetValueOrDefault(BeforeDot.ToLowerFast());
             PostCheckLinkableText(docs, Description);
         }
 

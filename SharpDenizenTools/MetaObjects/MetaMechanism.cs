@@ -19,7 +19,7 @@ namespace SharpDenizenTools.MetaObjects
             FullName = $"{MechObject}.{MechName}";
             NameForms = [FullName.ToLowerFast(), MechName.ToLowerFast()];
             HasMultipleNames = true;
-            docs.META_TYPE_MECHANISM.Meta.Add(CleanName, this);
+            docs.Mechanisms.Add(CleanName, this);
         }
 
         /// <summary><see cref="MetaObject.MultiNames"/></summary>
@@ -86,7 +86,7 @@ namespace SharpDenizenTools.MetaObjects
             PostCheckLinkableText(docs, Description);
             if (Tags.IsEmpty())
             {
-                if (docs.META_TYPE_TAG.Meta.ContainsKey(CleanName))
+                if (docs.Tags.ContainsKey(CleanName))
                 {
                     docs.LoadErrors.Add($"Mechanism '{Name}' has no Tags link, but has the same name as an existing tag. A link should be added.");
                 }

@@ -43,14 +43,14 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (root == "context" || root == "entry")
             {
-                TraceTagParts(new HashSet<MetaObjectType>(Docs.META_TYPE_OBJECT.Meta.Values), 2);
+                TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
             }
             else if (LegacySpecialTags.Contains(root))
             {
                 Error($"Tag base '{root}' is deprecated: write it as a definition, like '<[{root}]>'.");
                 return;
             }
-            else if (Tag.Parts.Count >= 4 && Docs.META_TYPE_TAG.Meta.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
+            else if (Tag.Parts.Count >= 4 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text + "." + Tag.Parts[3].Text, out MetaTag superComplexBaseTag))
             {
                 for (int i = 0; i < 4; i++)
                 {
@@ -58,7 +58,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 TraceTagParts(ParsePossibleTypes(superComplexBaseTag.Returns, superComplexBaseTag.ReturnType), 4);
             }
-            else if (Tag.Parts.Count >= 3 && Docs.META_TYPE_TAG.Meta.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
+            else if (Tag.Parts.Count >= 3 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text + "." + Tag.Parts[2].Text, out MetaTag veryComplexBaseTag))
             {
                 for (int i = 0; i < 3; i++)
                 {
@@ -66,7 +66,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 TraceTagParts(ParsePossibleTypes(veryComplexBaseTag.Returns, veryComplexBaseTag.ReturnType), 3);
             }
-            else if (Tag.Parts.Count >= 2 && Docs.META_TYPE_TAG.Meta.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
+            else if (Tag.Parts.Count >= 2 && Docs.Tags.TryGetValue(root + "." + Tag.Parts[1].Text, out MetaTag complexBaseTag))
             {
                 for (int i = 0; i < 2; i++)
                 {
@@ -74,7 +74,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 TraceTagParts(ParsePossibleTypes(complexBaseTag.Returns, complexBaseTag.ReturnType), 2);
             }
-            else if (Docs.META_TYPE_TAG.Meta.TryGetValue(root, out MetaTag realBaseTag))
+            else if (Docs.Tags.TryGetValue(root, out MetaTag realBaseTag))
             {
                 Tag.Parts[0].PossibleTags.Add(realBaseTag);
                 if (Tag.Parts[0].Parameter == null)
@@ -95,7 +95,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 TraceTagParts(ParsePossibleTypes(realBaseTag.Returns, realBaseTag.ReturnType), 1);
             }
-            else if (Docs.META_TYPE_OBJECT.Meta.TryGetValue(root, out MetaObjectType documentedObjectBase))
+            else if (Docs.ObjectTypes.TryGetValue(root, out MetaObjectType documentedObjectBase))
             {
                 if (documentedObjectBase.Prefix.ToLowerFast() == "none")
                 {
@@ -125,11 +125,11 @@ namespace SharpDenizenTools.MetaHandlers
             returnType = returnType.ToLowerFast();
             if (returnType == "objecttag")
             {
-                return new HashSet<MetaObjectType>(Docs.META_TYPE_OBJECT.Meta.Values);
+                return new HashSet<MetaObjectType>(Docs.ObjectTypes.Values);
             }
             if (known == null)
             {
-                known = Docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(returnType);
+                known = Docs.ObjectTypes.GetValueOrDefault(returnType);
             }
             if (known != null)
             {
@@ -201,7 +201,7 @@ namespace SharpDenizenTools.MetaHandlers
                         {
                             type = $"{type}tag";
                         }
-                        MetaObjectType wantedType = Docs.META_TYPE_OBJECT.Meta.GetValueOrDefault(type);
+                        MetaObjectType wantedType = Docs.ObjectTypes.GetValueOrDefault(type);
                         if (wantedType == null)
                         {
                             Error($"Tag part 'as[{type}]' is invalid: type name given doesn't appear to be a real object type.");
@@ -224,7 +224,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 if (type == Docs.ObjectTagType)
                 {
-                    return new HashSet<MetaObjectType>(Docs.META_TYPE_OBJECT.Meta.Values);
+                    return new HashSet<MetaObjectType>(Docs.ObjectTypes.Values);
                 }
                 result.Add(type);
                 MetaObjectType baseType = type.BaseType;
@@ -237,7 +237,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     result.Add(implType);
                 }
-                foreach (MetaObjectType extendType in Docs.META_TYPE_OBJECT.Meta.Values)
+                foreach (MetaObjectType extendType in Docs.ObjectTypes.Values)
                 {
                     if (extendType.Implements.Contains(type))
                     {

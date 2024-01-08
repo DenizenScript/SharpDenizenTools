@@ -174,7 +174,7 @@ namespace SharpDenizenTools.MetaHandlers
                     Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
                 }
             }
-            docs.RawAdjustables = docs.META_TYPE_OBJECT.Meta.Values.Where(t => t.GeneratedExampleAdjust == t.Name && !t.CleanName.EndsWith("tag")).Select(t => t.Name).ToHashSet();
+            docs.RawAdjustables = docs.ObjectTypes.Values.Where(t => t.GeneratedExampleAdjust == t.Name && !t.CleanName.EndsWith("tag")).Select(t => t.Name).ToHashSet();
         }
 
         /// <summary>Downloads guide source info.</summary>
@@ -355,12 +355,12 @@ namespace SharpDenizenTools.MetaHandlers
         {
             try
             {
-                if (!docs.MetaTypes.TryGetValue(objectType.ToLowerFast(), out IMetaType type))
+                if (!docs.MetaTypesData.TryGetValue(objectType.ToLowerFast(), out IMetaTypeData typeData))
                 {
                     docs.LoadErrors.Add($"While processing {file} found unknown meta type '{objectType}'.");
                     return;
                 }
-                MetaObject obj = type.CreateNewMeta();
+                MetaObject obj = typeData.CreateNewMeta();
                 obj.SourceFile = file;
                 obj.Meta = docs;
                 string curKey = null;

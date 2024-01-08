@@ -26,7 +26,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_EXTENSION.Meta.Add(CleanName, this);
+            docs.Extensions.Add(CleanName, this);
         }
 
         /// <inheritdoc/>
@@ -53,7 +53,7 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             Require(docs, ExtendType, ExtendName, ExtensionName);
-            MetaObject extended = docs.MetaTypes.TryGetValue(ExtendType.ToLowerFast(), out IMetaType type) ? type.Meta.GetValueOrDefault(ExtendName.ToLowerFast()) : null;
+            MetaObject extended = docs.MetaTypesData.TryGetValue(ExtendType.ToLowerFast(), out IMetaTypeData typeData) ? typeData.Meta.GetValueOrDefault(ExtendName.ToLowerFast()) : null;
             if (extended is null)
             {
                 docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta type/name to extend: '{ExtendType}'/'{ExtendName}'.");

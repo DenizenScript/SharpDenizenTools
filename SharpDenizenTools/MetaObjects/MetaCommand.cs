@@ -49,7 +49,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_COMMAND.Meta.Add(CleanName, this);
+            docs.Commands.Add(CleanName, this);
         }
 
         /// <summary>Parses this command's syntax data to create a list of helper data about the known arguments.</summary>

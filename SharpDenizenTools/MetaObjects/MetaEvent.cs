@@ -28,7 +28,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_EVENT.Meta.Add(CleanName, this);
+            docs.Events.Add(CleanName, this);
             bool anyLegacy = false;
             foreach (ScriptEventCouldMatcher matcher in CouldMatchers.DistinctBy(m => m.Parts[0]))
             {

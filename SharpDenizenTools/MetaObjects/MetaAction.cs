@@ -38,7 +38,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_ACTION.Meta.Add(CleanName, this);
+            docs.Actions.Add(CleanName, this);
         }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

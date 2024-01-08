@@ -21,7 +21,7 @@ namespace SharpDenizenTools.MetaObjects
             FullName = $"{PropObject}.{PropName}";
             NameForms = [FullName.ToLowerFast(), PropName.ToLowerFast()];
             HasMultipleNames = true;
-            docs.META_TYPE_PROPERTY.Meta.Add(CleanName, this);
+            docs.Properties.Add(CleanName, this);
             string asTag = $"<{FullName}>";
             string cleanedTag = MetaTag.CleanTag(asTag);
             new MetaMechanism()

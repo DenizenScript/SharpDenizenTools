@@ -22,7 +22,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_LANGUAGE.Meta.Add(CleanName, this);
+            docs.Languages.Add(CleanName, this);
         }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

@@ -25,7 +25,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public override void AddTo(MetaDocs docs)
         {
-            docs.META_TYPE_GUIDEPAGE.Meta.Add(CleanName, this);
+            docs.GuidePages.Add(CleanName, this);
         }
 
         /// <summary><see cref="MetaObject.BuildSearchables"/></summary>

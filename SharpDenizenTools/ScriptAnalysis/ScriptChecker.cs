@@ -811,7 +811,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 commandName = commandName[1..];
             }
             CommandArgument[] arguments = parts.Length == 1 ? [] : BuildArgs(line, startChar + parts[0].Length + 1, parts[1], this);
-            if (!Meta.META_TYPE_COMMAND.Meta.TryGetValue(commandName, out MetaCommand command))
+            if (!Meta.Commands.TryGetValue(commandName, out MetaCommand command))
             {
                 if (commandName != "case" && commandName != "default")
                 {
@@ -942,7 +942,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         warnScript(Warnings, script.LineNumber, "enumerated_script_name", "Dangerous script title - exactly matches a core keyword in Minecraft. Use a more unique name.");
                     }
-                    if (Meta.META_TYPE_COMMAND.Meta.ContainsKey(script.Name) || KnownScriptTypes.ContainsKey(script.Name))
+                    if (Meta.Commands.ContainsKey(script.Name) || KnownScriptTypes.ContainsKey(script.Name))
                     {
                         warnScript(Warnings, script.LineNumber, "enumerated_script_name", "Dangerous script title - exactly matches a Denizen command or keyword. Use a more unique name.");
                     }
@@ -1177,10 +1177,10 @@ namespace SharpDenizenTools.ScriptAnalysis
                                     Warn(Warnings, actionValue.Line, "action_object_notation", "This action line appears to contain raw object notation. Object notation is not allowed in action lines.", start, end);
                                 }
                                 actionName = "on " + actionName;
-                                if (!Meta.META_TYPE_ACTION.Meta.ContainsKey(actionName))
+                                if (!Meta.Actions.ContainsKey(actionName))
                                 {
                                     bool exists = false;
-                                    foreach (MetaAction action in Meta.META_TYPE_ACTION.Meta.Values)
+                                    foreach (MetaAction action in Meta.Actions.Values)
                                     {
                                         if (action.RegexMatcher.IsMatch(actionName))
                                         {
@@ -1218,7 +1218,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 MetaEvent matchedEvent = null;
                                 ScriptEventCouldMatcher matched = null;
                                 bool matchedSwitches = false;
-                                foreach (MetaEvent evt in Meta.META_TYPE_EVENT.Meta.Values)
+                                foreach (MetaEvent evt in Meta.Events.Values)
                                 {
                                     foreach (ScriptEventCouldMatcher matcher in evt.CouldMatchers)
                                     {
@@ -1249,7 +1249,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                                 }
                                 if (matchedEvent is null)
                                 {
-                                    foreach (MetaEvent evt in Meta.META_TYPE_EVENT.Meta.Values)
+                                    foreach (MetaEvent evt in Meta.Events.Values)
                                     {
                                         if (evt.CouldMatchers.Any(c => c.TryMatch(parts, true, false) > 0))
                                         {
