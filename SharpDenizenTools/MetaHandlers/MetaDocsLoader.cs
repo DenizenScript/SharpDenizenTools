@@ -355,12 +355,12 @@ namespace SharpDenizenTools.MetaHandlers
         {
             try
             {
-                if (!MetaDocs.MetaObjectGetters.TryGetValue(objectType.ToLowerFast(), out Func<MetaObject> getter))
+                if (!docs.MetaTypesData.TryGetValue(objectType.ToLowerFast(), out IMetaTypeData typeData))
                 {
                     docs.LoadErrors.Add($"While processing {file} found unknown meta type '{objectType}'.");
                     return;
                 }
-                MetaObject obj = getter();
+                MetaObject obj = typeData.CreateNewMeta();
                 obj.SourceFile = file;
                 obj.Meta = docs;
                 string curKey = null;
@@ -371,9 +371,15 @@ namespace SharpDenizenTools.MetaHandlers
                     {
                         if (curKey != null && curValue != null)
                         {
-                            if (!obj.ApplyValue(docs, curKey.ToLowerFast(), curValue.Trim(' ', '\t', '\n')))
+                            string cleanKey = curKey.ToLowerFast();
+                            string cleanValue = curValue.Trim(' ', '\t', '\n');
+                            if (!obj.ApplyValue(docs, cleanKey, cleanValue))
                             {
                                 docs.LoadErrors.Add($"While processing {file} in object type '{objectType}' for '{obj.Name}' could not apply key '{curKey}' with value '{curValue}'.");
+                            }
+                            else
+                            {
+                                obj.RawValues.GetOrCreate(cleanKey, () => []).Add(cleanValue);
                             }
                             curKey = null;
                             curValue = null;

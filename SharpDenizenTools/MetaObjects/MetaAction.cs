@@ -11,9 +11,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented action.</summary>
     public class MetaAction : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_ACTION;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => Actions[0];
 

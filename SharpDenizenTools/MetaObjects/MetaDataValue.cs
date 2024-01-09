@@ -11,9 +11,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>Internally tracked data values helper.</summary>
     public class MetaDataValue : MetaObject
     {
-        /// <summary>Irrelevant.</summary>
-        public override MetaType Type => null;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => DataKeyName;
 

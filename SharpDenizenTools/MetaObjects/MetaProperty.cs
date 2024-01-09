@@ -11,8 +11,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented object property.</summary>
     public class MetaProperty : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_PROPERTY;
 
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => FullName;

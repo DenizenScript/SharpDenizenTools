@@ -10,9 +10,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented command.</summary>
     public class MetaCommand : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_COMMAND;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => CommandName;
 

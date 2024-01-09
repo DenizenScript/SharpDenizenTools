@@ -10,9 +10,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A page of the beginner's guide.</summary>
     public class MetaGuidePage : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_GUIDEPAGE;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => PageName;
 

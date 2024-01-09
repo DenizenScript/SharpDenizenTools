@@ -11,8 +11,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented type of object.</summary>
     public class MetaObjectType : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_OBJECT;
 
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => TypeName;

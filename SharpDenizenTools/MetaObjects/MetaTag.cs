@@ -10,9 +10,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented tag.</summary>
     public class MetaTag : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_TAG;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => TagFull;
 

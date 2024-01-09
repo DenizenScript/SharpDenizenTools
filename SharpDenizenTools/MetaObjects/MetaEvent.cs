@@ -16,9 +16,6 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>Symbols that are structural in event names and can be hidden.</summary>
         public static AsciiMatcher EventNameCleaner = new("<>'()");
 
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_EVENT;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => Events[0];
 

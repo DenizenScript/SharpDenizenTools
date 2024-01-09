@@ -10,9 +10,6 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>A documented mechanism.</summary>
     public class MetaMechanism : MetaObject
     {
-        /// <summary><see cref="MetaObject.Type"/></summary>
-        public override MetaType Type => MetaDocs.META_TYPE_MECHANISM;
-
         /// <summary><see cref="MetaObject.Name"/></summary>
         public override string Name => FullName;
 

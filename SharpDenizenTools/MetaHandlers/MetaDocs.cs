@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.IO;
-using System.IO.Compression;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using FreneticUtilities.FreneticExtensions;
 using SharpDenizenTools.MetaObjects;
 
@@ -46,23 +39,11 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>The "guide page" meta type.</summary>
         public static MetaType META_TYPE_GUIDEPAGE = new() { Name = "GuidePage", WebPath = null };
 
-        /// <summary>All meta types.</summary>
-        public static MetaType[] META_TYPES = [ META_TYPE_COMMAND, META_TYPE_MECHANISM,
-            META_TYPE_EVENT, META_TYPE_ACTION, META_TYPE_LANGUAGE, META_TYPE_TAG, META_TYPE_GUIDEPAGE ];
+        /// <summary>The "extension" meta type.</summary>
+        public static MetaType META_TYPE_EXTENSION = new() { Name = "Extension", WebPath = null };
 
-        /// <summary>Getters for standard meta object types.</summary>
-        public static Dictionary<string, Func<MetaObject>> MetaObjectGetters = new()
-        {
-            { "command", () => new MetaCommand() },
-            { "mechanism", () => new MetaMechanism() },
-            { "tag", () => new MetaTag() },
-            { "objecttype", () => new MetaObjectType() },
-            { "property", () => new MetaProperty() },
-            { "event", () => new MetaEvent() },
-            { "action", () => new MetaAction() },
-            { "language", () => new MetaLanguage() },
-            { "data", () => new MetaDataValue() }
-        };
+        /// <summary>Data for all meta types, by name.</summary>
+        public Dictionary<string, IMetaTypeData> MetaTypesData = [];
 
         /// <summary>All known commands.</summary>
         public Dictionary<string, MetaCommand> Commands = new(512);
@@ -91,6 +72,9 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>All known guide pages.</summary>
         public Dictionary<string, MetaGuidePage> GuidePages = new(512);
 
+        /// <summary>All known meta extensions.</summary>
+        public Dictionary<string, MetaExtension> Extensions = new(256);
+
         /// <summary>A set of all known tag bases.</summary>
         public HashSet<string> TagBases = new(512) { "context", "entry" };
 
@@ -114,6 +98,37 @@ namespace SharpDenizenTools.MetaHandlers
 
         /// <summary>Set of raw adjustable keys.</summary>
         public HashSet<string> RawAdjustables = [];
+
+        /// <summary>Creates a new instance of <see cref="MetaDocs"/> and registers its <see cref="MetaTypeData{T}"/>.</summary>
+        public MetaDocs()
+        {
+            // Extensions explicitly first
+            RegisterMetaData(META_TYPE_EXTENSION, Extensions);
+            RegisterMetaData(META_TYPE_COMMAND, Commands);
+            RegisterMetaData(META_TYPE_MECHANISM, Mechanisms);
+            RegisterMetaData(META_TYPE_TAG, Tags);
+            RegisterMetaData(META_TYPE_OBJECT, ObjectTypes);
+            RegisterMetaData(META_TYPE_PROPERTY, Properties);
+            RegisterMetaData(META_TYPE_EVENT, Events);
+            RegisterMetaData(META_TYPE_ACTION, Actions);
+            RegisterMetaData(META_TYPE_LANGUAGE, Languages);
+            RegisterMetaData(META_TYPE_GUIDEPAGE, GuidePages);
+            RegisterMetaData<MetaDataValue>("data", null);
+        }
+
+        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
+        public void RegisterMetaData<T>(MetaType type, Dictionary<string, T> storage)
+            where T : MetaObject, new()
+        {
+            MetaTypesData.Add(type.Name.ToLowerFast(), new MetaTypeData<T>(storage, type));
+        }
+
+        /// <summary>Registers a new <see cref="MetaTypeData{T}"/> with the provided values.</summary>
+        public void RegisterMetaData<T>(string type, Dictionary<string, T> storage)
+            where T : MetaObject, new()
+        {
+            MetaTypesData.Add(type, new MetaTypeData<T>(storage, null));
+        }
 
         /// <summary>Returns whether the given text value is in the named data set.</summary>
         public bool IsInDataValueSet(string set, string text)
@@ -192,42 +207,7 @@ namespace SharpDenizenTools.MetaHandlers
         /// <summary>Returns an enumerable of all objects in the meta documentation.</summary>
         public IEnumerable<MetaObject> AllMetaObjects()
         {
-            foreach (MetaCommand command in Commands.Values)
-            {
-                yield return command;
-            }
-            foreach (MetaMechanism mechanism in Mechanisms.Values)
-            {
-                yield return mechanism;
-            }
-            foreach (MetaTag tag in Tags.Values)
-            {
-                yield return tag;
-            }
-            foreach (MetaObjectType objType in ObjectTypes.Values)
-            {
-                yield return objType;
-            }
-            foreach (MetaProperty prop in Properties.Values)
-            {
-                yield return prop;
-            }
-            foreach (MetaEvent evt in Events.Values)
-            {
-                yield return evt;
-            }
-            foreach (MetaAction action in Actions.Values)
-            {
-                yield return action;
-            }
-            foreach (MetaLanguage language in Languages.Values)
-            {
-                yield return language;
-            }
-            foreach (MetaGuidePage guidePage in GuidePages.Values)
-            {
-                yield return guidePage;
-            }
+            return MetaTypesData.SelectMany(type => type.Value.AllMetaObjects());
         }
 
         /// <summary>

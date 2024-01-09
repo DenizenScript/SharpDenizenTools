@@ -10,8 +10,8 @@ namespace SharpDenizenTools.MetaObjects
     /// <summary>Abstract base for a type of meta object.</summary>
     public abstract class MetaObject
     {
-        /// <summary>Get the meta type of the object.</summary>
-        public abstract MetaType Type { get; }
+        /// <summary>The meta type of the object.</summary>
+        public MetaType Type;
 
         /// <summary>Get the name of the object. May have capitals.</summary>
         public abstract string Name { get; }
@@ -48,6 +48,9 @@ namespace SharpDenizenTools.MetaObjects
 
         /// <summary>The backing <see cref="MetaDocs"/> instance.</summary>
         public MetaDocs Meta;
+
+        /// <summary>The original raw values specified for the object.</summary>
+        public Dictionary<string, List<string>> RawValues = [];
 
         /// <summary>Apply a setting value to this meta object.</summary>
         /// <param name="docs">The relevant meta docs instance.</param>
