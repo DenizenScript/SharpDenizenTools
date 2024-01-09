@@ -1,7 +1,4 @@
-﻿using FreneticUtilities.FreneticExtensions;
-using SharpDenizenTools.MetaHandlers;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SharpDenizenTools.MetaObjects
@@ -13,7 +10,7 @@ namespace SharpDenizenTools.MetaObjects
         MetaObject CreateNewMeta();
 
         /// <summary>Gets a <see cref="MetaObject"/> by name, or <c>null</c> if one by that name doesn't exist.</summary>
-        MetaObject MetaByNameIfPresent(string name);
+        bool TryGetMeta(string name, out MetaObject meta);
 
         /// <summary>Returns all <see cref="MetaObject"/>s of this type.</summary>
         IEnumerable<MetaObject> AllMetaObjects();
@@ -25,15 +22,14 @@ namespace SharpDenizenTools.MetaObjects
         /// <inheritdoc/>
         public MetaObject CreateNewMeta()
         {
-            MetaObject newMeta = new T();
-            newMeta.Type = Type;
-            return newMeta;
+            return new T { Type = Type };
         }
 
         /// <inheritdoc/>
-        public MetaObject MetaByNameIfPresent(string name)
+        public bool TryGetMeta(string name, out MetaObject meta)
         {
-            return Meta?.GetValueOrDefault(name);
+            meta = Meta?.GetValueOrDefault(name);
+            return meta != null;
         }
 
         /// <inheritdoc/>

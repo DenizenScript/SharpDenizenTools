@@ -53,10 +53,14 @@ namespace SharpDenizenTools.MetaObjects
         public override void PostCheck(MetaDocs docs)
         {
             Require(docs, ExtendType, ExtendName, ExtensionName);
-            MetaObject extended = docs.MetaTypesData.TryGetValue(ExtendType.ToLowerFast(), out IMetaTypeData typeData) ? typeData.MetaByNameIfPresent(ExtendName.ToLowerFast()) : null;
-            if (extended is null)
+            if (!docs.MetaTypesData.TryGetValue(ExtendType.ToLowerFast(), out IMetaTypeData typeData))
             {
-                docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta type/name to extend: '{ExtendType}'/'{ExtendName}'.");
+                docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta type to extend: {ExtendType}.");
+                return;
+            }
+            if (!typeData.TryGetMeta(ExtendName.ToLowerFast(), out MetaObject extended))
+            {
+                docs.LoadErrors.Add($"Extension '{ExtensionName}' has invalid target meta name to extend: {ExtendName}.");
                 return;
             }
             foreach ((string key, List<string> values) in RawValues.ExceptBy(["target_type", "target_name", "name", "include_existing"], pair => pair.Key))
