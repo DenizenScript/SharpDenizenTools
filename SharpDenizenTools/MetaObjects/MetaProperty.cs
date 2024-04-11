@@ -114,6 +114,10 @@ namespace SharpDenizenTools.MetaObjects
                 case "description":
                     Description = value;
                     return true;
+                case "example":
+                    TagExamples.Add(value);
+                    MechanismExamples.Add(value);
+                    return true;
                 case "tag-example":
                     TagExamples.Add(value);
                     return true;
