@@ -24,14 +24,15 @@ namespace SharpDenizenTools.MetaObjects
             docs.Properties.Add(CleanName, this);
             string asTag = $"<{FullName}>";
             string cleanedTag = MetaTag.CleanTag(asTag);
-            string noPrefixDescription = Description.After("Controls");
+            bool hasControls = Description.StartsWithFast("Controls");
+            string cleanedDescription = hasControls ? Description.Substring("Controls".Length) : Description;
             new MetaMechanism()
             {
                 Type = MetaDocs.META_TYPE_MECHANISM,
                 MechName = PropName,
                 MechObject = PropObject,
                 Input = Input,
-                Description = "(Property) Sets" + noPrefixDescription + MechanismDescription,
+                Description = "(Property) " + (hasControls ? "Sets" : "") + cleanedDescription + MechanismDescription,
                 Group = Group ?? "Properties",
                 Warnings = Warnings,
                 Examples = MechanismExamples,
@@ -50,7 +51,7 @@ namespace SharpDenizenTools.MetaObjects
                 BeforeDot = cleanedTag.Before('.'),
                 AfterDotCleaned = cleanedTag.ToLowerFast().After('.'),
                 Returns = Input,
-                Description = "(Property) Returns" + noPrefixDescription + TagDescription,
+                Description = "(Property) " + (hasControls ? "Returns" : "") + cleanedDescription + TagDescription,
                 Mechanism = FullName,
                 Examples = TagExamples,
                 Group = Group ?? "Properties",
@@ -85,10 +86,10 @@ namespace SharpDenizenTools.MetaObjects
         public string Description;
 
         /// <summary>Optional description specific to the property's mechanism.</summary>
-        public string MechanismDescription;
+        public string MechanismDescription = "";
 
         /// <summary>Optional description specific to the property's tag.</summary>
-        public string TagDescription;
+        public string TagDescription = "";
 
         /// <summary>Manual examples for the property's tag. One full script per entry.</summary>
         public List<string> TagExamples = [];
