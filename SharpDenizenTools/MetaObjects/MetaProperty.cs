@@ -24,14 +24,18 @@ namespace SharpDenizenTools.MetaObjects
             docs.Properties.Add(CleanName, this);
             string asTag = $"<{FullName}>";
             string cleanedTag = MetaTag.CleanTag(asTag);
+            bool hasControls = Description.StartsWithFast("Controls");
+            string cleanedDescription = hasControls ? Description.Substring("Controls".Length) : Description;
             new MetaMechanism()
             {
+                Type = MetaDocs.META_TYPE_MECHANISM,
                 MechName = PropName,
                 MechObject = PropObject,
                 Input = Input,
-                Description = "(Property) " + Description,
+                Description = "(Property) " + (hasControls ? "Sets" : "") + cleanedDescription + MechanismDescription,
                 Group = Group ?? "Properties",
                 Warnings = Warnings,
+                Examples = MechanismExamples,
                 Plugin = Plugin,
                 SourceFile = SourceFile,
                 Deprecated = Deprecated,
@@ -41,14 +45,15 @@ namespace SharpDenizenTools.MetaObjects
             }.AddTo(docs);
             new MetaTag()
             {
+                Type = MetaDocs.META_TYPE_TAG,
                 TagFull = asTag,
                 CleanedName = cleanedTag.ToLowerFast(),
                 BeforeDot = cleanedTag.Before('.'),
                 AfterDotCleaned = cleanedTag.ToLowerFast().After('.'),
                 Returns = Input,
-                Description = "(Property) " + Description,
+                Description = "(Property) " + (hasControls ? "Returns" : "") + cleanedDescription + TagDescription,
                 Mechanism = FullName,
-                Examples = Examples,
+                Examples = TagExamples,
                 Group = Group ?? "Properties",
                 Warnings = Warnings,
                 Plugin = Plugin,
@@ -80,8 +85,17 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary>The long-form description.</summary>
         public string Description;
 
-        /// <summary>Manual examples of this tag. One full script per entry.</summary>
-        public List<string> Examples = [];
+        /// <summary>Optional description specific to the property's mechanism.</summary>
+        public string MechanismDescription = "";
+
+        /// <summary>Optional description specific to the property's tag.</summary>
+        public string TagDescription = "";
+
+        /// <summary>Manual examples for the property's tag. One full script per entry.</summary>
+        public List<string> TagExamples = [];
+
+        /// <summary>Manual examples for the property's mechanism. One full script per entry.</summary>
+        public List<string> MechanismExamples = [];
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>
         public override bool ApplyValue(MetaDocs docs, string key, string value)
@@ -101,7 +115,20 @@ namespace SharpDenizenTools.MetaObjects
                     Description = value;
                     return true;
                 case "example":
-                    Examples.Add(value);
+                    TagExamples.Add(value);
+                    MechanismExamples.Add(value);
+                    return true;
+                case "tag-example":
+                    TagExamples.Add(value);
+                    return true;
+                case "mechanism-example":
+                    MechanismExamples.Add(value);
+                    return true;
+                case "tag":
+                    TagDescription = '\n' + value;
+                    return true;
+                case "mechanism":
+                    MechanismDescription = '\n' + value;
                     return true;
                 default:
                     return base.ApplyValue(docs, key, value);
