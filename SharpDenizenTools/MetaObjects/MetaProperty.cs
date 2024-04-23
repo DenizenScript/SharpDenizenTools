@@ -25,7 +25,7 @@ namespace SharpDenizenTools.MetaObjects
             string asTag = $"<{FullName}>";
             string cleanedTag = MetaTag.CleanTag(asTag);
             bool hasControls = Description.StartsWithFast("Controls");
-            string cleanedDescription = hasControls ? Description.Substring("Controls".Length) : Description;
+            string cleanedDescription = hasControls ? Description["Controls".Length..] : Description;
             new MetaMechanism()
             {
                 Type = MetaDocs.META_TYPE_MECHANISM,
