@@ -29,7 +29,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FreneticLLC.FreneticUtilities" Version="1.0.24" />
-    <PackageReference Include="YamlDotNet" Version="13.7.1" />
+    <PackageReference Include="FreneticLLC.FreneticUtilities" Version="1.0.27" />
+    <PackageReference Include="YamlDotNet" Version="15.1.2" />
   </ItemGroup>
 </Project>

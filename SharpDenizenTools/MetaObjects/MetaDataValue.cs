@@ -23,7 +23,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
-            docs.DataValueSets.GetOrCreate(DataKeyName, () => new HashSet<string>()).UnionWith(Values);
+            docs.DataValueSets.GetOrCreate(DataKeyName, () => []).UnionWith(Values);
         }
 
         /// <summary><see cref="MetaObject.ApplyValue(MetaDocs, string, string)"/></summary>

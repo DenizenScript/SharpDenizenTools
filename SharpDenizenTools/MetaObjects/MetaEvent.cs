@@ -32,7 +32,7 @@ namespace SharpDenizenTools.MetaObjects
             bool anyLegacy = false;
             foreach (ScriptEventCouldMatcher matcher in CouldMatchers.DistinctBy(m => m.Parts[0]))
             {
-                docs.EventLookupOpti.GetOrCreate(matcher.Parts[0], () => new List<MetaEvent>()).Add(this);
+                docs.EventLookupOpti.GetOrCreate(matcher.Parts[0], () => []).Add(this);
                 if (matcher.Parts[0].StartsWithFast('<'))
                 {
                     anyLegacy = true;

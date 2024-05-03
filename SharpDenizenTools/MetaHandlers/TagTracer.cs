@@ -205,7 +205,7 @@ namespace SharpDenizenTools.MetaHandlers
                         if (wantedType == null)
                         {
                             Error($"Tag part 'as[{type}]' is invalid: type name given doesn't appear to be a real object type.");
-                            return new HashSet<MetaObjectType>();
+                            return [];
                         }
                         return ParsePossibleTypes(type, wantedType);
                     }
