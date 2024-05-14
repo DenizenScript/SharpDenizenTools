@@ -16,6 +16,7 @@ namespace SharpDenizenTools.MetaObjects
         /// <summary><see cref="MetaObject.AddTo(MetaDocs)"/></summary>
         public override void AddTo(MetaDocs docs)
         {
+            Type = MetaDocs.META_TYPE_GUIDEPAGE;
             docs.GuidePages.Add(CleanName, this);
         }
 
