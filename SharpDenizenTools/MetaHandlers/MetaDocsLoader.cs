@@ -369,7 +369,7 @@ namespace SharpDenizenTools.MetaHandlers
                 {
                     if (line.StartsWith('@'))
                     {
-                        if (curKey != null && curValue != null)
+                        if (curKey is not null && curValue is not null)
                         {
                             string cleanKey = curKey.ToLowerFast();
                             string cleanValue = curValue.Trim(' ', '\t', '\n');

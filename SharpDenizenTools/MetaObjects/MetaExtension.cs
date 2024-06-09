@@ -73,6 +73,10 @@ namespace SharpDenizenTools.MetaObjects
                     {
                         docs.LoadErrors.Add($"Extension '{ExtensionName}' could not extend {ExtendType} meta '{ExtendName}', key/value pair '{key}' -> '{value}' is invalid.");
                     }
+                    else
+                    {
+                        extended.RawValues.GetOrCreate(key, () => []).Add(newValue);
+                    }
                 }
             }
         }
