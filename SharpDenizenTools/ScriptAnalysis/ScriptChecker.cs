@@ -252,8 +252,8 @@ namespace SharpDenizenTools.ScriptAnalysis
             }
             catch (YamlException yamlEx)
             {
-                int line = yamlEx.Start.Line - 1;
-                int col = yamlEx.Start.Column;
+                int line = (int)yamlEx.Start.Line - 1;
+                int col = (int)yamlEx.Start.Column;
                 Warn(Errors, line, "yaml_load", $"Invalid YAML! Error message: {yamlEx.Message}", col, Lines[line].Length);
             }
             catch (Exception ex)
