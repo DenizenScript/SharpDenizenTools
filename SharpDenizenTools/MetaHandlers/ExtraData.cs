@@ -106,7 +106,7 @@ namespace SharpDenizenTools.MetaHandlers
 
         private HashSet<string> GetDataSet(string type)
         {
-            HashSet<string> result = new((DataSection.GetStringList(type.ToLowerFast()) ?? []).Select(s => s.ToLowerFast()));
+            HashSet<string> result = [.. (DataSection.GetStringList(type.ToLowerFast()) ?? []).Select(s => s.ToLowerFast())];
             All.UnionWith(result);
             return result;
         }

@@ -142,9 +142,9 @@ namespace SharpDenizenTools.MetaObjects
             {
                 case "events":
                     Events = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                    CleanEvents = Events.Select(s => EventNameCleaner.TrimToNonMatches(s.ToLowerFast())).ToArray();
-                    OverlyCleanedEvents = Events.Select(OverCleanEvent).ToArray();
-                    CouldMatchers = Events.Select(s => EventTools.ParseMatchers(s, docs.Data.KnownValidatorTypes, (s) => docs.LoadErrors.Add(s))).Flatten().ToArray();
+                    CleanEvents = [.. Events.Select(s => EventNameCleaner.TrimToNonMatches(s.ToLowerFast()))];
+                    OverlyCleanedEvents = [.. Events.Select(OverCleanEvent)];
+                    CouldMatchers = [.. Events.Select(s => EventTools.ParseMatchers(s, docs.Data.KnownValidatorTypes, (s) => docs.LoadErrors.Add(s))).Flatten()];
                     HasMultipleNames = Events.Length > 1;
                     return true;
                 case "triggers":

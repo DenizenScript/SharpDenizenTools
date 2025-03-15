@@ -142,7 +142,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 script = script.Replace("\r\n", "\n").Replace('\r', '\n');
             }
             Lines = script.Split('\n');
-            CleanedLines = Lines.Select(s => s.Trim().ToLowerFast()).ToArray();
+            CleanedLines = [.. Lines.Select(s => s.Trim().ToLowerFast())];
         }
 
         /// <summary>Adds a warning to track.</summary>
@@ -1720,7 +1720,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                     {
                         IEnumerable<string> defNames = defs is List<object> defList ? defList.Select(o => o.ToString()) : defs.ToString().SplitFast('|');
                         defNames = defNames.Select(d => d.ToLowerFast().Before('[').Trim());
-                        container.DefNames.AddAll(defNames.ToArray());
+                        container.DefNames.AddAll([.. defNames]);
                     }
                     PreprocContainer(container);
                     GeneratedWorkspace.Scripts[container.Name] = container;
@@ -1787,8 +1787,8 @@ namespace SharpDenizenTools.ScriptAnalysis
                 void procSingleCommand(string cmd)
                 {
                     string cmdName = cmd.Trim().BeforeAndAfter(' ', out string argTextRaw).ToLowerFast();
-                    string[] fullArgs = BuildArgs(key.Line, 0, argTextRaw, null).Select(a => a.Text.ToLowerFast()).ToArray();
-                    string[] cleanArgs = fullArgs.Where(a => !StartsWithAny(a, "save:", "player:", "npc:")).ToArray();
+                    string[] fullArgs = [.. BuildArgs(key.Line, 0, argTextRaw, null).Select(a => a.Text.ToLowerFast())];
+                    string[] cleanArgs = [.. fullArgs.Where(a => !StartsWithAny(a, "save:", "player:", "npc:"))];
                     switch (cmdName)
                     {
                         case "define":

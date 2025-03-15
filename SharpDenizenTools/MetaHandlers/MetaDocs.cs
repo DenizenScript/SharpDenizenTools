@@ -150,7 +150,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 return null;
             }
-            return matches.Select(p => p.Item1).ToList();
+            return [.. matches.Select(p => p.Item1)];
         }
 
         /// <summary>Returns event match details for the given input text, as pair of event and match quality.</summary>

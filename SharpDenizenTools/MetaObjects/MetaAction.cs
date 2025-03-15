@@ -48,7 +48,7 @@ namespace SharpDenizenTools.MetaObjects
             {
                 case "actions":
                     Actions = value.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                    CleanActions = Actions.Select(s => s.ToLowerFast()).ToArray();
+                    CleanActions = [.. Actions.Select(s => s.ToLowerFast())];
                     HasMultipleNames = Actions.Length > 1;
                     string outRegex = "";
                     foreach (string action in Actions)

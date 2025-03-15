@@ -73,7 +73,7 @@ namespace SharpDenizenTools.ScriptAnalysis
                 }
                 else if (arg.Contains('|'))
                 {
-                    HashSet<string> rawValues = new(arg.SplitFast('|'));
+                    HashSet<string> rawValues = [.. arg.SplitFast('|')];
                     validatorList.Add((word, price) => rawValues.Contains(word) ? 10 : 0);
                     argOrderList.Add(index++);
                 }

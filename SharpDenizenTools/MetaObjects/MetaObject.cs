@@ -328,11 +328,11 @@ namespace SharpDenizenTools.MetaObjects
             {
                 docs.LoadErrors.Add($"{Type.Name} object {CleanName} contains null values in searchable data");
             }
-            SearchHelper.PerfectMatches = SearchHelper.PerfectMatches.Select(s => s.ToLowerFast()).ToList();
-            SearchHelper.Synonyms = SearchHelper.Synonyms.Select(s => s.ToLowerFast()).ToList();
-            SearchHelper.Strongs = SearchHelper.Strongs.Select(s => s.ToLowerFast()).ToList();
-            SearchHelper.Decents = SearchHelper.Decents.Select(s => s.ToLowerFast()).ToList();
-            SearchHelper.Backups = SearchHelper.Backups.Select(s => s.ToLowerFast()).ToList();
+            SearchHelper.PerfectMatches = [.. SearchHelper.PerfectMatches.Select(s => s.ToLowerFast())];
+            SearchHelper.Synonyms = [.. SearchHelper.Synonyms.Select(s => s.ToLowerFast())];
+            SearchHelper.Strongs = [.. SearchHelper.Strongs.Select(s => s.ToLowerFast())];
+            SearchHelper.Decents = [.. SearchHelper.Decents.Select(s => s.ToLowerFast())];
+            SearchHelper.Backups = [.. SearchHelper.Backups.Select(s => s.ToLowerFast())];
         }
 
         /// <summary>Data to help object searches.</summary>

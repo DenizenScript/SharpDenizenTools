@@ -43,7 +43,7 @@ namespace SharpDenizenTools.MetaHandlers
             }
             if (root == "context" || root == "entry")
             {
-                TraceTagParts(new HashSet<MetaObjectType>(Docs.ObjectTypes.Values), 2);
+                TraceTagParts([.. Docs.ObjectTypes.Values], 2);
             }
             else if (LegacySpecialTags.Contains(root))
             {
@@ -107,10 +107,10 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 Error($"Tag base '{Tag.Parts[0].Text}' does not exist.");
             }
-            Tag.Parts[0].PossibleSubTypes = GetFullComplexSetFrom(Tag.Parts[0].PossibleTags.Select(t => t.ReturnType).Where(t => t is not null).ToHashSet());
+            Tag.Parts[0].PossibleSubTypes = GetFullComplexSetFrom([.. Tag.Parts[0].PossibleTags.Select(t => t.ReturnType).Where(t => t is not null)]);
             foreach (SingleTag.Part part in Tag.Parts)
             {
-                List<MetaTag> deprecated = part.PossibleTags.Where(p => p.Deprecated is not null).ToList();
+                List<MetaTag> deprecated = [.. part.PossibleTags.Where(p => p.Deprecated is not null)];
                 if (deprecated.Any() && deprecated.Count == part.PossibleTags.Count)
                 {
                     MetaTag tag = deprecated[0];
@@ -125,7 +125,7 @@ namespace SharpDenizenTools.MetaHandlers
             returnType = returnType.ToLowerFast();
             if (returnType == "objecttag")
             {
-                return new HashSet<MetaObjectType>(Docs.ObjectTypes.Values);
+                return [.. Docs.ObjectTypes.Values];
             }
             if (known == null)
             {
@@ -174,7 +174,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 if (Tag.Parts[index].Parameter == null)
                 {
-                    result = result.Where(t => !t.Item1.RequiresParam).ToList();
+                    result = [.. result.Where(t => !t.Item1.RequiresParam)];
                     if (result.IsEmpty())
                     {
                         Error($"Tag part '{part}' requires an input [tag parameter] value.");
@@ -183,7 +183,7 @@ namespace SharpDenizenTools.MetaHandlers
                 }
                 else
                 {
-                    result = result.Where(t => t.Item1.AllowsParam).ToList();
+                    result = [.. result.Where(t => t.Item1.AllowsParam)];
                     if (result.IsEmpty())
                     {
                         Error($"Tag part '{part}' cannot have a [tag parameter].");
@@ -191,8 +191,8 @@ namespace SharpDenizenTools.MetaHandlers
                     }
                 }
                 int longestPart = result.Max(p => p.Item2);
-                result = result.Where(p => p.Item2 == longestPart).ToList();
-                possibleRoots = new HashSet<MetaObjectType>(result.SelectMany(p =>
+                result = [.. result.Where(p => p.Item2 == longestPart)];
+                possibleRoots = [.. result.SelectMany(p =>
                 {
                     if (p.Item1.BaseType == Docs.ObjectTagType && p.Item1.AfterDotCleaned == "as")
                     {
@@ -210,7 +210,7 @@ namespace SharpDenizenTools.MetaHandlers
                         return ParsePossibleTypes(type, wantedType);
                     }
                     return ParsePossibleTypes(p.Item1.Returns, p.Item1.ReturnType);
-                }));
+                })];
                 Tag.Parts[index].PossibleSubTypes = GetFullComplexSetFrom(possibleRoots);
                 index += longestPart;
             }
@@ -224,7 +224,7 @@ namespace SharpDenizenTools.MetaHandlers
             {
                 if (type == Docs.ObjectTagType)
                 {
-                    return new HashSet<MetaObjectType>(Docs.ObjectTypes.Values);
+                    return [.. Docs.ObjectTypes.Values];
                 }
                 result.Add(type);
                 MetaObjectType baseType = type.BaseType;

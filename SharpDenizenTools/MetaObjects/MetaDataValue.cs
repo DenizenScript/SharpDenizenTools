@@ -35,7 +35,7 @@ namespace SharpDenizenTools.MetaObjects
                     DataKeyName = value.ToLowerFast();
                     return true;
                 case "values":
-                    Values = value.Split(',').Select(s => s.Trim().ToLowerFast()).ToArray();
+                    Values = [.. value.Split(',').Select(s => s.Trim().ToLowerFast())];
                     return true;
             }
             return false;

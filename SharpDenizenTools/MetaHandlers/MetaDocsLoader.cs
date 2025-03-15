@@ -174,7 +174,7 @@ namespace SharpDenizenTools.MetaHandlers
                     Console.Error.WriteLine($"Error with {obj.Type.Name} '{obj.Name}': {ex}");
                 }
             }
-            docs.RawAdjustables = docs.ObjectTypes.Values.Where(t => t.GeneratedExampleAdjust == t.Name && !t.CleanName.EndsWith("tag")).Select(t => t.Name).ToHashSet();
+            docs.RawAdjustables = [.. docs.ObjectTypes.Values.Where(t => t.GeneratedExampleAdjust == t.Name && !t.CleanName.EndsWith("tag")).Select(t => t.Name)];
         }
 
         /// <summary>Downloads guide source info.</summary>
