@@ -181,7 +181,7 @@ namespace SharpDenizenTools.MetaHandlers
         public static void ReadGuides(MetaDocs docs, HttpClient client)
         {
             string page = StringConversionHelper.UTF8Encoding.GetString(client.GetByteArrayAsync(DENIZEN_GUIDE_SOURCE).Result);
-            int contentIndex = page.IndexOf("<div class=\"section\" id=\"contents\">");
+            int contentIndex = page.IndexOf("<div class=\"toctree-wrapper compound\">");
             if (contentIndex == -1)
             {
                 docs.LoadErrors.Add("Guide page did not match expected format (table of contents div missing).");
