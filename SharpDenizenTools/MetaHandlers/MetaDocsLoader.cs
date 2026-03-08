@@ -206,17 +206,17 @@ namespace SharpDenizenTools.MetaHandlers
                 string subpageContent = StringConversionHelper.UTF8Encoding.GetString(client.GetByteArrayAsync(DENIZEN_GUIDE_SOURCE + subPage).Result);
                 int pageTitleIndex = subpageContent.IndexOf("<title>");
                 int pageTitleEndIndex = subpageContent.IndexOf("</title>");
-                int tableIndex = subpageContent.IndexOf("<div class=\"contents local topic\" id=\"table-of-contents\">");
+                int tableIndex = subpageContent.IndexOf("<nav class=\"contents local\" id=\"table-of-contents\">");
                 if (pageTitleIndex == -1 || pageTitleEndIndex == -1 || tableIndex == -1)
                 {
-                    docs.LoadErrors.Add("Guide sub-page did not match expected format (title or table of contents div missing).");
+                    docs.LoadErrors.Add("Guide sub-page did not match expected format (title or table of contents nav elem missing).");
                     return;
                 }
                 string pageTitle = subpageContent[(pageTitleIndex + "<title>".Length)..pageTitleEndIndex].Before(" &mdash");
-                int tableEndIndex = subpageContent.IndexOf("</div>", tableIndex);
+                int tableEndIndex = subpageContent.IndexOf("</nav>", tableIndex);
                 if (tableEndIndex == -1)
                 {
-                    docs.LoadErrors.Add("Guide sub-page did not match expected format (table of contents div never ends).");
+                    docs.LoadErrors.Add("Guide sub-page did not match expected format (table of contents nav elem never ends).");
                     return;
                 }
                 string[] table = subpageContent[tableIndex..tableEndIndex].Replace('\r', '\n').Split('\n');
